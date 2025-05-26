@@ -142,17 +142,12 @@ void WalkerTab::start_walker() {
 }
 
 void WalkerTab::saveProfile() {
-    // Implementacja zapisu profilu do JSON (QJsonDocument)
 }
 
 void WalkerTab::loadProfile() {
-    // Implementacja ładowania profilu z JSON
 }
 
 void WalkerTab::addWaypoint(int index) {
-    //MemoryFunctions::moveTo(32021, 31920, 5);
-    //MemoryFunctions::openContainer();
-    MemoryFunctions::say();
     auto wpt = MemoryFunctions::read_my_wpt();
     int x = wpt[0];
     int y = wpt[1];
