@@ -1,0 +1,67 @@
+#pragma once
+
+class LocalPlayer
+{
+public:
+    char pad_0000[56]; //0x0000
+    uint32_t x; //0x0038
+    uint32_t y; //0x003C
+    uint16_t z; //0x0040
+    char pad_0042[906]; //0x0042
+    uint64_t is_walking; //0x03CC
+    char pad_03D4[76]; //0x03D4
+    uint64_t *head; //0x0420
+    uint64_t *necklace; //0x0428
+    uint64_t *container; //0x0430
+    uint64_t *armor; //0x0438
+    uint64_t *right_hand; //0x0440
+    uint64_t *left_hand; //0x0448
+    uint64_t *legs; //0x0450
+    uint64_t *boots; //0x0458
+    uint64_t *ring; //0x0460
+    uint64_t *arrow; //0x0468
+    char pad_0470[224];
+    double hp; //0x0558
+    double max_hp; //0x0560
+    double cap; //0x0568
+    char pad_0570[16]; //0x0570
+    double lvl; //0x0580
+    double lvl_pc; //0x0588
+    double mp; //0x0590
+    double max_mp; //0x0598
+};
+
+class Entity
+{
+public:
+    char pad_0000[56]; //0x0000
+    uint32_t x; //0x0038
+    uint32_t y; //0x003C
+    uint16_t z; //0x0040
+    char pad_0042[102]; //0x0042
+    char *name; //0x00A8
+    char pad_00B0[56]; //0x00B0
+    uint16_t hp; //0x00E8
+};
+
+class Tile
+{
+public:
+    char pad_0000[128]; //0x0000
+    uint32_t x; //0x0080
+    uint32_t y; //0x0084
+    uint16_t z; //0x0088
+    char pad_008A[2]; //0x008A
+    uint16_t walkable; //0x008C
+};
+
+class MapView
+{
+public:
+    char pad_0000[200]; //0x0000
+    uint64_t *entityList; //0x00C8
+    char pad_00D0[16]; //0x00D0
+    LocalPlayer* LocalPlayer; //0x00E0
+};
+
+
