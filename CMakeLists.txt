@@ -25,6 +25,10 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Walker/walker_thread.cpp
         Walker/walker_thread.h
         Structs/medivia_struct.h
+        Target/target_tab.cpp
+        Target/target_tab.h
+        Target/target_thread.cpp
+        Target/target_thread.h
 )
 
 target_link_libraries(EasyBot PRIVATE Qt5::Widgets)

@@ -12,20 +12,21 @@ public:
         Medivia,
     };
 
+    static uintptr_t base_module;
 
     static std::array<int, 3> read_my_wpt();
     explicit MemoryFunctions(LoadOption load_option);
     static void moveTo(int x, int y, int z);
-    static void attackTarget(int target_id);
-    static void openContainer();
+    static void attackTarget(uint64_t target_id);
+    static void openContainer(uint64_t container_id);
     static void collectItem();
     static void say();
 
 
     static bool isWalking();
+    static bool isAttacking();
 
 private:
-    static uintptr_t base_module;
     static uintptr_t character_address;
     static uintptr_t my_x_address;
     static uintptr_t my_y_address;

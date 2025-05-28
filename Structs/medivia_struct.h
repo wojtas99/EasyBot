@@ -24,7 +24,7 @@ public:
     double hp; //0x0558
     double max_hp; //0x0560
     double cap; //0x0568
-    char pad_0570[16]; //0x0570
+    char pad10_0570[16]; //0x0570
     double lvl; //0x0580
     double lvl_pc; //0x0588
     double mp; //0x0590
@@ -39,26 +39,43 @@ public:
     uint32_t y; //0x003C
     uint16_t z; //0x0040
     char pad_0042[102]; //0x0042
-    char *name; //0x00A8
-    char pad_00B0[56]; //0x00B0
+    char name[32]; //0x00A8
+    char pad_00B0[32]; //0x00C8
     uint16_t hp; //0x00E8
+    char pad_00EA[530]; //0x00EA
+    uint32_t last_x; //0x02FC
+    uint32_t last_y; //0x0300
+    uint16_t last_z; //0x0304
 };
 
 class Tile
 {
 public:
-    char pad_0000[128]; //0x0000
+    char pad_0000[104]; //0x0000
+    uint64_t *itemList; //0x0068
+    char pad_0070[16]; //0x0070
     uint32_t x; //0x0080
     uint32_t y; //0x0084
     uint16_t z; //0x0088
-    char pad_008A[2]; //0x008A
-    uint16_t walkable; //0x008C
+    char pad_008A[6]; //0x008A
+    uint16_t walkable; //0x0090
+};
+
+class Item
+{
+public:
+    char pad_0000[56]; //0x0000
+    uint32_t x; //0x0038
+    uint32_t y; //0x003C
+    uint16_t z; //0x0040
 };
 
 class MapView
 {
 public:
-    char pad_0000[200]; //0x0000
+    char pad_0000[176]; //0x0000
+    uint64_t *tileList; //0x00B0
+    char pad_00B8[16]; //0x00B8
     uint64_t *entityList; //0x00C8
     char pad_00D0[16]; //0x00D0
     LocalPlayer* LocalPlayer; //0x00E0

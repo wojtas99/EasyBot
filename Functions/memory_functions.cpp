@@ -80,10 +80,10 @@ void MemoryFunctions::moveTo(int x, int y, int z) {
     }
 }
 
-void MemoryFunctions::attackTarget(int target_id) {
+void MemoryFunctions::attackTarget(uint64_t target_id) {
     if (load_functions_variant == LoadOption::Altaron) {
         typedef void(__thiscall* AttackFuncAltaron)(int*, int*);
-        ((AttackFuncAltaron)attack_func_address)(reinterpret_cast<int *>(base_module + character_address), &target_id);
+        //((AttackFuncAltaron)attack_func_address)(reinterpret_cast<int *>(base_module + character_address), &target_id);
     } else if (load_functions_variant == LoadOption::Medivia) {
         typedef __int32(__fastcall* AttackFuncMedivia)(__int64 character_base, volatile signed __int32 **target, __int64 a3);
         volatile signed __int32 *param_2 = reinterpret_cast<volatile signed __int32 *>(target_id);
@@ -91,11 +91,11 @@ void MemoryFunctions::attackTarget(int target_id) {
     }
 }
 
-void MemoryFunctions::openContainer() {
-    typedef __int64(__fastcall* OpenContainerFuncMedivia)(__int64 character_base, long long *a2, __int64 *a3);
-    long long param_2 = 0x2FAE9F29F00;
+void MemoryFunctions::openContainer(uint64_t container_id) {
+    typedef __int64(__fastcall* OpenContainerFuncMedivia)(__int64 character_base, uint64_t *a2, __int64 *a3);
+    uint64_t param_2 = container_id;
     long long param_3 = 0x0;
-    ((OpenContainerFuncMedivia)open_func_address)(0x7FF71B9AB3D0, &param_2, &param_3);
+    ((OpenContainerFuncMedivia)open_func_address)(base_module + character_address - 0x110, &param_2, &param_3);
 }
 
 void MemoryFunctions::collectItem() {
@@ -116,9 +116,6 @@ void MemoryFunctions::say() {
 }
 
 
-
-
-
 bool MemoryFunctions::isWalking() {
     int walking = *(DWORD*)(*(DWORD*)(base_module + 0x02F72BC0) + 0x248);
     if (walking == 65535) {
@@ -126,5 +123,12 @@ bool MemoryFunctions::isWalking() {
     }
     return true;
 }
+bool MemoryFunctions::isAttacking() {;
+    if (*reinterpret_cast<uint64_t *>(base_module + 0xBEB4E8) != 0) {
+        return true;
+    }
+    return false;
+}
+
 
 

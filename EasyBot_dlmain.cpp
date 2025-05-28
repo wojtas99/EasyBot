@@ -4,6 +4,7 @@
 
 #include "Functions/memory_functions.h"
 #include "General/select_client_tab.h"
+#include "Structs/medivia_struct.h"
 
 
 HMODULE myhModule;
@@ -17,6 +18,7 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
+    uintptr_t moduleBase = (uintptr_t)GetModuleHandleW(NULL);
     int argc = 0;
     QApplication app(argc, nullptr);
     SelectClientTab w;
@@ -34,7 +36,7 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
 
     app.exec();
 
-    uintptr_t moduleBase = (uintptr_t)GetModuleHandleW(NULL);
+
 
 
     std::cout << "Main module base address: 0x" << std::hex << moduleBase << std::endl;

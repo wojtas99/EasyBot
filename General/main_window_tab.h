@@ -3,6 +3,7 @@
 #pragma once
 #include <QPushButton>
 #include "../Walker/walker_tab.h"
+#include "../Target/target_tab.h"
 class MainWindowTab : public QWidget {
     Q_OBJECT
 
@@ -26,6 +27,7 @@ private:
     QPushButton *trainingTab_button;
 
     WalkerTab* walker_tab = nullptr;
+    TargetTab* target_tab = nullptr;
 };
 
 

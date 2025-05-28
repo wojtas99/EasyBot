@@ -37,7 +37,12 @@ void MainWindowTab::walker() {
     }
     walker_tab->show();
 }
-void MainWindowTab::targetLoot() { /* Tu otwórz nowe okno lub dialog dla TargetLoot */ }
+void MainWindowTab::targetLoot() {
+    if (!target_tab) {
+        target_tab = new TargetTab();
+    }
+    target_tab->show();
+}
 void MainWindowTab::healing() { /* Tu otwórz nowe okno lub dialog dla Healing */ }
 void MainWindowTab::settings() { /* Tu otwórz nowe okno lub dialog dla Settings */ }
 void MainWindowTab::smartHotkeys() { /* Tu otwórz nowe okno lub dialog dla SmartHotkeys */ }
