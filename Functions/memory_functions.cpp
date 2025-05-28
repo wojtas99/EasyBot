@@ -12,6 +12,7 @@ void* MemoryFunctions::attack_func_address = nullptr;
 void* MemoryFunctions::open_func_address = nullptr;
 void* MemoryFunctions::collect_func_address = nullptr;
 void* MemoryFunctions::say_func_address = nullptr;
+void* MemoryFunctions::creature_func_address = nullptr;
 
 
 MemoryFunctions::MemoryFunctions(LoadOption load_option) {
@@ -129,6 +130,20 @@ bool MemoryFunctions::isAttacking() {;
     }
     return false;
 }
+
+int MemoryFunctions::entityCount() {
+    int count = 0;
+    uint64_t entity_count = *reinterpret_cast<uint64_t *>(base_module + 0x00C717C8);
+    entity_count = *reinterpret_cast<uint64_t *>(entity_count + 0x90);
+    entity_count = *reinterpret_cast<uint64_t *>(entity_count + 0x68);
+    entity_count = *reinterpret_cast<uint64_t *>(entity_count + 0x20);
+    count = *reinterpret_cast<int*>(entity_count + 0xDDC);
+    count = count - 47;
+    count = count/25;
+    count += 1;
+    return count;
+}
+
 
 
 

@@ -21,6 +21,8 @@ public:
     static void openContainer(uint64_t container_id);
     static void collectItem();
     static void say();
+    static bool isCreature(void*);
+    static int entityCount();
 
 
     static bool isWalking();
@@ -38,6 +40,7 @@ private:
     static void* open_func_address;
     static void* collect_func_address;
     static void* say_func_address;
+    static void* creature_func_address;
 
     static LoadOption load_functions_variant;
 };
