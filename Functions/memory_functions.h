@@ -27,7 +27,7 @@ public:
 
 
     static bool isWalking();
-    static bool isAttacking();
+    static uint64_t isAttacking();
 
 private:
     // Variables

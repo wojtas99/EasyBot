@@ -15,6 +15,9 @@ DWORD __stdcall EjectThread(LPVOID lpParameter) {
 }
 
 DWORD WINAPI TibiaBot(HMODULE hModule) {
+    AllocConsole();
+    FILE* f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
     int argc = 0;
     QApplication app(argc, nullptr);
     SelectClientTab w;
@@ -30,13 +33,9 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
     "QLabel { color: #f0f0f0; }";
     app.setStyleSheet(darkStyle);
     app.exec();
-    /*
-    AllocConsole();
-    FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
     fclose(f);
     FreeConsole();
-    */
+
     CreateThread(0, 0, EjectThread, 0, 0, 0);
     return 0;
 }

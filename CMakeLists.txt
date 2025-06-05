@@ -29,6 +29,8 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Target/target_tab.h
         Target/target_thread.cpp
         Target/target_thread.h
+        PatternScans/pattern_scan.cpp
+        PatternScans/pattern_scan.h
 )
 
 set_target_properties(EasyBot PROPERTIES

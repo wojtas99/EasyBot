@@ -16,17 +16,22 @@ public:
 
 private slots:
 
-    void addTarget(const QString& name, int hpFrom, int hpTo, int distance) const;
+    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& action) const;
 
     void startTargetThread(int state);
 
 private:
     QLabel* status_label;
+
     QListWidget* targetList_listWidget;
+
     QLineEdit* targetName_lineEdit;
     QLineEdit* hpFrom_lineEdit;
     QLineEdit* hpTo_lineEdit;
-    QSlider* distanceSlider;
+
+    QSlider* distance_slider;
+
+    QComboBox* action_comboBox;
 
     void targetList();
     void startTarget();
