@@ -16,10 +16,9 @@ void WalkerThread::run() {
         int map_y = wpt_data.value("y").toInt();
         int map_z = wpt_data.value("z").toInt();
 
-        auto wpt = MemoryFunctions::read_my_wpt();
-        int x = wpt[0];
-        int y = wpt[1];
-        int z = wpt[2];
+        uint32_t x = MemoryFunctions::map_view->LocalPlayer->x;
+        uint32_t y = MemoryFunctions::map_view->LocalPlayer->y;
+        uint16_t z = MemoryFunctions::map_view->LocalPlayer->z;
 
 
         if (x == map_x && y == map_y && z == map_z) {

@@ -1,7 +1,9 @@
 #ifndef MEMORY_FUNCTIONS_H
 #define MEMORY_FUNCTIONS_H
 #include <array>
+#include <vector>
 #include <Windows.h>
+#include "../Structs/medivia_struct.h"
 
 
 class MemoryFunctions {
@@ -12,29 +14,26 @@ public:
         Medivia,
     };
 
-    static uintptr_t base_module;
+    // Variables
+    static MapView* map_view;
 
-    static std::array<int, 3> read_my_wpt();
     explicit MemoryFunctions(LoadOption load_option);
     static void moveTo(int x, int y, int z);
     static void attackTarget(uint64_t target_id);
     static void openContainer(uint64_t container_id);
     static void collectItem();
     static void say();
-    static bool isCreature(void*);
-    static int entityCount();
+    static std::vector<Entity*> entityCount();
 
 
     static bool isWalking();
     static bool isAttacking();
 
 private:
-    static uintptr_t character_address;
-    static uintptr_t my_x_address;
-    static uintptr_t my_y_address;
-    static uintptr_t my_z_address;
-
-    //
+    // Variables
+    static uintptr_t base_module;
+    static uintptr_t local_player_address;
+    // Function Addresses
     static void* move_func_address;
     static void* attack_func_address;
     static void* open_func_address;

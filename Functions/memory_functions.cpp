@@ -1,11 +1,10 @@
 #include "memory_functions.h"
 #include <iostream>
 
-uintptr_t MemoryFunctions::base_module = 0;
-uintptr_t MemoryFunctions::character_address = 0;
-uintptr_t MemoryFunctions::my_x_address = 0;
-uintptr_t MemoryFunctions::my_y_address = 0;
-uintptr_t MemoryFunctions::my_z_address = 0;
+MapView* MemoryFunctions::map_view = nullptr;
+uint64_t MemoryFunctions::base_module = 0;
+uint64_t MemoryFunctions::local_player_address = 0;
+
 MemoryFunctions::LoadOption MemoryFunctions::load_functions_variant = LoadOption::Altaron;
 void* MemoryFunctions::move_func_address = nullptr;
 void* MemoryFunctions::attack_func_address = nullptr;
@@ -18,85 +17,50 @@ void* MemoryFunctions::creature_func_address = nullptr;
 MemoryFunctions::MemoryFunctions(LoadOption load_option) {
     load_functions_variant = load_option;
     base_module = reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
-    if (load_option == LoadOption::Altaron) { // Loading Altaron Memories
-        //MoveFunc = (_MoveFunc)(baseModule + 0xF8870);
-        move_func_address = reinterpret_cast<void *>(base_module + 0xF8870);
-        character_address = 0x2F72BC0;
-        my_x_address = 0x2F72D30;
-        my_y_address = my_x_address + 0x4;
-        my_z_address = my_x_address + 0x8;
-        attack_func_address = reinterpret_cast<void *>(base_module + 0xEED10);
-        std::cout << "Altaron module loaded: 0x" << std::hex << base_module << std::endl;
-        std::cout << "AttackFunc Address: 0x" << std::hex << attack_func_address << std::endl;
-    }
     if (load_option == LoadOption::Medivia) { // Loading Medivia Memories
+        // Variables
+        uint64_t address = *reinterpret_cast<uint64_t *>(*reinterpret_cast<uint64_t *>(base_module + 0x00BEBA98));
+        map_view = reinterpret_cast<MapView*>(address);
+        local_player_address = base_module + 0xBEB4E0;
+
+        // Functions Signatures
         move_func_address = reinterpret_cast<void *>(base_module + 0x14A0F0);
-        character_address = 0xBEB4E0;
-        my_x_address = 0xBEC560;
-        my_y_address = my_x_address + 0x4;
-        my_z_address = my_x_address + 0x8;
         attack_func_address = reinterpret_cast<void *>(base_module + 0x1325E0);
         open_func_address = reinterpret_cast<void *>(base_module + 0x136190);
         collect_func_address = reinterpret_cast<void *>(base_module + 0x135610);
         say_func_address = reinterpret_cast<void *>(base_module + 0x136D80);
-        std::cout << "Medivia module loaded: 0x" << std::hex << base_module << std::endl;
-        std::cout << "MoveFunc Address: 0x" << std::hex << move_func_address << std::endl;
-        std::cout << "AttackFunc Address: 0x" << std::hex << attack_func_address << std::endl;
-        std::cout << "OpenFunc Address: 0x" << std::hex << open_func_address << std::endl;
-        std::cout << "CollectFunc Address: 0x" << std::hex << collect_func_address << std::endl;
-        std::cout << "SayFunc Address: 0x" << std::hex << say_func_address << std::endl;
+        creature_func_address = reinterpret_cast<void *>(base_module + 0x271160);
     }
-}
-
-std::array<int, 3> MemoryFunctions::read_my_wpt() {
-    int x = *reinterpret_cast<DWORD*>(base_module + my_x_address);
-    int y = *reinterpret_cast<DWORD*>(base_module + my_y_address);
-    int z = *reinterpret_cast<SHORT*>(base_module + my_z_address);
-    return {x, y, z};
 }
 
 void MemoryFunctions::moveTo(int x, int y, int z) {
-    if (load_functions_variant == LoadOption::Altaron) {
-        DWORD char_ptr_addr = base_module + character_address;
-        WORD* player_struct = reinterpret_cast<WORD*>(*reinterpret_cast<DWORD*>(char_ptr_addr));
-
-        std::cout << "[moveTo] base_module: " << std::hex << base_module
-          << " move_func: " << move_func_address
-          << " dyn_char_addr: " << player_struct
-          << " x: " << x << " y: " << y << " z: " << z << std::endl;
-        if (!player_struct) {
-            std::cout << "[moveTo] character_address == 0! Skip move." << std::endl;
-            return;
-        }
-        //typedef void(__thiscall* MoveFuncAltaron)(int, int, int, short, char);
-        auto param_3 = static_cast<__int16>(z);
-        typedef int(__thiscall* MoveFuncAltaron)(WORD*, int, int, __int16, char);
-        ((MoveFuncAltaron)move_func_address)(player_struct, x, y, param_3, '0');
-    } else if (load_functions_variant == LoadOption::Medivia) {
-        typedef void(__fastcall* MoveFuncMedivia)(long long, int*);
-        int pos[3] = {x, y, z};
-        long long param_1 = *reinterpret_cast<long long *>(base_module + character_address);
-        std::cout << "Param1 Address: 0x" << std::hex << param_1 << std::endl;
-        ((MoveFuncMedivia)move_func_address)(param_1, pos);
-    }
+    int pos[3] = {x, y, z};
+    using mapClick_t = void(__fastcall *)(
+        uint64_t a1,       // Local Player
+        int* a2            // Coords to move
+        );
+    auto mapClick = reinterpret_cast<mapClick_t>(move_func_address);
+    mapClick(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
 }
 
 void MemoryFunctions::attackTarget(uint64_t target_id) {
-    if (load_functions_variant == LoadOption::Altaron) {
-        typedef void(__thiscall* AttackFuncAltaron)(int*, int*);
-        //((AttackFuncAltaron)attack_func_address)(reinterpret_cast<int *>(base_module + character_address), &target_id);
-    } else if (load_functions_variant == LoadOption::Medivia) {
-        typedef __int32(__fastcall* AttackFuncMedivia)(__int64 character_base, volatile signed __int32 **target, __int64 a3);
-        volatile signed __int32 *param_2 = reinterpret_cast<volatile signed __int32 *>(target_id);
-        ((AttackFuncMedivia)attack_func_address)(base_module + character_address - 0x110, &param_2, 0);
-    }
+    using attack_t = void(__fastcall *)(
+        uint64_t a1,  // Local Player - 0x110
+        int** target, // TargetID
+        uint64_t a3  // Unknown
+        );
+    uint64_t a1 = local_player_address - 0x110;
+    int *a2 = reinterpret_cast<int*>(target_id);
+    auto attack = reinterpret_cast<attack_t>(attack_func_address);
+    attack(a1, &a2, 0);
 }
 
 void MemoryFunctions::openContainer(uint64_t container_id) {
     typedef __int64(__fastcall* OpenContainerFuncMedivia)(__int64 character_base, uint64_t *a2, __int64 *a3);
     uint64_t param_2 = container_id;
     long long param_3 = 0x0;
-    ((OpenContainerFuncMedivia)open_func_address)(base_module + character_address - 0x110, &param_2, &param_3);
+    long long param_1 = *reinterpret_cast<long long *>(&map_view->LocalPlayer - 0x110);
+    ((OpenContainerFuncMedivia)open_func_address)(param_1, &param_2, &param_3);
 }
 
 void MemoryFunctions::collectItem() {
@@ -104,7 +68,8 @@ void MemoryFunctions::collectItem() {
     long long param_2 = 0x2C36F6D2D00;
     long long param_3 = 0xFFFF;
     int param_4 = 0x01;
-    ((CollectItemFuncMedivia)collect_func_address)(base_module + character_address - 0x110, &param_2, &param_3, param_4);
+    long long param_1 = *reinterpret_cast<long long *>(&map_view->LocalPlayer - 0x110);
+    ((CollectItemFuncMedivia)collect_func_address)(param_1, &param_2, &param_3, param_4);
 }
 
 void MemoryFunctions::say() {
@@ -113,7 +78,8 @@ void MemoryFunctions::say() {
     uintptr_t args[2];
     args[0] = (uintptr_t)text; // Text To speak
     args[1] = strlen(text); // Lenght of the text
-    ((SayFuncMedivia)say_func_address)(base_module + character_address - 0x110,1,0,args);
+    long long param_1 = *reinterpret_cast<long long *>(&map_view->LocalPlayer - 0x110);
+    ((SayFuncMedivia)say_func_address)(param_1,1,0,args);
 }
 
 
@@ -131,17 +97,48 @@ bool MemoryFunctions::isAttacking() {;
     return false;
 }
 
-int MemoryFunctions::entityCount() {
-    int count = 0;
-    uint64_t entity_count = *reinterpret_cast<uint64_t *>(base_module + 0x00C717C8);
-    entity_count = *reinterpret_cast<uint64_t *>(entity_count + 0x90);
-    entity_count = *reinterpret_cast<uint64_t *>(entity_count + 0x68);
-    entity_count = *reinterpret_cast<uint64_t *>(entity_count + 0x20);
-    count = *reinterpret_cast<int*>(entity_count + 0xDDC);
-    count = count - 47;
-    count = count/25;
-    count += 1;
-    return count;
+std::vector<Entity*> MemoryFunctions::entityCount() {
+    // Define a struct matching the output container (3 pointers: begin, end, capacity)
+    struct EntityVector {
+        void* begin;
+        void* end;
+        void* capacity;
+    };
+    using GetEntitiesAround_t = volatile int32_t* (__fastcall *)(
+    int64_t a1,       // Map Address RCX
+    EntityVector* a2, // Entities around
+    int64_t a3,       // Pointer to your base coordinate struct (a3);
+    bool a4,          // a4 flag (true to search all floors (z), false for only one floor)
+    int a5,           //a5 (how far left)
+    int a6,           //a6 (how far right)
+    int a7,           //a7 (how far up)
+    int a8            //a8 (how far down)
+);
+    int64_t worldPtr = local_player_address + 0x288;
+    // initialize output container (begin=end=capacity=null)
+    EntityVector outVec = {nullptr, nullptr, nullptr};
+    // My coords
+    int64_t baseCoordPtr = reinterpret_cast<uintptr_t>(&(map_view->LocalPlayer->x));
+    // Scan only my floor
+    bool includeLayers = false;
+    // Scan Whole Screen
+    int radiusX_neg = 7;
+    int radiusX_pos = 7;
+    int radiusY_neg = 5;
+    int radiusY_pos = 5;
+
+    // Call Function
+    auto GetEntitiesAround = reinterpret_cast<GetEntitiesAround_t>(creature_func_address);
+    GetEntitiesAround(worldPtr, &outVec, baseCoordPtr, includeLayers,radiusX_neg, radiusX_pos, radiusY_neg, radiusY_pos);
+
+    // Retrun empty vector if there are no Entities
+    if (!outVec.begin || !outVec.end)
+        return {};
+
+    // Assign and return list of Entities:
+    Entity** entities = reinterpret_cast<Entity**>(outVec.begin);
+    Entity** entities_end = reinterpret_cast<Entity**>(outVec.end);
+    return std::vector<Entity*>(entities, entities_end);
 }
 
 

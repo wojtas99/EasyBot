@@ -148,13 +148,12 @@ void WalkerTab::loadProfile() {
 }
 
 void WalkerTab::addWaypoint(int index) {
-    auto wpt = MemoryFunctions::read_my_wpt();
-    int x = wpt[0];
-    int y = wpt[1];
-    int z = wpt[2];
+    uint32_t x = MemoryFunctions::map_view->LocalPlayer->x;
+    uint32_t y = MemoryFunctions::map_view->LocalPlayer->y;
+    uint16_t z = MemoryFunctions::map_view->LocalPlayer->z;
 
     QString itemText = QString("Waypoint: %1 %2 %3").arg(x).arg(y).arg(z);
-    QListWidgetItem* item = new QListWidgetItem(itemText);
+    auto* item = new QListWidgetItem(itemText);
     QVariantMap data;
     data["x"] = x;
     data["y"] = y;

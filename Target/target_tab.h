@@ -15,17 +15,18 @@ public:
     explicit TargetTab(QWidget* parent = nullptr);
 
 private slots:
-    void addTarget(int index);
+
+    void addTarget(const QString& name, int hpFrom, int hpTo, int distance);
+
     void startTargetThread(int state);
 
 private:
-    QListWidget* targetList_listWidget;
-
-    QLineEdit* targetName_textEdit;
-
-    QCheckBox* start_checkBox;
-
     QLabel* status_label;
+    QListWidget* targetList_listWidget;
+    QLineEdit* targetName_lineEdit;
+    QLineEdit* hpFrom_lineEdit;
+    QLineEdit* hpTo_lineEdit;
+    QSlider* distanceSlider;
 
     void targetList();
     void startTarget();
