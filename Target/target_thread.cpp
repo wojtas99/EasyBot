@@ -16,7 +16,7 @@ void TargetThread::run() {
                     dist_x = abs(dist_x);
                     int dist_y = MemoryFunctions::map_view->LocalPlayer->y - entity->y;
                     dist_y = abs(dist_y);
-                    if (dist_y < target_data.value("distance").toInt() && dist_x < target_data.value("distance").toInt()) {
+                    if (dist_y <= target_data.value("distance").toInt() && dist_x <= target_data.value("distance").toInt()) {
                         MemoryFunctions::attackTarget(reinterpret_cast<uint64_t>(entity));
                         break;
                     }

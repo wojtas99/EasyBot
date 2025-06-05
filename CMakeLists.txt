@@ -31,5 +31,11 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Target/target_thread.h
 )
 
+set_target_properties(EasyBot PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
+
 target_link_libraries(EasyBot PRIVATE Qt5::Widgets)
 
