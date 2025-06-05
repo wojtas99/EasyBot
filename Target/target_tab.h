@@ -34,7 +34,6 @@ private:
     QComboBox* action_comboBox;
 
     void targetList();
-    void startTarget();
 
     TargetThread* targetThread = nullptr;
 };

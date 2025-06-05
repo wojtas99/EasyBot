@@ -15,10 +15,11 @@ void WalkerThread::run() {
         int map_x = wpt_data.value("x").toInt();
         int map_y = wpt_data.value("y").toInt();
         int map_z = wpt_data.value("z").toInt();
+        std::string option = wpt_data.value("option").toString().toStdString();
 
-        uint32_t x = MemoryFunctions::map_view->LocalPlayer->x;
-        uint32_t y = MemoryFunctions::map_view->LocalPlayer->y;
-        uint16_t z = MemoryFunctions::map_view->LocalPlayer->z;
+        int x = MemoryFunctions::map_view->LocalPlayer->x;
+        int y = MemoryFunctions::map_view->LocalPlayer->y;
+        int z = MemoryFunctions::map_view->LocalPlayer->z;
 
 
         if (x == map_x && y == map_y && z == map_z) {
@@ -27,10 +28,25 @@ void WalkerThread::run() {
             msleep(300);
             continue;
         }
-        if (x != map_x || y != map_y || z != map_z) {
-            MemoryFunctions::moveTo(map_x, map_y, map_z);
+
+        if ((x != map_x || y != map_y || z != map_z) && !MemoryFunctions::isAttacking()) {
+            if (option == "Center") {
+                MemoryFunctions::moveTo(map_x, map_y, map_z);
+            } else {
+                if (option == "North") {
+                    MemoryFunctions::moveTo(map_x, map_y - 1, map_z);
+                } else if (option == "South") {
+                    MemoryFunctions::moveTo(map_x, map_y + 1, map_z);
+                } else if (option == "East") {
+                    MemoryFunctions::moveTo(map_x + 1, map_y, map_z);
+                } else if (option == "West") {
+                    MemoryFunctions::moveTo(map_x - 1, map_y, map_z);
+                }
+                currentWpt = (currentWpt + 1) % m_waypoints.size();
+                emit indexUpdate(currentWpt);
+            }
         }
-        msleep(100);
+        msleep(500);
     }
 }
 

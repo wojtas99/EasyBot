@@ -46,7 +46,7 @@ TargetTab::TargetTab(QWidget* parent) : QWidget(parent) {
     action_comboBox = new QComboBox(this);
     action_comboBox->addItem("No Action");
     action_comboBox->addItem("Chase");
-    action_comboBox->addItem("Avoid Waves");
+    action_comboBox->addItem("Stay Away");
 
     auto layout = new QGridLayout(this);
     setLayout(layout);
@@ -91,7 +91,7 @@ void TargetTab::targetList() {
     });
 
     connect(targetList_listWidget, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem* item) {
-    delete targetList_listWidget->takeItem(targetList_listWidget->row(item));
+        delete targetList_listWidget->takeItem(targetList_listWidget->row(item));
     });
 
 

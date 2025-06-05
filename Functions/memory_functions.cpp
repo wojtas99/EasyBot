@@ -7,12 +7,14 @@ uint64_t MemoryFunctions::base_module = 0;
 uint64_t MemoryFunctions::local_player_address = 0;
 
 MemoryFunctions::LoadOption MemoryFunctions::load_functions_variant = LoadOption::Altaron;
+
 void* MemoryFunctions::move_func_address = nullptr;
 void* MemoryFunctions::attack_func_address = nullptr;
 void* MemoryFunctions::open_func_address = nullptr;
 void* MemoryFunctions::collect_func_address = nullptr;
 void* MemoryFunctions::say_func_address = nullptr;
 void* MemoryFunctions::creature_func_address = nullptr;
+void* MemoryFunctions::chase_func_address = nullptr;
 
 
 MemoryFunctions::MemoryFunctions(LoadOption load_option) {
@@ -44,7 +46,6 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x48, 0x89, 0x55
         };
-
         LPCSTR ATTACK_MASK = "xxxxxx?xxxx?xxx?????xxx";
 
         attack_func_address = FindPattern(ATTACK_PATTERN, ATTACK_MASK);
@@ -54,15 +55,14 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
             0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00,
             0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24, 0x00, 0xBE
         };
+        LPCSTR OPEN_MASK = "xxxxxxxxxxxx?xxx????xxxxxxx?x";
 
-        LPCSTR OPEN_MASK = "xxxxxxxxxxxx?xxx????xxxxxxxx?x";
 
         open_func_address = FindPattern(OPEN_PATTERN, OPEN_MASK);
 
         const BYTE COLLECT_PATTERN[] = {
             0x41, 0x56, 0x56, 0x57, 0x55, 0x53, 0x48, 0x83, 0xEC, 0x00, 0x41, 0x83, 0xF9
         };
-
         LPCSTR COLLECT_MASK = "xxxxxxxxx?xxx";
 
         collect_func_address = FindPattern(COLLECT_PATTERN, COLLECT_MASK);
@@ -91,7 +91,6 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
             "x?xx?????x?xxx";
 
         say_func_address = FindPattern(SAY_PATTERN, SAY_MASK);
-        //say_func_address = reinterpret_cast<void *>(base_module + 0x136D80);
         const BYTE CREATURE_PATTERN[] = {
             0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41,
             0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xEC,
@@ -103,12 +102,9 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x4D, 0x89, 0xC5
         };
-
-        LPCSTR CREATURE_MASK = "xxxxxxxxxxxxxx????xxxx????xxx?xxx?????xxx";
+        LPCSTR CREATURE_MASK = "xxxxxxxxxxxxxxx????xxxx????xxx?xxx?????xxx";
 
         creature_func_address = FindPattern(CREATURE_PATTERN, CREATURE_MASK);
-
-        //creature_func_address = reinterpret_cast<void *>(base_module + 0x271160);
     }
 }
 
@@ -132,6 +128,12 @@ void MemoryFunctions::attackTarget(uint64_t target_id) {
     int *a2 = reinterpret_cast<int*>(target_id);
     auto attack = reinterpret_cast<attack_t>(attack_func_address);
     attack(a1, &a2, 0);
+}
+void MemoryFunctions::setChase() {
+    using SetChaseMode_t = void(__fastcall*)(void*, int);
+    auto chase = reinterpret_cast<SetChaseMode_t>(chase_func_address);
+    void *param1 = reinterpret_cast<void*>(base_module + 0xBEB3D0);
+    chase(param1, 1);
 }
 
 void MemoryFunctions::openContainer(uint64_t container_id) {

@@ -2,7 +2,6 @@
 #define WALKER_TAB_H
 #include <QLineEdit>
 #include <QTextEdit>
-#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QListWidgetItem>
@@ -15,12 +14,11 @@ public:
     explicit WalkerTab(QWidget* parent = nullptr);
 
 private slots:
-    void saveProfile();
-    void loadProfile();
-    void addWaypoint(int index);
-    void clearWaypointList();
+    void saveProfile() const;
+    void loadProfile() const;
+    void addWaypoint(const QString &index) const;
+    void clearWaypointList() const;
     void startWalkerThread(int state);
-    void startRecordThread(int state);
 
 private:
     QListWidget* waypointList_listWidget;
@@ -29,9 +27,6 @@ private:
     QLineEdit* profile_lineEdit;
     QTextEdit* action_textEdit;
 
-    QCheckBox* record_checkBox;
-    QCheckBox* start_checkBox;
-
     QComboBox* option_comboBox;
 
     QLabel* status_label;
@@ -39,7 +34,6 @@ private:
 
     void profileList();
     void waypointList();
-    void start_walker();
 
     WalkerThread* walkerThread = nullptr;
 };

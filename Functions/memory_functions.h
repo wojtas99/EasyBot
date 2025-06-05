@@ -23,6 +23,7 @@ public:
     static void openContainer(uint64_t container_id);
     static void collectItem();
     static void say();
+    static void setChase();
     static std::vector<Entity*> entityCount();
 
 
@@ -40,6 +41,7 @@ private:
     static void* collect_func_address;
     static void* say_func_address;
     static void* creature_func_address;
+    static void* chase_func_address;
 
     static LoadOption load_functions_variant;
 };
