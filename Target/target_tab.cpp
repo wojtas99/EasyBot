@@ -56,6 +56,11 @@ void TargetTab::targetList() {
         addTarget(targetName_lineEdit->text(), hpFrom, hpTo, distance);
     });
 
+    connect(targetList_listWidget, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem* item) {
+    delete targetList_listWidget->takeItem(targetList_listWidget->row(item));
+    });
+
+
     connect(start_checkBox, &QCheckBox::stateChanged, this, &TargetTab::startTargetThread);
 
     QVBoxLayout* groupbox2_layout = new QVBoxLayout();
@@ -91,11 +96,11 @@ void TargetTab::targetList() {
     groupbox_layout->addWidget(targetList_listWidget, 1); // Stretch
     groupbox_layout->addLayout(groupbox2_layout, 0);
 
-    static_cast<QGridLayout*>(layout())->addWidget(groupbox, 0, 0, 1, 2);
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 0, 0, 1, 2);
 }
 
-void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distance) {
-    QListWidgetItem* item = new QListWidgetItem(name);
+void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distance) const {
+    auto* item = new QListWidgetItem(name);
     QVariantMap data;
     data["name"] = name;
     data["hpFrom"] = hpFrom;
@@ -104,8 +109,15 @@ void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distanc
     item->setData(Qt::UserRole, data);
     targetList_listWidget->addItem(item);
 
+    distanceSlider->setValue(1);
+    hpFrom_lineEdit->clear();
+    hpTo_lineEdit->clear();
+    targetName_lineEdit->clear();
+
     status_label->setStyleSheet("color: green; font-weight: bold;");
-    status_label->setText("Target added!");
+    status_label->setText(name + " added!");
+
+
 }
 
 void TargetTab::startTargetThread(int state) {

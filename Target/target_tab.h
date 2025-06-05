@@ -16,7 +16,7 @@ public:
 
 private slots:
 
-    void addTarget(const QString& name, int hpFrom, int hpTo, int distance);
+    void addTarget(const QString& name, int hpFrom, int hpTo, int distance) const;
 
     void startTargetThread(int state);
 
