@@ -1,6 +1,7 @@
 #ifndef MEMORY_FUNCTIONS_H
 #define MEMORY_FUNCTIONS_H
 #include <array>
+#include <string>
 #include <vector>
 #include <Windows.h>
 #include "../Structs/medivia_struct.h"
@@ -16,23 +17,19 @@ public:
 
     // Variables
     static MapView* map_view;
+    static PlayerBase* player_base;
+    static uintptr_t base_module;
 
     explicit MemoryFunctions(LoadOption load_option);
-    static void moveTo(int x, int y, int z);
-    static void attackTarget(uint64_t target_id);
-    static void openContainer(uint64_t container_id);
-    static void collectItem();
-    static void say();
-    static void setChase();
+
+    static bool moveTo(int x, int y, int z);
+    static bool attackTarget(Entity* target);
+    static bool attack(const std::string &target_name, int dist_threshold, Entity* entity);
+
     static std::vector<Entity*> entityCount();
-
-
-    static bool isWalking();
-    static uint64_t isAttacking();
 
 private:
     // Variables
-    static uintptr_t base_module;
     static uintptr_t local_player_address;
     // Function Addresses
     static void* move_func_address;

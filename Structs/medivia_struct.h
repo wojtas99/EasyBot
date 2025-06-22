@@ -8,7 +8,7 @@ public:
     uint32_t y; //0x003C
     uint16_t z; //0x0040
     char pad_0042[906]; //0x0042
-    uint64_t is_walking; //0x03CC
+    uint32_t is_walking; //0x03CC
     char pad_03D4[76]; //0x03D4
     uint64_t *head; //0x0420
     uint64_t *necklace; //0x0428
@@ -41,12 +41,31 @@ public:
     char pad_0042[102]; //0x0042
     char name[32]; //0x00A8
     char pad_00B0[32]; //0x00C8
-    uint16_t hp; //0x00E8
-    char pad_00EA[530]; //0x00EA
+    uint8_t hp; //0x00E8
+    char pad_00EA[531]; //0x00EA
     uint32_t last_x; //0x02FC
     uint32_t last_y; //0x0300
     uint16_t last_z; //0x0304
 };
+struct EntitySnapshot {
+    uint32_t x;
+    uint32_t y;
+    uint16_t z;
+    char name[32];
+    uint8_t hp;
+    uint32_t last_x;
+    uint32_t last_y;
+    uint16_t last_z;
+};
+
+class PlayerBase
+{
+public:
+    char pad_0000[272]; //0x0000
+    LocalPlayer *LocalPlayer; //0x0110
+    void *Entity; //0x0118
+};
+
 
 class Tile
 {

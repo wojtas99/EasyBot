@@ -12,14 +12,15 @@ public:
         : QThread(parent), m_waypoints(waypoints), m_running(true) {}
 
     void run() override;
-    void stop() { m_running = false; }
+    void stop() noexcept { m_running = false; }
+
 
     signals:
         void indexUpdate(int wpt_index);
 
 private:
     QList<QVariantMap> m_waypoints;
-    bool m_running;
+    std::atomic<bool> m_running{true};
 };
 
 #endif // WALKER_THREAD_H

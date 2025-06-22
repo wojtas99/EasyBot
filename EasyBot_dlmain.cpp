@@ -6,7 +6,6 @@
 #include "General/select_client_tab.h"
 #include "Structs/medivia_struct.h"
 #include <filesystem>
-
 HMODULE myhModule;
 
 DWORD __stdcall EjectThread(LPVOID lpParameter) {
@@ -22,7 +21,7 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
-    int argc = 0;
+    int argc = 1;
     QApplication app(argc, nullptr);
     SelectClientTab w;
     w.show();

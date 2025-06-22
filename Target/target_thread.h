@@ -12,11 +12,11 @@ public:
         : QThread(parent), m_targets(targets), m_running(true) {}
 
     void run() override;
-    void stop() { m_running = false; }
+    void stop() noexcept { m_running = false; }
 
 private:
     QList<QVariantMap> m_targets;
-    bool m_running;
+    std::atomic<bool> m_running{true};
 };
 
 #endif
