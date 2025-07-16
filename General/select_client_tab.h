@@ -21,6 +21,9 @@ private:
 
     MainWindowTab *main_window_tab = nullptr;
 
+    bool m_hookInitialized = false;
+    bool m_itemHookInitialized = false;
+
 };
 
 

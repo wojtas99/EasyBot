@@ -1,5 +1,4 @@
 #pragma once
-
 class LocalPlayer
 {
 public:
@@ -47,16 +46,6 @@ public:
     uint32_t last_y; //0x0300
     uint16_t last_z; //0x0304
 };
-struct EntitySnapshot {
-    uint32_t x;
-    uint32_t y;
-    uint16_t z;
-    char name[32];
-    uint8_t hp;
-    uint32_t last_x;
-    uint32_t last_y;
-    uint16_t last_z;
-};
 
 class PlayerBase
 {
@@ -87,6 +76,8 @@ public:
     uint32_t x; //0x0038
     uint32_t y; //0x003C
     uint16_t z; //0x0040
+    char pad_0040[94]; // 0X42
+    uint16_t id; // 0xA0
 };
 
 class MapView

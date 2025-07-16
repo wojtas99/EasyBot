@@ -12,7 +12,6 @@
 #include <QGroupBox>
 #include <QJsonArray>
 #include <QSaveFile>
-#include <__msvc_ostream.hpp>
 
 #include "../Functions/memory_functions.h"
 

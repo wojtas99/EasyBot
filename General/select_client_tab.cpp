@@ -1,8 +1,8 @@
 #include "select_client_tab.h"
-
 #include <QGridLayout>
-
 #include "../Functions/memory_functions.h"
+#include "../include/MinHook.h"
+#include <iostream>
 
 
 SelectClientTab::SelectClientTab(QWidget *parent) : QWidget(parent) {
@@ -23,6 +23,57 @@ SelectClientTab::SelectClientTab(QWidget *parent) : QWidget(parent) {
     connect(medivia_button, &QPushButton::clicked, this, &SelectClientTab::load_medivia);
 }
 
+typedef void(__stdcall* tGameMainLoop)();
+tGameMainLoop originalGameMainLoop = nullptr;
+
+void __stdcall hookedGameMainLoop() {
+    originalGameMainLoop();
+    MemoryFunctions::actionQueue.execute_all();
+}
+
+typedef void(__fastcall* tItemFunc)(__int64 a1);
+tItemFunc originalItemFunc = nullptr;
+
+void __fastcall hookedItemFunc(__int64 a1)
+{
+    // 'a1' is the value in RCX.
+    std::cout << "[HOOKED] RCX (a1): 0x" << std::hex << a1 << "\n";
+    Item* item = reinterpret_cast<Item*>(a1);
+    std::cout << item->x << std::endl;
+    std::cout << item->y << std::endl;
+    std::cout << item->z << std::endl;
+    //originalItemFunc(a1);
+}
+
+
+void setupItemHook(uint64_t itemFuncAddress) {
+    if (MH_CreateHook(reinterpret_cast<void*>(itemFuncAddress),
+                      &hookedItemFunc,
+                      reinterpret_cast<void**>(&originalItemFunc)) != MH_OK) {
+        std::cout << "[HOOK] Błąd tworzenia hooka (ItemFunc)\n";
+        return;
+                      }
+
+    if (MH_EnableHook(reinterpret_cast<void*>(itemFuncAddress)) != MH_OK) {
+        std::cout << "[HOOK] Błąd aktywacji hooka (ItemFunc)\n";
+        return;
+    }
+
+    std::cout << "[HOOK] ItemFunc hook załadowany poprawnie!\n";
+}
+
+void setupMainLoopHook(uint64_t gameLoopAddress) {
+    if (MH_Initialize() != MH_OK)
+        return;
+    if (MH_CreateHook(reinterpret_cast<void*>(gameLoopAddress), &hookedGameMainLoop,
+                      reinterpret_cast<void**>(&originalGameMainLoop)) != MH_OK)
+        return;
+    if (MH_EnableHook(reinterpret_cast<void*>(gameLoopAddress)) != MH_OK)
+        return;
+    std::cout << "Main Loop hooked successfully!\n";
+}
+SafeQueue MemoryFunctions::actionQueue;
+
 void SelectClientTab::load_altaron() {
     MemoryFunctions mf(MemoryFunctions::LoadOption::Altaron);
     this->close();
@@ -35,4 +86,10 @@ void SelectClientTab::load_medivia() {
     this->close();
     main_window_tab = new MainWindowTab();
     main_window_tab->show();
+    if (!m_hookInitialized) {
+        setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
+        m_hookInitialized = true;
+    }
 }
+
+

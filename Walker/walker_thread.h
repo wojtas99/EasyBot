@@ -12,6 +12,7 @@ public:
         : QThread(parent), m_waypoints(waypoints), m_running(true) {}
 
     void run() override;
+    int find_wpt();
     void stop() noexcept { m_running = false; }
 
 

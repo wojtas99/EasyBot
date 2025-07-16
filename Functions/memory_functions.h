@@ -5,6 +5,7 @@
 #include <vector>
 #include <Windows.h>
 #include "../Structs/medivia_struct.h"
+#include "../safe_queue.h"
 
 
 class MemoryFunctions {
@@ -18,19 +19,31 @@ public:
     // Variables
     static MapView* map_view;
     static PlayerBase* player_base;
-    static uintptr_t base_module;
+    static uint64_t base_module;
+    static void* main_func_address;
+    static bool has_target;
+
+    static SafeQueue actionQueue;
+
+    static uintptr_t getTopItem(HANDLE hProcess, uintptr_t tileList, int coords[3]);
+    static void queueAttack(Entity* entity);
+    static void queueMove(int x, int y, int z);
+    static void queueOpenItem(Item* item);
+    static void queueOpenCorpse(Tile* tile);
+    static std::vector<void*> getFieldsAround(int radius);
 
     explicit MemoryFunctions(LoadOption load_option);
 
-    static bool moveTo(int x, int y, int z);
-    static bool attackTarget(Entity* target);
-    static bool attack(const std::string &target_name, int dist_threshold, Entity* entity);
+    static void moveTo(int x, int y, int z);
+    static void attackTarget(Entity* target);
+    static void openItem(Item* item);
+    static void openCorpse(Tile* tile);
 
-    static std::vector<Entity*> entityCount();
+    static std::vector<Entity*> entityCount(int radius);
 
 private:
     // Variables
-    static uintptr_t local_player_address;
+    static uint64_t local_player_address;
     // Function Addresses
     static void* move_func_address;
     static void* attack_func_address;

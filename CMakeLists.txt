@@ -12,6 +12,9 @@ set(CMAKE_PREFIX_PATH "C:/Qt/5.15.2/msvc2019_64/lib/cmake")
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
+link_directories(${CMAKE_SOURCE_DIR}/lib)
+
 
 add_library(EasyBot SHARED EasyBot_dlmain.cpp
         General/main_window_tab.cpp
@@ -31,6 +34,7 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Target/target_thread.h
         PatternScans/pattern_scan.cpp
         PatternScans/pattern_scan.h
+        safe_queue.h
 )
 
 set_target_properties(EasyBot PROPERTIES
@@ -39,5 +43,8 @@ set_target_properties(EasyBot PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
 
-target_link_libraries(EasyBot PRIVATE Qt5::Widgets)
+target_link_libraries(EasyBot PRIVATE
+        Qt5::Widgets
+        libMinHook.x64.lib
+)
 
