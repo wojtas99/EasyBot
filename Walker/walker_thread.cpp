@@ -11,6 +11,7 @@ void WalkerThread::run()
 {
     int idx = 0;
     int timer = 0;
+    bool stop = false;
     while (m_running && !m_waypoints.isEmpty())
     {
         if (timer/1000 > 10) {
@@ -23,13 +24,16 @@ void WalkerThread::run()
         int map_y = wpt["y"].toInt();
         int map_z = wpt["z"].toInt();
         std::string option = wpt["option"].toString().toStdString();
-        std::cout << std::hex << MemoryFunctions::map_view->LocalPlayer->is_walking << std::endl;
-        if (MemoryFunctions::has_target) {
-            MemoryFunctions::queueMove(MemoryFunctions::map_view->LocalPlayer->x, MemoryFunctions::map_view->LocalPlayer->y, MemoryFunctions::map_view->LocalPlayer->z);
+        if (MemoryFunctions::has_target && !stop) {
+            stop = true;
+            MemoryFunctions::queueMove(MemoryFunctions::map_view->LocalPlayer->x,
+                MemoryFunctions::map_view->LocalPlayer->y,
+                MemoryFunctions::map_view->LocalPlayer->z);
         }
         if ((!MemoryFunctions::has_target || option == "Lure") &&
             MemoryFunctions::map_view->LocalPlayer->z == map_z)
         {
+            stop = false;
             if (option == "North") {
                 map_y = map_y-1;
             } else if (option == "South") {
@@ -42,7 +46,6 @@ void WalkerThread::run()
                 idx = (idx + 1) % m_waypoints.size();
                 emit indexUpdate(idx);
             }
-            std::cout << "Walking" << std::endl;
             MemoryFunctions::queueMove(map_x, map_y, map_z);
         }
         if (MemoryFunctions::map_view->LocalPlayer->x == map_x &&

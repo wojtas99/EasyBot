@@ -31,6 +31,7 @@ public:
     static void queueOpenItem(Item* item);
     static void queueOpenCorpse(Tile* tile);
     static std::vector<void*> getFieldsAround(int radius);
+    static void queueMoveItem(Item* item);
 
     explicit MemoryFunctions(LoadOption load_option);
 
@@ -38,6 +39,7 @@ public:
     static void attackTarget(Entity* target);
     static void openItem(Item* item);
     static void openCorpse(Tile* tile);
+    static void collectItem(Item* item);
 
     static std::vector<Entity*> entityCount(int radius);
 

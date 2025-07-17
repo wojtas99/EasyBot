@@ -181,7 +181,7 @@ using LookupFieldFunc_t = __int64* (__fastcall *)(__int64 tablePtr, __int64 keyP
 
 std::vector<void*> MemoryFunctions::getFieldsAround(int radius) {
     auto LookupField = reinterpret_cast<LookupFieldFunc_t>(MemoryFunctions::base_module + 0x298750);
-    __int64 tablePtr = 0x7FF758DAAAF8; // <- adres twojej tablicy (czyli a1)
+    __int64 tablePtr = 0x7FF7925CAAF8;
 
     std::vector<void*> resultFields;
 
@@ -207,10 +207,28 @@ std::vector<void*> MemoryFunctions::getFieldsAround(int radius) {
     return resultFields;
 }
 
-void MemoryFunctions::openItem(Item* item) {
+void MemoryFunctions::collectItem(Item* item) {
+    //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
+    using collectItem_t = void(__fastcall *)(
+    __int64 a1, // RCX - Player Base
+    __int64 *a2, // RDX - Item ID Src
+    __int64 *a3, // R8 - Item ID Dst
+    __int64 a4 // R9 - Number of objects moved
+    );
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    auto a2 = reinterpret_cast<__int64>(0x3AD7DF72B00);
+    auto a3 = reinterpret_cast<__int64>(0x3AD7DF76000);
+    auto a4 = 1;
+    auto collect = reinterpret_cast<collectItem_t>(base_module + 0x141B00);
+    collect(a1, &a2, &a3, a4);
+
+}
+
+void MemoryFunctions::openItem(Item* item)
+{
     using openItem_t = __int64(__fastcall *)(
-    __int64 a1, // Player Base
-    uint64_t *a2, // Item ID
+        __int64 a1, // Player Base
+        uint64_t* a2, // Item ID
     __int64 *a3 // 0
     );
     auto open = reinterpret_cast<openItem_t>(open_func_address);
@@ -220,19 +238,6 @@ void MemoryFunctions::openItem(Item* item) {
     open(a1, &a2, &a3);
 }
 
-void MemoryFunctions::openCorpse(Tile* tile) {
-    // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF6D2382780(__int64 a1, volatile signed __int32 **a2)
-    using openCorpse_t = __int64(__fastcall*)(
-        __int64 a1, // Tile Address
-        __int64 *a2 // Some Variable
-        );
-    //auto open = reinterpret_cast<openCorpse_t>(MemoryFunctions::base_module + 0x352780);
-    auto open = reinterpret_cast<openCorpse_t>(MemoryFunctions::base_module + 0x352780);
-    auto a1 = reinterpret_cast<__int64>(tile);
-    __int64 a2[3]= {0x00007C2D00007DB3, reinterpret_cast<__int64>(tile), reinterpret_cast<__int64>(tile)};
-    open(a1, a2);
-
-}
 
 void MemoryFunctions::queueAttack(Entity* entity) {
     actionQueue.enqueue([entity]() {
@@ -251,11 +256,9 @@ void MemoryFunctions::queueOpenItem(Item* item) {
     });
 }
 
-void MemoryFunctions::queueOpenCorpse(Tile* tile)
-{
-    actionQueue.enqueue([tile] ()
-    {
-        openCorpse(tile);
+void MemoryFunctions::queueMoveItem(Item* item) {
+    actionQueue.enqueue([item]() {
+        collectItem(item);
     });
 }
 
