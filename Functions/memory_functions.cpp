@@ -181,7 +181,7 @@ using LookupFieldFunc_t = __int64* (__fastcall *)(__int64 tablePtr, __int64 keyP
 
 std::vector<void*> MemoryFunctions::getFieldsAround(int radius) {
     auto LookupField = reinterpret_cast<LookupFieldFunc_t>(MemoryFunctions::base_module + 0x298750);
-    __int64 tablePtr = 0x7FF7925CAAF8;
+    __int64 tablePtr = 0x7FF7C97FAAF8;
 
     std::vector<void*> resultFields;
 
@@ -206,22 +206,28 @@ std::vector<void*> MemoryFunctions::getFieldsAround(int radius) {
 
     return resultFields;
 }
-
+struct CollectKey {
+    uint32_t a;      // offset 0x00 Nothing 0xFFFF
+    uint32_t b;      // offset 0x04 Some kind of ID container
+    uint32_t c;         // offset 0x08 In which place move
+    uint64_t ptrItem;   // offset 0x0C Item address
+};
 void MemoryFunctions::collectItem(Item* item) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
     using collectItem_t = void(__fastcall *)(
     __int64 a1, // RCX - Player Base
-    __int64 *a2, // RDX - Item ID Src
-    __int64 *a3, // R8 - Item ID Dst
+    __int64 a2, // RDX - Item ID Src
+    __int64 a3, // R8 - Item ID Src
     __int64 a4 // R9 - Number of objects moved
     );
     auto a1 = reinterpret_cast<__int64>(player_base);
-    auto a2 = reinterpret_cast<__int64>(0x3AD7DF72B00);
-    auto a3 = reinterpret_cast<__int64>(0x3AD7DF76000);
-    auto a4 = 1;
+    CollectKey container{};
+    container.a = 65535;
+    container.b = 129;
+    container.c = 00000;
+    container.ptrItem = 0x000004D91F803B00;
     auto collect = reinterpret_cast<collectItem_t>(base_module + 0x141B00);
-    collect(a1, &a2, &a3, a4);
-
+    collect(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), 1);
 }
 
 void MemoryFunctions::openItem(Item* item)
