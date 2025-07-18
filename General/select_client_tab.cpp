@@ -59,7 +59,19 @@ void SelectClientTab::load_medivia() {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
         m_hookInitialized = true;
     }
-    MemoryFunctions::queueMoveItem(0x0);
+    using GetContainer_t = void(__fastcall*)(void*, void**, int);
+    auto GetContainer = reinterpret_cast<GetContainer_t>(MemoryFunctions::base_module + 0x1DC5E0);
+    void* container = nullptr;
+    void* g_GamePointer = reinterpret_cast<void*>(MemoryFunctions::player_base);
+    for (int i = 0; i < 15; ++i)
+    {
+        GetContainer(g_GamePointer, &container, i);
+        if (container) {
+            std::cout << "[DEBUG] Container["<<i<<"] Pointer: " << container << "\n";
+        } else {
+            break;
+        }
+    }
 }
 
 

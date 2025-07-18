@@ -230,6 +230,7 @@ void MemoryFunctions::collectItem(Item* item) {
     collect(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), 1);
 }
 
+
 void MemoryFunctions::openItem(Item* item)
 {
     using openItem_t = __int64(__fastcall *)(
