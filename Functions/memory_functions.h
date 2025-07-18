@@ -30,6 +30,7 @@ public:
     static void queueMove(int x, int y, int z);
     static void queueOpenItem(Item* item);
     static void queueOpenCorpse(Tile* tile);
+    static std::vector<void*> listContainers();
     static std::vector<void*> getFieldsAround(int radius);
     static void queueMoveItem(Item* item);
 

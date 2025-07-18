@@ -11,52 +11,54 @@ void WalkerThread::run()
 {
     int idx = 0;
     int timer = 0;
-    bool stop = false;
+    bool walking = false;
+    int x = 0, y = 0;
     while (m_running && !m_waypoints.isEmpty())
     {
-        if (timer/1000 > 10) {
+        // Every 1 sec check if character is walking
+        if (timer/1000 > 1) {
+            if (x == MemoryFunctions::map_view->LocalPlayer->x && y == MemoryFunctions::map_view->LocalPlayer->y) {
+                walking = false;
+            } else {
+                walking = true;
+            }
+            x = MemoryFunctions::map_view->LocalPlayer->x;
+            y = MemoryFunctions::map_view->LocalPlayer->y;
             //idx = find_wpt();
             timer = 0;
         }
+
         const auto& wpt = m_waypoints[idx];
 
         int map_x = wpt["x"].toInt();
         int map_y = wpt["y"].toInt();
         int map_z = wpt["z"].toInt();
         std::string option = wpt["option"].toString().toStdString();
-        if (MemoryFunctions::has_target && !stop) {
-            stop = true;
-            MemoryFunctions::queueMove(MemoryFunctions::map_view->LocalPlayer->x,
-                MemoryFunctions::map_view->LocalPlayer->y,
-                MemoryFunctions::map_view->LocalPlayer->z);
-        }
-        if ((!MemoryFunctions::has_target || option == "Lure") &&
-            MemoryFunctions::map_view->LocalPlayer->z == map_z)
-        {
-            stop = false;
-            if (option == "North") {
-                map_y = map_y-1;
-            } else if (option == "South") {
-                map_y = map_y+1;
-            } else if (option == "East") {
-                map_x = map_x+1;
-            } else if (option == "West") {
-                map_x = map_x-1;
-            } else if (option != "Center") {
-                idx = (idx + 1) % m_waypoints.size();
-                emit indexUpdate(idx);
-            }
-            MemoryFunctions::queueMove(map_x, map_y, map_z);
-        }
-        if (MemoryFunctions::map_view->LocalPlayer->x == map_x &&
-            MemoryFunctions::map_view->LocalPlayer->y == map_y &&
-            MemoryFunctions::map_view->LocalPlayer->z == map_z) {
+
+        if (option != "Center" && option != "Lure" &&
+            map_z != MemoryFunctions::map_view->LocalPlayer->z) {
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
             continue;
         }
-        msleep(200);
-        timer += 200;
+
+        if (MemoryFunctions::map_view->LocalPlayer->x == map_x &&
+            MemoryFunctions::map_view->LocalPlayer->y == map_y &&
+            MemoryFunctions::map_view->LocalPlayer->z == map_z) {
+            walking = false;
+            idx = (idx + 1) % m_waypoints.size();
+            emit indexUpdate(idx);
+            continue;
+        }
+
+        if ((!MemoryFunctions::has_target || option == "Lure") &&
+            MemoryFunctions::map_view->LocalPlayer->z == map_z &&
+            !walking) {
+            MemoryFunctions::queueMove(map_x, map_y, map_z);
+            walking = true;
+        }
+        msleep(25);
+        timer += 25;
     }
 }
 

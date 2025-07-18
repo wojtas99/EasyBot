@@ -181,7 +181,7 @@ using LookupFieldFunc_t = __int64* (__fastcall *)(__int64 tablePtr, __int64 keyP
 
 std::vector<void*> MemoryFunctions::getFieldsAround(int radius) {
     auto LookupField = reinterpret_cast<LookupFieldFunc_t>(MemoryFunctions::base_module + 0x298750);
-    __int64 tablePtr = 0x7FF7C97FAAF8;
+    __int64 tablePtr = 0x7FF67AD0AAF8;
 
     std::vector<void*> resultFields;
 
@@ -223,11 +223,34 @@ void MemoryFunctions::collectItem(Item* item) {
     auto a1 = reinterpret_cast<__int64>(player_base);
     CollectKey container{};
     container.a = 65535;
-    container.b = 129;
+    container.b = 130;
     container.c = 00000;
     container.ptrItem = 0x000004D91F803B00;
     auto collect = reinterpret_cast<collectItem_t>(base_module + 0x141B00);
     collect(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), 1);
+}
+
+std::vector<void*> MemoryFunctions::listContainers() {
+    using GetContainer_t = void(__fastcall*)(
+        void* a1,  // RCX - Player Base
+        void** a2, // RAX - result ptr
+        int a3     // R8 - Number of container
+        );
+    auto GetContainer = reinterpret_cast<GetContainer_t>(base_module + 0x1DC5E0);
+    void* container = nullptr;
+    void* g_GamePointer = player_base;
+    std::vector<void*> resultContainers;
+    int i = 0;
+    while (true) {
+        GetContainer(g_GamePointer, &container, i);
+        if (container) {
+            resultContainers.push_back(reinterpret_cast<void*>(container));
+        } else {
+            break;
+        }
+        ++i;
+    }
+    return resultContainers;
 }
 
 

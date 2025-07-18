@@ -248,6 +248,17 @@ void WalkerTab::addWaypoint(const QString& index) const {
     uint32_t y = MemoryFunctions::map_view->LocalPlayer->y;
     uint16_t z = MemoryFunctions::map_view->LocalPlayer->z;
 
+    if (option_comboBox->currentText() == "North") {
+        y = y-1;
+    } else if (option_comboBox->currentText() == "South") {
+
+        y = y+1;
+    } else if (option_comboBox->currentText() == "East") {
+        x = x+1;
+    } else if (option_comboBox->currentText() == "West") {
+        x = x-1;
+    }
+
     QString itemText = QString("%1 %2 %3 %4 %5").arg(index).arg(x).arg(y).arg(z).arg(option_comboBox->currentText());
     auto* item = new QListWidgetItem(itemText);
     QVariantMap data;
