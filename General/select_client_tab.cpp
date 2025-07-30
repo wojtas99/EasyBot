@@ -59,6 +59,7 @@ void SelectClientTab::load_medivia() {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
         m_hookInitialized = true;
     }
+
 }
 
 

@@ -72,12 +72,26 @@ public:
 class Item
 {
 public:
-    char pad_0000[56]; //0x0000
+    char pad_0000[56]; // 0x0000
     uint32_t x; //0x0038
     uint32_t y; //0x003C
     uint16_t z; //0x0040
-    char pad_0040[94]; // 0X42
+    char pad_0042[94]; // 0X42
     uint16_t id; // 0xA0
+    char pad_00A2[102]; // 0x00A2
+    uint16_t count; // 0x00108
+
+};
+
+class Container {
+public:
+    char pad_0000[64]; // 0x0000
+    Item *item; // 0x0040
+    char name[32]; // 0x0048
+    char pad_0068[24]; // 0x0068
+    uint64_t *item_list; // 0x0080
+    char pad_0088[16]; // 0x0088
+    uint32_t number_of_items; // 0x0098
 };
 
 class MapView

@@ -40,9 +40,22 @@ public:
     static void attackTarget(Entity* target);
     static void openItem(Item* item);
     static void openCorpse(Tile* tile);
+
+    static void collectItem(__int64 container, __int64 item);
+
     static void collectItem(Item* item);
 
+    static __int64 findItem(__int64 container);
+
+    static __int64 getItem(__int64 *containerPtr, int index);
+
+    static __int64 findItems(__int64 container);
+
     static std::vector<Entity*> entityCount(int radius);
+
+    static __int64 getTile(uint32_t x, uint32_t y, uint16_t z);
+
+    static __int64 getTopThing(__int64 tile);
 
 private:
     // Variables

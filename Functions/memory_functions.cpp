@@ -171,47 +171,46 @@ std::vector<Entity*> MemoryFunctions::entityCount(int radius) {
     return std::vector<Entity*>(entities, entities_end);
 }
 
-struct LookupKey {
+struct Position {
     uint32_t x;
     uint32_t y;
     uint16_t z;
 };
 
-using LookupFieldFunc_t = __int64* (__fastcall *)(__int64 tablePtr, __int64 keyPtr);
-
-std::vector<void*> MemoryFunctions::getFieldsAround(int radius) {
-    auto LookupField = reinterpret_cast<LookupFieldFunc_t>(MemoryFunctions::base_module + 0x298750);
-    __int64 tablePtr = 0x7FF67AD0AAF8;
-
-    std::vector<void*> resultFields;
-
-    int localX = map_view->LocalPlayer->x;
-    int localY = map_view->LocalPlayer->y;
-    int localZ = map_view->LocalPlayer->z;
-
-    for (int dx = -radius; dx <= radius; ++dx) {
-        for (int dy = -radius; dy <= radius; ++dy) {
-            LookupKey key{};
-            key.x = localX + dx;
-            key.y = localY + dy;
-            key.z = localZ;
-
-            __int64* fieldPtr = LookupField(tablePtr, reinterpret_cast<__int64>(&key));
-
-            if (fieldPtr && fieldPtr  != reinterpret_cast<__int64*>(0x7FF70B7EA470)) {
-                resultFields.push_back(reinterpret_cast<void*>(fieldPtr));
-            }
-        }
-    }
-
-    return resultFields;
+__int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
+    //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, __int64 a2)
+    using GetTile_t = __int64(__fastcall*)(
+        __int64 a1,  // RCX - Tile Base ?
+        Position* a2 // RAX - Corrds of tile
+        );
+    auto GetTile = reinterpret_cast<GetTile_t>(MemoryFunctions::base_module + 0x298750);
+    Position position{};
+    position.x = x;
+    position.y = y;
+    position.z = z;
+    __int64 result = GetTile(0x7FF71A90AAF8, &position);
+    result = *reinterpret_cast<__int64*>(result);
+    return result;
 }
+
+__int64 MemoryFunctions::getTopThing( __int64 tile) {
+    //decomp by ida _QWORD *__fastcall sub_7FF719F81CC0(__int64 a1, _QWORD *a2)
+    using GetTopThing_t = __int64(__fastcall*)(
+    __int64 a1,  // RCX - Tile ?
+    void* a2 // RAX - Result
+    );
+    auto GetTopThing = reinterpret_cast<GetTopThing_t>(base_module + 0x351CC0);
+    void* a2 = nullptr;
+    GetTopThing(tile, &a2);
+    return reinterpret_cast<__int64>(a2);
+};
 struct CollectKey {
-    uint32_t a;      // offset 0x00 Nothing 0xFFFF
-    uint32_t b;      // offset 0x04 Some kind of ID container
-    uint32_t c;         // offset 0x08 In which place move
+    int32_t x;      // offset 0x00 Nothing 0xFFFF
+    int32_t y;      // offset 0x04 Some kind of ID container
+    uint8_t z;         // offset 0x08 In which place move
     uint64_t ptrItem;   // offset 0x0C Item address
 };
+
 void MemoryFunctions::collectItem(Item* item) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
     using collectItem_t = void(__fastcall *)(
@@ -222,12 +221,13 @@ void MemoryFunctions::collectItem(Item* item) {
     );
     auto a1 = reinterpret_cast<__int64>(player_base);
     CollectKey container{};
-    container.a = 65535;
-    container.b = 130;
-    container.c = 00000;
-    container.ptrItem = 0x000004D91F803B00;
+    container.x = 65535;
+    container.y = 128;
+    container.z = 0;
+    container.ptrItem = reinterpret_cast<uint64_t>(item);
+
     auto collect = reinterpret_cast<collectItem_t>(base_module + 0x141B00);
-    collect(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), 1);
+    collect(a1, reinterpret_cast<__int64>(item), reinterpret_cast<__int64>(&container), item->count);
 }
 
 std::vector<void*> MemoryFunctions::listContainers() {
