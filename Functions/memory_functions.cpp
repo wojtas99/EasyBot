@@ -184,11 +184,12 @@ __int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
         Position* a2 // RAX - Corrds of tile
         );
     auto GetTile = reinterpret_cast<GetTile_t>(MemoryFunctions::base_module + 0x298750);
+    __int64 a1 = base_module + 0xCDAAF8;
     Position position{};
     position.x = x;
     position.y = y;
     position.z = z;
-    __int64 result = GetTile(0x7FF71A90AAF8, &position);
+    __int64 result = GetTile(a1, &position);
     result = *reinterpret_cast<__int64*>(result);
     return result;
 }
@@ -199,19 +200,19 @@ __int64 MemoryFunctions::getTopThing( __int64 tile) {
     __int64 a1,  // RCX - Tile ?
     void* a2 // RAX - Result
     );
-    auto GetTopThing = reinterpret_cast<GetTopThing_t>(base_module + 0x351CC0);
+    auto GetTopThing = reinterpret_cast<GetTopThing_t>(base_module + 0x351DC0);
     void* a2 = nullptr;
     GetTopThing(tile, &a2);
     return reinterpret_cast<__int64>(a2);
 };
 struct CollectKey {
-    int32_t x;      // offset 0x00 Nothing 0xFFFF
-    int32_t y;      // offset 0x04 Some kind of ID container
-    uint8_t z;         // offset 0x08 In which place move
+    uint32_t x;      // offset 0x00 Nothing 0xFFFF
+    uint32_t y;      // offset 0x04 Some kind of ID container
+    uint16_t z;         // offset 0x08 In which place move
     uint64_t ptrItem;   // offset 0x0C Item address
 };
 
-void MemoryFunctions::collectItem(Item* item) {
+void MemoryFunctions::collectItem(Item* item_src, Item* item_dst) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
     using collectItem_t = void(__fastcall *)(
     __int64 a1, // RCX - Player Base
@@ -221,16 +222,18 @@ void MemoryFunctions::collectItem(Item* item) {
     );
     auto a1 = reinterpret_cast<__int64>(player_base);
     CollectKey container{};
-    container.x = 65535;
-    container.y = 128;
-    container.z = 0;
-    container.ptrItem = reinterpret_cast<uint64_t>(item);
+    // Get Position Dest item
+    container.x = item_dst->x;
+    container.y = item_dst->y;
+    container.z = item_dst->z;
+    container.ptrItem = reinterpret_cast<uint64_t>(item_src);
 
     auto collect = reinterpret_cast<collectItem_t>(base_module + 0x141B00);
-    collect(a1, reinterpret_cast<__int64>(item), reinterpret_cast<__int64>(&container), item->count);
+
+    collect(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
 }
 
-std::vector<void*> MemoryFunctions::listContainers() {
+std::vector<Container*> MemoryFunctions::listContainers() {
     using GetContainer_t = void(__fastcall*)(
         void* a1,  // RCX - Player Base
         void** a2, // RAX - result ptr
@@ -239,18 +242,32 @@ std::vector<void*> MemoryFunctions::listContainers() {
     auto GetContainer = reinterpret_cast<GetContainer_t>(base_module + 0x1DC5E0);
     void* container = nullptr;
     void* g_GamePointer = player_base;
-    std::vector<void*> resultContainers;
+    std::vector<Container*> resultContainers;
     int i = 0;
     while (true) {
         GetContainer(g_GamePointer, &container, i);
         if (container) {
-            resultContainers.push_back(reinterpret_cast<void*>(container));
+            resultContainers.push_back(reinterpret_cast<Container*>(container));
         } else {
             break;
         }
         ++i;
     }
     return resultContainers;
+}
+
+Item* MemoryFunctions::getItem(Container *container, int index)
+{
+    //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, int a2)
+    using GetItem_t = __int64(__fastcall*)(
+        Container *a1,  // RCX - Container
+        void* a2, // RDX - Result
+        int index // R8 - Index numer
+        );
+    auto GetItem = reinterpret_cast<GetItem_t>(MemoryFunctions::base_module + 0x1068B0);
+    void *a2 = nullptr;
+    GetItem(container, &a2, index);
+    return reinterpret_cast<Item*>(a2);
 }
 
 
@@ -286,9 +303,9 @@ void MemoryFunctions::queueOpenItem(Item* item) {
     });
 }
 
-void MemoryFunctions::queueMoveItem(Item* item) {
-    actionQueue.enqueue([item]() {
-        collectItem(item);
+void MemoryFunctions::queueMoveItem(Item* item_src, Item* item_dest) {
+    actionQueue.enqueue([item_src, item_dest]() {
+            collectItem(item_src, item_dest);
     });
 }
 

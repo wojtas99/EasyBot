@@ -24,6 +24,21 @@ void TargetThread::run() {
                 uint64_t tile = tile = MemoryFunctions::getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
                 uint64_t top_thing = MemoryFunctions::getTopThing(tile);
                 MemoryFunctions::queueOpenItem(reinterpret_cast<Item*>(top_thing));
+                msleep(500);
+                std::vector<Container*> containers = MemoryFunctions::listContainers();
+                for (int i =0; i < containers.size(); i++)
+                {
+                    for (int j = 0; j < containers[i]->number_of_items; ++j)
+                    {
+                        Item* item = MemoryFunctions::getItem(containers[i], j);
+                        if (item->id == 2148 && i != 1)
+                        {
+                            MemoryFunctions::queueMoveItem(item, containers[1]->item);
+                            msleep(500);
+                            i = 0;
+                        }
+                    }
+                }
             }
             closest_entity = nullptr;
             std::vector<Entity*> entities = MemoryFunctions::entityCount(dist_threshold);

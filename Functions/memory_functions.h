@@ -30,9 +30,9 @@ public:
     static void queueMove(int x, int y, int z);
     static void queueOpenItem(Item* item);
     static void queueOpenCorpse(Tile* tile);
-    static std::vector<void*> listContainers();
+    static std::vector<Container*> listContainers();
     static std::vector<void*> getFieldsAround(int radius);
-    static void queueMoveItem(Item* item);
+    static void queueMoveItem(Item* item_src, Item* item_dest);
 
     explicit MemoryFunctions(LoadOption load_option);
 
@@ -43,11 +43,11 @@ public:
 
     static void collectItem(__int64 container, __int64 item);
 
-    static void collectItem(Item* item);
+    static void collectItem(Item* item_src, Item* item_dest);
 
     static __int64 findItem(__int64 container);
 
-    static __int64 getItem(__int64 *containerPtr, int index);
+    static Item* getItem(Container *container, int index);
 
     static __int64 findItems(__int64 container);
 
