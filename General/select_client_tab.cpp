@@ -59,7 +59,10 @@ void SelectClientTab::load_medivia() {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
         m_hookInitialized = true;
     }
-
+    std::vector<Container*> containers = MemoryFunctions::listContainers();
+    for (auto container : containers) {
+        std::cout << std::hex << reinterpret_cast<uint64_t>(container) << std::endl;
+    }
 }
 
 
