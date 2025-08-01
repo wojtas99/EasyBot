@@ -224,7 +224,7 @@ void MemoryFunctions::collectItem(Item* item_src, Item* item_dst) {
     CollectKey container{};
     // Get Position Dest item
     container.x = item_dst->x;
-    container.y = item_dst->y;
+    container.y = item_dst->y + 1;
     container.z = item_dst->z;
     container.ptrItem = reinterpret_cast<uint64_t>(item_src);
 

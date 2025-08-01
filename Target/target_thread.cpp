@@ -26,23 +26,16 @@ void TargetThread::run() {
                 MemoryFunctions::queueOpenItem(reinterpret_cast<Item*>(top_thing));
                 msleep(500);
                 std::vector<Container*> containers = MemoryFunctions::listContainers();
-                std::cout << "List all containers" << std::endl;
-                for (auto container : containers) {
-                    std::cout << std::hex << container << std::endl;
-                }
-                std::cout << "Collecting " << std::endl;
-                for (auto container : containers)
+                for (int i = 0; i < containers.size(); i++)
                 {
-
-                    std::cout << std::hex << "Container: " << container << std::endl;
-                    std::cout << std::hex << "Number of Items: " << container->number_of_items << std::endl;
-                    for (int i = 0; i < container->number_of_items; ++i)
+                    for (int j = 0; j < containers[i]->number_of_items; ++j)
                     {
-                        Item* item = MemoryFunctions::getItem(container, i);
-                        if (item->id == 2148 && container != containers[1])
+                        Item* item = MemoryFunctions::getItem(containers[i], j);
+                        if (item->id == 2148 && ((containers[0]->item->x + 1) != (containers[0]->item->x + i)))
                         {
-                            MemoryFunctions::queueMoveItem(item, containers[1]->item);
-                            msleep(500);
+                            MemoryFunctions::queueMoveItem(item, containers[0]->item);
+                            msleep(700);
+                            i = 1;
                         }
                     }
                 }
