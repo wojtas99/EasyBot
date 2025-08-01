@@ -21,11 +21,11 @@ void TargetThread::run() {
             if (open_corpse)
             {
                 open_corpse = false;
-                uint64_t tile = tile = MemoryFunctions::getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
-                uint64_t top_thing = MemoryFunctions::getTopThing(tile);
-                MemoryFunctions::queueOpenItem(reinterpret_cast<Item*>(top_thing));
+                uint64_t tile = tile = MemoryFunctions::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
+                uint64_t top_thing = MemoryFunctions::queue_getTopThing(tile);
+                MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing));
                 msleep(500);
-                std::vector<Container*> containers = MemoryFunctions::listContainers();
+                std::vector<Container*> containers = MemoryFunctions::queue_getContainers();
                 for (int i = 0; i < containers.size(); i++)
                 {
                     for (int j = 0; j < containers[i]->number_of_items; ++j)
@@ -33,15 +33,13 @@ void TargetThread::run() {
                         Item* item = MemoryFunctions::getItem(containers[i], j);
                         if (item->id == 2148 && ((containers[0]->item->x + 1) != (containers[0]->item->x + i)))
                         {
-                            MemoryFunctions::queueMoveItem(item, containers[0]->item);
-                            msleep(700);
-                            i = 1;
+                            MemoryFunctions::queue_move(item, containers[0]->item);
                         }
                     }
                 }
             }
             closest_entity = nullptr;
-            std::vector<Entity*> entities = MemoryFunctions::entityCount(dist_threshold);
+            std::vector<Entity*> entities = MemoryFunctions::queue_getSpectatorsInRangeEx(dist_threshold);
             for (Entity* entity : entities) {
                 int dist_x = abs(static_cast<int>(entity->x - MemoryFunctions::map_view->LocalPlayer->x));
                 int dist_y = abs(static_cast<int>(entity->y - MemoryFunctions::map_view->LocalPlayer->y));
@@ -53,7 +51,7 @@ void TargetThread::run() {
                 }
             }
             if (closest_entity != nullptr) {
-                MemoryFunctions::queueAttack(closest_entity);
+                MemoryFunctions::queue_attack(closest_entity);
                 msleep(500);
                 MemoryFunctions::has_target = true;
                 open_corpse = true;

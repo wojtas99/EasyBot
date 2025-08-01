@@ -25,37 +25,37 @@ public:
 
     static SafeQueue actionQueue;
 
-    static uintptr_t getTopItem(HANDLE hProcess, uintptr_t tileList, int coords[3]);
-    static void queueAttack(Entity* entity);
-    static void queueMove(int x, int y, int z);
-    static void queueOpenItem(Item* item);
-    static void queueOpenCorpse(Tile* tile);
-    static std::vector<Container*> listContainers();
-    static std::vector<void*> getFieldsAround(int radius);
-    static void queueMoveItem(Item* item_src, Item* item_dest);
+
+    static void queue_attack(Entity* entity);
+    static void attack(Entity* target);
+
+    static void queue_autoWalk(int x, int y, int z);
+    static void autoWalk(int x, int y, int z);
+
+    static void queue_open(Item* item);
+    static void open(Item* item);
+
+    static std::vector<Container*> queue_getContainers();
+    static std::vector<Container*> getContainers();
+
+    static void queue_move(Item* item_src, Item* item_dest);
+    static void move(Item* item_src, Item* item_dest);
+
+    static __int64 queue_getTile(uint32_t x, uint32_t y, uint16_t z);
+    static __int64 getTile(uint32_t x, uint32_t y, uint16_t z);
+
+    static __int64 queue_getTopThing(__int64 tile);
+    static __int64 getTopThing(__int64 tile);
+
+    static Item* queue_getItem(Container *container, int index);
+    static Item* getItem(Container *container, int index);
+
+    static std::vector<Entity*> queue_getSpectatorsInRangeEx(int radius);
+    static std::vector<Entity*> getSpectatorsInRangeEx(int radius);
+
 
     explicit MemoryFunctions(LoadOption load_option);
 
-    static void moveTo(int x, int y, int z);
-    static void attackTarget(Entity* target);
-    static void openItem(Item* item);
-    static void openCorpse(Tile* tile);
-
-    static void collectItem(__int64 container, __int64 item);
-
-    static void collectItem(Item* item_src, Item* item_dest);
-
-    static __int64 findItem(__int64 container);
-
-    static Item* getItem(Container *container, int index);
-
-    static __int64 findItems(__int64 container);
-
-    static std::vector<Entity*> entityCount(int radius);
-
-    static __int64 getTile(uint32_t x, uint32_t y, uint16_t z);
-
-    static __int64 getTopThing(__int64 tile);
 
 private:
     // Variables

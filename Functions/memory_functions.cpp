@@ -104,29 +104,29 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
     }
 }
 
-void MemoryFunctions::moveTo(int x, int y, int z) {
+void MemoryFunctions::autoWalk(int x, int y, int z) {
     // Decomp by IDA for Medivia __int64 __fastcall sub_7FF69838A0F0(unsigned __int64 a1, unsigned int *a2)
-    using mapClick_t = __int64(__fastcall *)(
+    using autoWalk_t = __int64(__fastcall *)(
         uint64_t a1,       // Local Player
         int* a2            // Coords to move
         );
-    auto mapClick = reinterpret_cast<mapClick_t>(move_func_address);
+    auto AutoWalk = reinterpret_cast<autoWalk_t>(move_func_address);
     int pos[3] = {x, y, z};
-    mapClick(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
+    AutoWalk(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
 }
-void MemoryFunctions::attackTarget(Entity* entity) {
+void MemoryFunctions::attack(Entity* entity) {
     // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF79045E8B0(__int64 a1, volatile signed __int32 **a2, char a3)
-    using attackTarget_t = volatile signed __int32 **(__fastcall *)(
+    using attack_t = volatile signed __int32 **(__fastcall *)(
         __int64 a1, // Player Base
         volatile signed __int32 **a2, // Target ID
         char a3 // 0
         );
-    auto attack = reinterpret_cast<attackTarget_t>(attack_func_address);
+    auto Attack = reinterpret_cast<attack_t>(attack_func_address);
     auto a1 = reinterpret_cast<__int64>(player_base);
     volatile auto* a2 = reinterpret_cast<volatile signed __int32*>(entity);
-    attack(a1, &a2, 0);
+    Attack(a1, &a2, 0);
 }
-std::vector<Entity*> MemoryFunctions::entityCount(int radius) {
+std::vector<Entity*> MemoryFunctions::getSpectatorsInRangeEx(int radius) {
     // Define a struct matching the output container (3 pointers: begin, end, capacity)
     struct EntityVector {
         void* begin;
@@ -134,7 +134,7 @@ std::vector<Entity*> MemoryFunctions::entityCount(int radius) {
         void* capacity;
     };
     // Decomp by IDA for Medivia volatile signed __int32 *__fastcall sub_7FF6984B1160(__int64 a1, _QWORD *a2, __int64 a3, char a4, int a5, int a6, int a7, int a8)
-    using GetEntitiesAround_t = volatile signed __int32* (__fastcall *)(
+    using getSpectatorsInRangeEx_t = volatile signed __int32* (__fastcall *)(
     __int64 a1,       // Map Address RCX
     EntityVector* a2, // Entities around
     __int64 a3,       // Pointer to your base coordinate struct (a3);
@@ -158,8 +158,8 @@ std::vector<Entity*> MemoryFunctions::entityCount(int radius) {
     int radiusY_pos = radius;
 
     // Call Function
-    auto GetEntitiesAround = reinterpret_cast<GetEntitiesAround_t>(creature_func_address);
-    GetEntitiesAround(worldPtr, &outVec, baseCoordPtr, includeLayers,radiusX_neg, radiusX_pos, radiusY_neg, radiusY_pos);
+    auto GetSpectatorsInRangeEx = reinterpret_cast<getSpectatorsInRangeEx_t>(creature_func_address);
+    GetSpectatorsInRangeEx(worldPtr, &outVec, baseCoordPtr, includeLayers,radiusX_neg, radiusX_pos, radiusY_neg, radiusY_pos);
 
     // Retrun empty vector if there are no Entities
     if (!outVec.begin || !outVec.end)
@@ -179,11 +179,11 @@ struct Position {
 
 __int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
     //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, __int64 a2)
-    using GetTile_t = __int64(__fastcall*)(
+    using getTile_t = __int64(__fastcall*)(
         __int64 a1,  // RCX - Tile Base ?
         Position* a2 // RAX - Corrds of tile
         );
-    auto GetTile = reinterpret_cast<GetTile_t>(MemoryFunctions::base_module + 0x298750);
+    auto GetTile = reinterpret_cast<getTile_t>(MemoryFunctions::base_module + 0x298750);
     __int64 a1 = base_module + 0xCDAAF8;
     Position position{};
     position.x = x;
@@ -196,15 +196,15 @@ __int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
 
 __int64 MemoryFunctions::getTopThing( __int64 tile) {
     //decomp by ida _QWORD *__fastcall sub_7FF719F81CC0(__int64 a1, _QWORD *a2)
-    using GetTopThing_t = __int64(__fastcall*)(
+    using getTopThing_t = __int64(__fastcall*)(
     __int64 a1,  // RCX - Tile ?
     void* a2 // RAX - Result
     );
-    auto GetTopThing = reinterpret_cast<GetTopThing_t>(base_module + 0x351DC0);
+    auto GetTopThing = reinterpret_cast<getTopThing_t>(base_module + 0x351DC0);
     void* a2 = nullptr;
     GetTopThing(tile, &a2);
     return reinterpret_cast<__int64>(a2);
-};
+}
 struct CollectKey {
     uint32_t x;      // offset 0x00 Nothing 0xFFFF
     uint32_t y;      // offset 0x04 Some kind of ID container
@@ -212,9 +212,9 @@ struct CollectKey {
     uint64_t ptrItem;   // offset 0x0C Item address
 };
 
-void MemoryFunctions::collectItem(Item* item_src, Item* item_dst) {
+void MemoryFunctions::move(Item* item_src, Item* item_dst) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
-    using collectItem_t = void(__fastcall *)(
+    using move_t = void(__fastcall *)(
     __int64 a1, // RCX - Player Base
     __int64 a2, // RDX - Item ID Src
     __int64 a3, // R8 - Item ID Src
@@ -228,18 +228,19 @@ void MemoryFunctions::collectItem(Item* item_src, Item* item_dst) {
     container.z = item_dst->z;
     container.ptrItem = reinterpret_cast<uint64_t>(item_src);
 
-    auto collect = reinterpret_cast<collectItem_t>(base_module + 0x141B00);
+    auto Move = reinterpret_cast<move_t>(base_module + 0x141B00);
 
-    collect(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
+    Move(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
 }
 
-std::vector<Container*> MemoryFunctions::listContainers() {
-    using GetContainer_t = void(__fastcall*)(
+
+std::vector<Container*> MemoryFunctions::getContainers() {
+    using getContainer_t = void(__fastcall*)(
         void* a1,  // RCX - Player Base
         void** a2, // RAX - result ptr
         int a3     // R8 - Number of container
         );
-    auto GetContainer = reinterpret_cast<GetContainer_t>(base_module + 0x1DC5E0);
+    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC5E0);
     void* container = nullptr;
     void* g_GamePointer = player_base;
     std::vector<Container*> resultContainers;
@@ -259,92 +260,84 @@ std::vector<Container*> MemoryFunctions::listContainers() {
 Item* MemoryFunctions::getItem(Container *container, int index)
 {
     //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, int a2)
-    using GetItem_t = __int64(__fastcall*)(
+    using getItem_t = __int64(__fastcall*)(
         Container *a1,  // RCX - Container
         void* a2, // RDX - Result
         int index // R8 - Index numer
         );
-    auto GetItem = reinterpret_cast<GetItem_t>(MemoryFunctions::base_module + 0x1068B0);
+    auto GetItem = reinterpret_cast<getItem_t>(MemoryFunctions::base_module + 0x1068B0);
     void *a2 = nullptr;
     GetItem(container, &a2, index);
     return reinterpret_cast<Item*>(a2);
 }
 
 
-void MemoryFunctions::openItem(Item* item)
+void MemoryFunctions::open(Item* item)
 {
-    using openItem_t = __int64(__fastcall *)(
+    using open_t = __int64(__fastcall *)(
         __int64 a1, // Player Base
         uint64_t* a2, // Item ID
     __int64 *a3 // 0
     );
-    auto open = reinterpret_cast<openItem_t>(open_func_address);
+    auto Open = reinterpret_cast<open_t>(open_func_address);
     auto a1 = reinterpret_cast<__int64>(player_base);
     auto a2 = reinterpret_cast<uint64_t>(item);
     long long a3 = 0x0;
-    open(a1, &a2, &a3);
+    Open(a1, &a2, &a3);
 }
-
-
-void MemoryFunctions::queueAttack(Entity* entity) {
+void MemoryFunctions::queue_attack(Entity* entity) {
     actionQueue.enqueue([entity]() {
-        attackTarget(entity);
-    });
+        attack(entity);
+    }).get();
 }
-void MemoryFunctions::queueMove(int x, int y, int z) {
+
+void MemoryFunctions::queue_autoWalk(int x, int y, int z) {
     actionQueue.enqueue([x, y, z]() {
-        moveTo(x, y, z);
-    });
+        autoWalk(x, y, z);
+    }).get();
 }
 
-void MemoryFunctions::queueOpenItem(Item* item) {
+void MemoryFunctions::queue_open(Item* item) {
     actionQueue.enqueue([item]() {
-        openItem(item);
-    });
+        open(item);
+    }).get();
 }
 
-void MemoryFunctions::queueMoveItem(Item* item_src, Item* item_dest) {
+void MemoryFunctions::queue_move(Item* item_src, Item* item_dest) {
     actionQueue.enqueue([item_src, item_dest]() {
-            collectItem(item_src, item_dest);
-    });
+        move(item_src, item_dest);
+    }).get();
 }
 
-
-uintptr_t MemoryFunctions::getTopItem(HANDLE hProcess, uintptr_t tileList, int coords[3])
-{
-    constexpr int maxItems = 10;
-    constexpr SIZE_T ptrSize = 8;
-    uintptr_t topItemPtr = 0;
-    uint64_t itemId = 0;
-    uintptr_t currentItemPtr = 0;
-    uint64_t itemrealId = 0;
-
-    for (int i = 0; i < maxItems; ++i)
-    {
-        if (!ReadProcessMemory(hProcess, reinterpret_cast<LPCVOID>(tileList + i * ptrSize), &currentItemPtr, sizeof(currentItemPtr), nullptr))
-            break;
-        if (!ReadProcessMemory(hProcess, reinterpret_cast<LPCVOID>(currentItemPtr), &itemId, sizeof(itemId), nullptr))
-            continue;
-        if (i == 0) {
-            itemrealId = itemId;
-        }
-        if (itemId == itemrealId)
-        {
-            std::cout << std::hex << currentItemPtr << std::endl;
-            /*
-            Item* item = reinterpret_cast<Item*>(currentItemPtr);
-            if (item->x != coords[0] || item->y != coords[1] || item->z != coords[2]) {
-                break;
-            }
-            */
-            topItemPtr = currentItemPtr;
-        } else
-        {
-            break;
-        }
-    }
-
-    return topItemPtr;
+std::vector<Container*> MemoryFunctions::queue_getContainers() {
+    return actionQueue.enqueue([]() {
+        return getContainers();
+    }).get();
 }
+
+__int64 MemoryFunctions::queue_getTile(uint32_t x, uint32_t y, uint16_t z) {
+    return actionQueue.enqueue([x, y, z]() {
+        return getTile(x, y, z);
+    }).get();
+}
+
+__int64 MemoryFunctions::queue_getTopThing(__int64 tile) {
+    return actionQueue.enqueue([tile]() {
+        return getTopThing(tile);
+    }).get();
+}
+
+Item* MemoryFunctions::queue_getItem(Container* container, int index) {
+    return actionQueue.enqueue([container, index]() {
+        return getItem(container, index);
+    }).get();
+}
+
+std::vector<Entity*> MemoryFunctions::queue_getSpectatorsInRangeEx(int radius) {
+    return actionQueue.enqueue([radius]() {
+        return getSpectatorsInRangeEx(radius);
+    }).get();
+}
+
 
 

@@ -54,7 +54,7 @@ void WalkerThread::run()
         if ((!MemoryFunctions::has_target || option == "Lure") &&
             MemoryFunctions::map_view->LocalPlayer->z == map_z &&
             !walking) {
-            MemoryFunctions::queueMove(map_x, map_y, map_z);
+            MemoryFunctions::queue_autoWalk(map_x, map_y, map_z);
             walking = true;
         }
         msleep(25);
