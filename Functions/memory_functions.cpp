@@ -114,6 +114,7 @@ void MemoryFunctions::autoWalk(int x, int y, int z) {
     int pos[3] = {x, y, z};
     AutoWalk(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
 }
+
 void MemoryFunctions::attack(Entity* entity) {
     // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF79045E8B0(__int64 a1, volatile signed __int32 **a2, char a3)
     using attack_t = volatile signed __int32 **(__fastcall *)(
@@ -271,6 +272,18 @@ Item* MemoryFunctions::getItem(Container *container, int index)
     return reinterpret_cast<Item*>(a2);
 }
 
+bool MemoryFunctions::isContainer(Item *item)
+{
+    //1E2CE0
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF7E97C2F60(__int64 a1)
+    using isContainer_t = bool(__fastcall*)(
+        Item **a1  // RCX - Container
+        );
+    auto IsContainer = reinterpret_cast<isContainer_t>(MemoryFunctions::base_module + 0x1E2F60);
+    bool result = IsContainer(&item);
+    std::cout << result << std::endl;
+    return result;
+}
 
 void MemoryFunctions::open(Item* item)
 {
@@ -285,6 +298,14 @@ void MemoryFunctions::open(Item* item)
     long long a3 = 0x0;
     Open(a1, &a2, &a3);
 }
+
+bool MemoryFunctions::queue_isContainer(Item* item)
+{
+    return actionQueue.enqueue([item]() {
+        return isContainer(item);
+    }).get();
+}
+
 void MemoryFunctions::queue_attack(Entity* entity) {
     actionQueue.enqueue([entity]() {
         attack(entity);

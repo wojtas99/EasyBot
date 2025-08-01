@@ -62,6 +62,11 @@ void SelectClientTab::load_medivia() {
     std::vector<Container*> containers = MemoryFunctions::getContainers();
     for (auto container : containers) {
         std::cout << std::hex << reinterpret_cast<uint64_t>(container) << std::endl;
+        for (int j = 0; j < container->number_of_items; ++j)
+        {
+            Item* item = MemoryFunctions::getItem(container, j);
+            bool result = MemoryFunctions::queue_isContainer(item);
+        }
     }
 }
 

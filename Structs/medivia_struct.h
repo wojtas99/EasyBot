@@ -85,7 +85,8 @@ public:
 
 class Container {
 public:
-    char pad_0000[64]; // 0x0000
+    char pad_0000[60]; // 0x0000
+    uint32_t capacity; // 0x003C
     Item *item; // 0x0040
     char name[32]; // 0x0048
     char pad_0068[24]; // 0x0068

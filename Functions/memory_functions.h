@@ -32,6 +32,9 @@ public:
     static void queue_autoWalk(int x, int y, int z);
     static void autoWalk(int x, int y, int z);
 
+    static bool queue_isContainer(Item* item);
+    static bool isContainer(Item* item);
+
     static void queue_open(Item* item);
     static void open(Item* item);
 
