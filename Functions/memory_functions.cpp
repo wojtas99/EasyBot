@@ -213,7 +213,7 @@ struct CollectKey {
     uint64_t ptrItem;   // offset 0x0C Item address
 };
 
-void MemoryFunctions::move(Item* item_src, Item* item_dst) {
+void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
     using move_t = void(__fastcall *)(
     __int64 a1, // RCX - Player Base
@@ -224,9 +224,9 @@ void MemoryFunctions::move(Item* item_src, Item* item_dst) {
     auto a1 = reinterpret_cast<__int64>(player_base);
     CollectKey container{};
     // Get Position Dest item
-    container.x = item_dst->x;
-    container.y = item_dst->y + 1;
-    container.z = item_dst->z;
+    container.x = container_dst->item->x;
+    container.y = 128 + slot;
+    container.z = container_dst->capacity - 1;
     container.ptrItem = reinterpret_cast<uint64_t>(item_src);
 
     auto Move = reinterpret_cast<move_t>(base_module + 0x141B00);
@@ -272,39 +272,20 @@ Item* MemoryFunctions::getItem(Container *container, int index)
     return reinterpret_cast<Item*>(a2);
 }
 
-bool MemoryFunctions::isContainer(Item *item)
-{
-    //1E2CE0
-    //Decomp by IDA for Medivia bool __fastcall sub_7FF7E97C2F60(__int64 a1)
-    using isContainer_t = bool(__fastcall*)(
-        Item **a1  // RCX - Container
-        );
-    auto IsContainer = reinterpret_cast<isContainer_t>(MemoryFunctions::base_module + 0x1E2F60);
-    bool result = IsContainer(&item);
-    std::cout << result << std::endl;
-    return result;
-}
-
-void MemoryFunctions::open(Item* item)
+void MemoryFunctions::open(Item* item, Container* parent_container)
 {
     using open_t = __int64(__fastcall *)(
         __int64 a1, // Player Base
-        uint64_t* a2, // Item ID
-    __int64 *a3 // 0
+        uint64_t *a2, // Item ID
+        uint64_t *a3 // Parent Container ID
     );
     auto Open = reinterpret_cast<open_t>(open_func_address);
     auto a1 = reinterpret_cast<__int64>(player_base);
     auto a2 = reinterpret_cast<uint64_t>(item);
-    long long a3 = 0x0;
+    auto a3 = reinterpret_cast<uint64_t>(parent_container);
     Open(a1, &a2, &a3);
 }
 
-bool MemoryFunctions::queue_isContainer(Item* item)
-{
-    return actionQueue.enqueue([item]() {
-        return isContainer(item);
-    }).get();
-}
 
 void MemoryFunctions::queue_attack(Entity* entity) {
     actionQueue.enqueue([entity]() {
@@ -318,15 +299,15 @@ void MemoryFunctions::queue_autoWalk(int x, int y, int z) {
     }).get();
 }
 
-void MemoryFunctions::queue_open(Item* item) {
-    actionQueue.enqueue([item]() {
-        open(item);
+void MemoryFunctions::queue_open(Item* item, Container* parent_container) {
+    actionQueue.enqueue([item, parent_container]() {
+        open(item, parent_container);
     }).get();
 }
 
-void MemoryFunctions::queue_move(Item* item_src, Item* item_dest) {
-    actionQueue.enqueue([item_src, item_dest]() {
-        move(item_src, item_dest);
+void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot) {
+    actionQueue.enqueue([item_src, item_dest, slot]() {
+        move(item_src, item_dest, slot);
     }).get();
 }
 

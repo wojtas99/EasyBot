@@ -32,17 +32,15 @@ public:
     static void queue_autoWalk(int x, int y, int z);
     static void autoWalk(int x, int y, int z);
 
-    static bool queue_isContainer(Item* item);
-    static bool isContainer(Item* item);
 
-    static void queue_open(Item* item);
-    static void open(Item* item);
+    static void queue_open(Item* item,Container* parent_container);
+    static void open(Item* item, Container* parent_container);
 
     static std::vector<Container*> queue_getContainers();
     static std::vector<Container*> getContainers();
 
-    static void queue_move(Item* item_src, Item* item_dest);
-    static void move(Item* item_src, Item* item_dest);
+    static void queue_move(Item* item_src, Container* item_dest, int slot);
+    static void move(Item* item_src, Container* container_dst, int slot);
 
     static __int64 queue_getTile(uint32_t x, uint32_t y, uint16_t z);
     static __int64 getTile(uint32_t x, uint32_t y, uint16_t z);

@@ -23,17 +23,30 @@ void TargetThread::run() {
                 open_corpse = false;
                 uint64_t tile = tile = MemoryFunctions::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
                 uint64_t top_thing = MemoryFunctions::queue_getTopThing(tile);
-                MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing));
-                msleep(500);
+                MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing), 0);
                 std::vector<Container*> containers = MemoryFunctions::queue_getContainers();
+                for (auto container : containers) {
+                    if (container->number_of_items == container->capacity) {
+                        for (int j = 0; j < container->number_of_items; ++j) {
+                            Item* item = MemoryFunctions::getItem(container, j);
+                            MemoryFunctions::queue_open(item, container);
+                        }
+                    }
+
+                }
+                msleep(500);
+                containers = MemoryFunctions::queue_getContainers();
+                int slot = 1;
                 for (int i = 0; i < containers.size(); i++)
                 {
+                    if (i == slot) continue;
                     for (int j = 0; j < containers[i]->number_of_items; ++j)
                     {
                         Item* item = MemoryFunctions::getItem(containers[i], j);
-                        if (item->id == 2148 && ((containers[0]->item->x + 1) != (containers[0]->item->x + i)))
+                        if (item->id == 2148)
                         {
-                            MemoryFunctions::queue_move(item, containers[0]->item);
+                            MemoryFunctions::queue_move(item, containers[slot], slot);
+                            msleep(1000);
                         }
                     }
                 }
