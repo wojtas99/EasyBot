@@ -32,6 +32,24 @@ public:
     static void queue_autoWalk(int x, int y, int z);
     static void autoWalk(int x, int y, int z);
 
+    static bool queue_isContainer(Item* item);
+    static bool isContainer(Item* item);
+
+    static std::string queue_getName(Item* item);
+    static std::string getName(Item* item);
+
+    static bool queue_isLyingCorpse(Item* item);
+    static bool isLyingCorpse(Item* item);
+
+    static void queue_stop();
+    static void stop();
+
+    static bool queue_isAttacking();
+    static bool isAttacking();
+
+    static bool queue_isAutoWalking();
+    static bool isAutoWalking();
+
 
     static void queue_open(Item* item,Container* parent_container);
     static void open(Item* item, Container* parent_container);

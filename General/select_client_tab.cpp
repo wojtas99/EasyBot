@@ -3,7 +3,7 @@
 #include "../Functions/memory_functions.h"
 #include "../include/MinHook.h"
 #include <iostream>
-
+#include <QMessageBox>
 
 SelectClientTab::SelectClientTab(QWidget *parent) : QWidget(parent) {
     setFixedSize(100, 400);
@@ -31,6 +31,33 @@ void __stdcall hookedGameMainLoop() {
     MemoryFunctions::actionQueue.execute_all();
 }
 
+typedef void(__fastcall* tItemFunc)(__int64 a1, void (__fastcall ****a2)(__int64, __int64));
+tItemFunc originalItemFunc = nullptr;
+
+void __fastcall hookedItemFunc(__int64 a1, void (__fastcall ****a2)(__int64, __int64))
+{
+    uint64_t result = *reinterpret_cast<uint64_t*>(a2);
+    Item* item = reinterpret_cast<Item*>(result);
+    std::cout << item->id << result << '\n';
+    originalItemFunc(a1, a2);
+}
+
+
+void setupItemHook(uint64_t itemFuncAddress) {
+    if (MH_CreateHook(reinterpret_cast<void*>(itemFuncAddress),
+                      &hookedItemFunc,
+                      reinterpret_cast<void**>(&originalItemFunc)) != MH_OK) {
+        std::cout << "[HOOK] Błąd tworzenia hooka (ItemFunc)\n";
+        return;
+                      }
+
+    if (MH_EnableHook(reinterpret_cast<void*>(itemFuncAddress)) != MH_OK) {
+        std::cout << "[HOOK] Błąd aktywacji hooka (ItemFunc)\n";
+        return;
+    }
+
+    std::cout << "[HOOK] ItemFunc hook załadowany poprawnie!\n";
+}
 
 void setupMainLoopHook(uint64_t gameLoopAddress) {
     if (MH_Initialize() != MH_OK)
@@ -40,6 +67,7 @@ void setupMainLoopHook(uint64_t gameLoopAddress) {
         return;
     if (MH_EnableHook(reinterpret_cast<void*>(gameLoopAddress)) != MH_OK)
         return;
+    std::cout << "Main Loop hooked successfully!\n";
 }
 SafeQueue MemoryFunctions::actionQueue;
 
@@ -57,6 +85,7 @@ void SelectClientTab::load_medivia() {
     main_window_tab->show();
     if (!m_hookInitialized) {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
+        setupItemHook(MemoryFunctions::base_module + 0x141A40);
         m_hookInitialized = true;
     }
 }

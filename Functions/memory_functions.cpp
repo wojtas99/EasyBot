@@ -272,6 +272,80 @@ Item* MemoryFunctions::getItem(Container *container, int index)
     return reinterpret_cast<Item*>(a2);
 }
 
+std::string MemoryFunctions::getName(Item* item)
+{
+    //Decomp by IDA for Medivia __int64 __fastcall sub_7FF6BA6B3C70(__int64 a1, __int64 a2)
+    using getName_t = __int64(__fastcall*)(
+        Item* a1,    // RCX
+        std::string* a2 // RDX - pointer to result string
+    );
+
+    auto GetName = reinterpret_cast<getName_t>(MemoryFunctions::base_module + 0x153C70);
+    std::string name;
+    __int64 result = GetName(item, &name);
+
+    std::cout << "Result ptr: 0x" << std::hex << result << '\n';
+    std::cout << "Name: " << name << '\n';
+    return name;
+}
+
+void MemoryFunctions::stop()
+{
+    //Decomp by IDA for Medivia void __fastcall sub_7FF780D51980(__int64 a1)
+    using stop_t = void(__fastcall*)(
+        __int64 a1  // RCX - Player Base
+        );
+    auto Stop = reinterpret_cast<stop_t>(MemoryFunctions::base_module + 0x141980);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    Stop(a1);
+}
+
+
+bool MemoryFunctions::isContainer(Item* item)
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF780DEEEE0(__int64 a1)
+    using isContainer_t = bool(__fastcall*)(
+        Item *a1  // RCX - Item
+        );
+    auto IsContainer = reinterpret_cast<isContainer_t>(MemoryFunctions::base_module + 0x1DEEE0);
+    return IsContainer(item);;
+}
+
+bool MemoryFunctions::isLyingCorpse(Item* item)
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73F190(__int64 a1)
+    using isLyingCorpse_t = bool(__fastcall*)(
+        Item *a1  // RCX - Item
+        );
+    auto IsLyingCorpse = reinterpret_cast<isLyingCorpse_t>(MemoryFunctions::base_module + 0x1DF190);
+    bool result = IsLyingCorpse(item);
+    std::cout << result << std::endl;
+    return result;
+}
+
+bool MemoryFunctions::isAutoWalking()
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA746450(__int64 a1)
+    using isAutoWalking_t = bool(__fastcall*)(
+        __int64 a1  // RCX - Player
+        );
+    auto IsAutoWalking = reinterpret_cast<isAutoWalking_t>(MemoryFunctions::base_module + 0x1E6450);
+    auto a1 = reinterpret_cast<__int64>(map_view->LocalPlayer);
+    return IsAutoWalking(a1);
+}
+
+bool MemoryFunctions::isAttacking()
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73C250(__int64 a1)
+    using isAttacking_t = bool(__fastcall*)(
+        __int64 a1  // RCX - Player
+        );
+    auto IsAttacking = reinterpret_cast<isAttacking_t>(MemoryFunctions::base_module + 0x1DC250);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    return IsAttacking(a1);
+}
+
+
 void MemoryFunctions::open(Item* item, Container* parent_container)
 {
     using open_t = __int64(__fastcall *)(
@@ -305,9 +379,21 @@ void MemoryFunctions::queue_open(Item* item, Container* parent_container) {
     }).get();
 }
 
+std::string MemoryFunctions::queue_getName(Item* item) {
+    return actionQueue.enqueue([item]() {
+        return getName(item);
+    }).get();
+}
+
 void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot) {
     actionQueue.enqueue([item_src, item_dest, slot]() {
         move(item_src, item_dest, slot);
+    }).get();
+}
+
+void MemoryFunctions::queue_stop() {
+    actionQueue.enqueue([]() {
+        stop();
     }).get();
 }
 
@@ -326,6 +412,30 @@ __int64 MemoryFunctions::queue_getTile(uint32_t x, uint32_t y, uint16_t z) {
 __int64 MemoryFunctions::queue_getTopThing(__int64 tile) {
     return actionQueue.enqueue([tile]() {
         return getTopThing(tile);
+    }).get();
+}
+
+bool MemoryFunctions::queue_isContainer(Item* item) {
+    return actionQueue.enqueue([item]() {
+        return isContainer(item);
+    }).get();
+}
+
+bool MemoryFunctions::queue_isAttacking() {
+    return actionQueue.enqueue([]() {
+        return isAttacking();
+    }).get();
+}
+
+bool MemoryFunctions::queue_isLyingCorpse(Item* item) {
+    return actionQueue.enqueue([item]() {
+        return isLyingCorpse(item);
+    }).get();
+}
+
+bool MemoryFunctions::queue_isAutoWalking() {
+    return actionQueue.enqueue([]() {
+        return isAutoWalking();
     }).get();
 }
 

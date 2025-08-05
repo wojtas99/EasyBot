@@ -9,27 +9,25 @@
 
 void WalkerThread::run()
 {
-    int idx = 0;
-    int timer = 0;
-    bool walking = false;
-    int x = 0, y = 0;
+    int timer = 0, x = 0, y = 0;
+    bool is_walking = false;
+    int idx = find_wpt();
+
     while (m_running && !m_waypoints.isEmpty())
     {
-        // Every 1 sec check if character is walking
-        if (timer/1000 > 1) {
+
+        if (timer/1000 >= 0.5) { // Check if character is moving every 500 ms
             if (x == MemoryFunctions::map_view->LocalPlayer->x && y == MemoryFunctions::map_view->LocalPlayer->y) {
-                walking = false;
+                is_walking = false;
             } else {
-                walking = true;
+                is_walking = true;
             }
             x = MemoryFunctions::map_view->LocalPlayer->x;
             y = MemoryFunctions::map_view->LocalPlayer->y;
-            //idx = find_wpt();
             timer = 0;
         }
 
         const auto& wpt = m_waypoints[idx];
-
         int map_x = wpt["x"].toInt();
         int map_y = wpt["y"].toInt();
         int map_z = wpt["z"].toInt();
@@ -45,17 +43,17 @@ void WalkerThread::run()
         if (MemoryFunctions::map_view->LocalPlayer->x == map_x &&
             MemoryFunctions::map_view->LocalPlayer->y == map_y &&
             MemoryFunctions::map_view->LocalPlayer->z == map_z) {
-            walking = false;
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
             continue;
         }
-
-        if ((!MemoryFunctions::has_target || option == "Lure") &&
-            MemoryFunctions::map_view->LocalPlayer->z == map_z &&
-            !walking) {
+        if (!MemoryFunctions::has_target || option == "Lure") {
             MemoryFunctions::queue_autoWalk(map_x, map_y, map_z);
-            walking = true;
+        }
+        if (MemoryFunctions::queue_isAttacking() && option != "Lure" && is_walking)
+        {
+            MemoryFunctions::queue_stop();
+            is_walking = false;
         }
         msleep(25);
         timer += 25;

@@ -17,39 +17,13 @@ void TargetThread::run() {
         int hp_to = m_targets[idx].value("hpTo").toInt();
         idx = (idx + 1) % m_targets.size();
         closest_dist = 100;
-        if (MemoryFunctions::player_base->Entity == 0) {
+        if (!MemoryFunctions::queue_isAttacking()) {
             if (open_corpse)
             {
                 open_corpse = false;
                 uint64_t tile = tile = MemoryFunctions::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
                 uint64_t top_thing = MemoryFunctions::queue_getTopThing(tile);
                 MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing), 0);
-                std::vector<Container*> containers = MemoryFunctions::queue_getContainers();
-                for (auto container : containers) {
-                    if (container->number_of_items == container->capacity) {
-                        for (int j = 0; j < container->number_of_items; ++j) {
-                            Item* item = MemoryFunctions::getItem(container, j);
-                            MemoryFunctions::queue_open(item, container);
-                        }
-                    }
-
-                }
-                msleep(500);
-                containers = MemoryFunctions::queue_getContainers();
-                int slot = 1;
-                for (int i = 0; i < containers.size(); i++)
-                {
-                    if (i == slot) continue;
-                    for (int j = 0; j < containers[i]->number_of_items; ++j)
-                    {
-                        Item* item = MemoryFunctions::getItem(containers[i], j);
-                        if (item->id == 2148)
-                        {
-                            MemoryFunctions::queue_move(item, containers[slot], slot);
-                            msleep(1000);
-                        }
-                    }
-                }
             }
             closest_entity = nullptr;
             std::vector<Entity*> entities = MemoryFunctions::queue_getSpectatorsInRangeEx(dist_threshold);
@@ -63,15 +37,17 @@ void TargetThread::run() {
                     closest_dist = dist_x + dist_y;
                 }
             }
-            if (closest_entity != nullptr) {
+            if (closest_entity != nullptr)
+            {
                 MemoryFunctions::queue_attack(closest_entity);
-                msleep(500);
                 MemoryFunctions::has_target = true;
                 open_corpse = true;
-            } else {
+            } else
+            {
                 MemoryFunctions::has_target = false;
             }
-        } else {
+        } else
+        {
             if (closest_entity-> x != 65535 && closest_entity-> x != 65535 && closest_entity-> x != 255) {
                 enemy_coords[0] = closest_entity-> x;
                 enemy_coords[1] = closest_entity-> y;
