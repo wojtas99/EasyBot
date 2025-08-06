@@ -35,6 +35,9 @@ public:
     static bool queue_isContainer(Item* item);
     static bool isContainer(Item* item);
 
+    static void queue_talkChannel(const char *message);
+    static void talkChannel(const char *message);
+
     static std::string queue_getName(Item* item);
     static std::string getName(Item* item);
 

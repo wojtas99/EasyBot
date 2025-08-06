@@ -38,7 +38,7 @@ void __fastcall hookedItemFunc(__int64 a1, void (__fastcall ****a2)(__int64, __i
 {
     uint64_t result = *reinterpret_cast<uint64_t*>(a2);
     Item* item = reinterpret_cast<Item*>(result);
-    std::cout << item->id << result << '\n';
+    MemoryFunctions::talkChannel(std::to_string(item->id).c_str());
     originalItemFunc(a1, a2);
 }
 

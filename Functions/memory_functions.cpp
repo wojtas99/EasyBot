@@ -299,6 +299,22 @@ void MemoryFunctions::stop()
     auto a1 = reinterpret_cast<__int64>(player_base);
     Stop(a1);
 }
+void MemoryFunctions::talkChannel(const char *message)
+{
+    //Decomp by IDA for Medivia void __fastcall sub_7FF771812E50(__int64 a1, int a2, int a3, __int128 *a4)
+    using talkChannel_t = void(__fastcall*)(
+        __int64 a1,  // RCX - Player Base
+        int a2,  // RDX - Msg type
+        int a3,  // R8 - Channel ID
+        void *a4 // R9 - Message
+        );
+    auto TalkChannel = reinterpret_cast<talkChannel_t>(MemoryFunctions::base_module + 0x142E50);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    uintptr_t a4[2];
+    a4[0] = reinterpret_cast<uintptr_t>(message); // Text To speak
+    a4[1] = strlen(message); // Lenght of the text
+    TalkChannel(a1, 1, 0, a4);
+}
 
 
 bool MemoryFunctions::isContainer(Item* item)
@@ -394,6 +410,12 @@ void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot)
 void MemoryFunctions::queue_stop() {
     actionQueue.enqueue([]() {
         stop();
+    }).get();
+}
+
+void MemoryFunctions::queue_talkChannel(const char *message) {
+    actionQueue.enqueue([message]() {
+        talkChannel(message);
     }).get();
 }
 

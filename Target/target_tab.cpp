@@ -23,8 +23,10 @@ TargetTab::TargetTab(QWidget* parent) : QWidget(parent) {
     status_label->setAlignment(Qt::AlignCenter);
 
     targetList_listWidget = new QListWidget(this);
-    targetList_listWidget->setMinimumWidth(150);
-    targetList_listWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    lootList_listWidget = new QListWidget(this);
+
+    profile_listWidget = new QListWidget(this);
 
     targetName_lineEdit = new QLineEdit(this);
     targetName_lineEdit->setPlaceholderText("Orc | * - all monsters");
@@ -52,12 +54,15 @@ TargetTab::TargetTab(QWidget* parent) : QWidget(parent) {
     setLayout(layout);
 
     targetList();
+    lootList();
+    profileList();
 
     layout->addWidget(status_label, 3, 0, 1, 2);
 }
 
 void TargetTab::targetList() {
     auto groupbox = new QGroupBox("Targets", this);
+    groupbox->setFixedHeight(200);
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
     auto* add_button = new QPushButton("Add", this);
@@ -133,10 +138,90 @@ void TargetTab::targetList() {
     groupbox2_layout->addWidget(start_checkBox);
     groupbox2_layout->addStretch();
 
-    groupbox_layout->addWidget(targetList_listWidget, 1); // Stretch
-    groupbox_layout->addLayout(groupbox2_layout, 0);
+    groupbox_layout->addWidget(targetList_listWidget);
+    groupbox_layout->addLayout(groupbox2_layout);
 
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 0, 0, 1, 2);
+}
+
+void TargetTab::lootList()
+{
+    auto groupbox = new QGroupBox("Looting", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto layout1 = new QHBoxLayout();
+    auto item_id_lineEdit = new QLineEdit(this);
+    item_id_lineEdit->setPlaceholderText("2014");
+    item_id_lineEdit->setFixedWidth(40);
+    auto item_action_lineEdit = new QLineEdit(this);
+    item_action_lineEdit->setPlaceholderText("1");
+    item_action_lineEdit->setFixedWidth(20);
+    auto item_name_lineEdit = new QLineEdit(this);
+    item_name_lineEdit->setPlaceholderText("Gold Coin");
+
+    auto add_button = new QPushButton("Add", this);
+
+    connect(add_button, &QPushButton::clicked, this, [this, item_name_lineEdit, item_id_lineEdit, item_action_lineEdit]() {
+
+        addLoot(item_name_lineEdit->text(), item_id_lineEdit->text().toInt(), item_action_lineEdit->text().toInt());
+    });
+
+
+
+    layout1->addWidget(item_id_lineEdit);
+    layout1->addWidget(item_action_lineEdit);
+    layout1->addWidget(item_name_lineEdit);
+    layout1->addWidget(add_button);
+
+
+    groupbox_layout->addWidget(lootList_listWidget);
+    groupbox_layout->addLayout(layout1);
+
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 1, 1, 1);
+    dynamic_cast<QGridLayout*>(layout())->setColumnStretch(0, 1);
+    dynamic_cast<QGridLayout*>(layout())->setColumnStretch(1, 1);
+
+}
+
+void TargetTab::profileList()
+{
+    auto groupbox = new QGroupBox("Save && Load", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto save_button = new QPushButton("Save");
+    auto load_button = new QPushButton("Load");
+
+    auto layout1 = new QHBoxLayout();
+    auto layout2 = new QHBoxLayout();
+
+    layout1->addWidget(new QLabel("Name", this));
+
+    layout2->addWidget(save_button);
+    layout2->addWidget(load_button);
+
+    groupbox_layout->addWidget(profile_listWidget);
+    groupbox_layout->addLayout(layout1);
+    groupbox_layout->addLayout(layout2);
+
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
+    dynamic_cast<QGridLayout*>(layout())->setColumnStretch(0, 1);
+    dynamic_cast<QGridLayout*>(layout())->setColumnStretch(1, 1);
+}
+
+void TargetTab::addLoot(const QString& name, int item_id, int item_action) const {
+    auto* item = new QListWidgetItem(name) ;
+    QVariantMap data;
+    data["name"] = name;
+    data["id"] = item_id;
+    data["action"] = item_action;
+
+    item->setData(Qt::UserRole, data);
+    lootList_listWidget->addItem(item);
+
+    status_label->setStyleSheet("color: green; font-weight: bold;");
+    status_label->setText(name + " added!");
+
+
 }
 
 void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& action) const {
@@ -168,12 +253,18 @@ void TargetTab::startTargetThread(int state) {
     if (state) {
         if (!targetThread) {
             QList<QVariantMap> targets;
+            QList<QVariantMap> looting;
             for (int i = 0; i < targetList_listWidget->count(); ++i) {
                 QListWidgetItem* item = targetList_listWidget->item(i);
                 QVariantMap data = item->data(Qt::UserRole).toMap();
                 targets.append(data);
             }
-            targetThread = new TargetThread(targets);
+            for (int i = 0; i < lootList_listWidget->count(); ++i) {
+                QListWidgetItem* item = lootList_listWidget->item(i);
+                QVariantMap data = item->data(Qt::UserRole).toMap();
+                looting.append(data);
+            }
+            targetThread = new TargetThread(targets, looting);
             std::cout << "Target Thread created" << std::endl;
             targetThread->start();
         }
