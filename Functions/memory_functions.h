@@ -20,6 +20,7 @@ public:
     static MapView* map_view;
     static PlayerBase* player_base;
     static uint64_t base_module;
+    static void* open_func_address;
     static void* main_func_address;
     static bool has_target;
 
@@ -75,6 +76,8 @@ public:
     static std::vector<Entity*> queue_getSpectatorsInRangeEx(int radius);
     static std::vector<Entity*> getSpectatorsInRangeEx(int radius);
 
+    static void actionLoot();
+
 
     explicit MemoryFunctions(LoadOption load_option);
 
@@ -85,7 +88,6 @@ private:
     // Function Addresses
     static void* move_func_address;
     static void* attack_func_address;
-    static void* open_func_address;
     static void* collect_func_address;
     static void* say_func_address;
     static void* creature_func_address;

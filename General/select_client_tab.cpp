@@ -41,22 +41,47 @@ void __fastcall hookedItemFunc(__int64 a1, void (__fastcall ****a2)(__int64, __i
     MemoryFunctions::talkChannel(std::to_string(item->id).c_str());
     originalItemFunc(a1, a2);
 }
+typedef __int64(__fastcall* tOpenFunc)(__int64 a1,  uint64_t *a2, uint64_t *a3);
+tOpenFunc originalOpenFunc = nullptr;
 
+void __fastcall hookedOpenFunc(__int64 a1,  uint64_t *a2, uint64_t *a3)
+{
+
+    originalOpenFunc(a1, a2, a3);
+
+    MemoryFunctions::actionLoot();
+}
+
+void setupOpenHook(uint64_t openFuncAddress) {
+    if (MH_CreateHook(reinterpret_cast<void*>(openFuncAddress),
+                      &hookedOpenFunc,
+                      reinterpret_cast<void**>(&originalOpenFunc)) != MH_OK) {
+        std::cout << "[HOOK] Error (OpenFunc)\n";
+        return;
+                      }
+
+    if (MH_EnableHook(reinterpret_cast<void*>(openFuncAddress)) != MH_OK) {
+        std::cout << "[HOOK] Error (OpenFunc)\n";
+        return;
+    }
+
+    std::cout << "[HOOK] OpenFunc\n";
+}
 
 void setupItemHook(uint64_t itemFuncAddress) {
     if (MH_CreateHook(reinterpret_cast<void*>(itemFuncAddress),
                       &hookedItemFunc,
                       reinterpret_cast<void**>(&originalItemFunc)) != MH_OK) {
-        std::cout << "[HOOK] Błąd tworzenia hooka (ItemFunc)\n";
+        std::cout << "[HOOK] Error (ItemFunc)\n";
         return;
                       }
 
     if (MH_EnableHook(reinterpret_cast<void*>(itemFuncAddress)) != MH_OK) {
-        std::cout << "[HOOK] Błąd aktywacji hooka (ItemFunc)\n";
+        std::cout << "[HOOK] Error (ItemFunc)\n";
         return;
     }
 
-    std::cout << "[HOOK] ItemFunc hook załadowany poprawnie!\n";
+    std::cout << "[HOOK] ItemFunc\n";
 }
 
 void setupMainLoopHook(uint64_t gameLoopAddress) {
@@ -86,6 +111,7 @@ void SelectClientTab::load_medivia() {
     if (!m_hookInitialized) {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
         setupItemHook(MemoryFunctions::base_module + 0x141A40);
+        setupOpenHook(reinterpret_cast<uint64_t>(MemoryFunctions::open_func_address));
         m_hookInitialized = true;
     }
 }

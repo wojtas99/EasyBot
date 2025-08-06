@@ -104,6 +104,7 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
     }
 }
 
+
 void MemoryFunctions::autoWalk(int x, int y, int z) {
     // Decomp by IDA for Medivia __int64 __fastcall sub_7FF69838A0F0(unsigned __int64 a1, unsigned int *a2)
     using autoWalk_t = __int64(__fastcall *)(
@@ -224,7 +225,7 @@ void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     auto a1 = reinterpret_cast<__int64>(player_base);
     CollectKey container{};
     // Get Position Dest item
-    container.x = container_dst->item->x;
+    container.x = 0xFFFF;
     container.y = 128 + slot;
     container.z = container_dst->capacity - 1;
     container.ptrItem = reinterpret_cast<uint64_t>(item_src);
@@ -376,6 +377,22 @@ void MemoryFunctions::open(Item* item, Container* parent_container)
     Open(a1, &a2, &a3);
 }
 
+
+void MemoryFunctions::actionLoot() {
+    auto containers = getContainers();
+    for (int j = 0; j < containers.size(); ++j)
+    {
+        if (j == 1) continue;
+        for (int i = containers[j]->number_of_items - 1; i >= 0; --i)
+        {
+            Item* item = getItem(containers[j], i);
+            if (item->id == 2148)
+            {
+                move(item, containers[1], 1);
+            }
+        }
+    }
+}
 
 void MemoryFunctions::queue_attack(Entity* entity) {
     actionQueue.enqueue([entity]() {
