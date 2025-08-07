@@ -3,10 +3,6 @@ project(EasyBotDll)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if(MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -41,14 +37,23 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         safe_queue.h
 )
 
-set_target_properties(EasyBot PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
-)
-
 target_link_libraries(EasyBot PRIVATE
         Qt5::Widgets
         libMinHook.x64.lib
 )
 
+add_executable(EasyBotLoader WIN32 Injector/EasyBotLoader.cpp)
+
+set_target_properties(EasyBot PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bot"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bot"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bot"
+)
+set_target_properties(EasyBotLoader PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bot"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bot"
+)
+
+target_link_libraries(EasyBotLoader PRIVATE
+        Qt5::Widgets
+)

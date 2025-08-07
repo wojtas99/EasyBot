@@ -24,7 +24,6 @@ void TargetThread::run() {
                 uint64_t tile = tile = MemoryFunctions::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
                 uint64_t top_thing = MemoryFunctions::queue_getTopThing(tile);
                 MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing), 0);
-                msleep(1000);
                 for (auto loot : m_looting)
                 {
                     int item_id = loot.value("id").toString().toInt();

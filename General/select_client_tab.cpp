@@ -111,7 +111,6 @@ void SelectClientTab::load_medivia() {
     if (!m_hookInitialized) {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
         setupItemHook(MemoryFunctions::base_module + 0x141A40);
-        setupOpenHook(reinterpret_cast<uint64_t>(MemoryFunctions::open_func_address));
         m_hookInitialized = true;
     }
 }
