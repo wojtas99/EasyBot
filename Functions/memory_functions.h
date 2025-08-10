@@ -55,11 +55,14 @@ public:
     static bool isAutoWalking();
 
 
-    static void queue_open(Item* item,Container* parent_container);
-    static void open(Item* item, Container* parent_container);
+    static int queue_open(Item* item,Container* parent_container);
+    static int open(Item* item, Container* parent_container);
 
     static std::vector<Container*> queue_getContainers();
     static std::vector<Container*> getContainers();
+
+    static Container* queue_getContainer(int index);
+    static Container* getContainer(int index);
 
     static void queue_move(Item* item_src, Container* item_dest, int slot);
     static void move(Item* item_src, Container* container_dst, int slot);

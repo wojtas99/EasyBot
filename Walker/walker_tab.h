@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QListWidgetItem>
 #include "walker_thread.h"
+#include <QButtonGroup>
 
 class WalkerTab : public QWidget {
     Q_OBJECT
@@ -13,12 +14,10 @@ class WalkerTab : public QWidget {
 public:
     explicit WalkerTab(QWidget* parent = nullptr);
 
-private slots:
-    void saveProfile() const;
-    void loadProfile() const;
-    void addWaypoint(const QString &index) const;
-    void clearWaypointList() const;
-    void startWalkerThread(int state);
+public slots:
+    void setWalkerEnabled(bool on);
+
+
 
 private:
     QListWidget* waypointList_listWidget;
@@ -26,14 +25,20 @@ private:
 
     QLineEdit* profile_lineEdit;
     QTextEdit* action_textEdit;
-
-    QComboBox* option_comboBox;
-
-    QLabel* status_label;
+    QButtonGroup* directions_buttonGroup= nullptr;
+    QButtonGroup* options_buttonGroup = nullptr;
 
 
-    void profileList();
+
+
+    void addWaypoint() const;
+    void clearWaypointList() const;
+    void saveProfile() const;
+    void loadProfile() const;
+
+
     void waypointList();
+    void profileList();
 
     WalkerThread* walkerThread = nullptr;
 };

@@ -259,6 +259,19 @@ std::vector<Container*> MemoryFunctions::getContainers() {
     return resultContainers;
 }
 
+Container* MemoryFunctions::getContainer(int index) {
+    using getContainer_t = void(__fastcall*)(
+        void* a1,  // RCX - Player Base
+        void** a2, // RAX - result ptr
+        int a3     // R8 - Number of container
+        );
+    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC5E0);
+    void* container = nullptr;
+    void* g_GamePointer = player_base;
+    GetContainer(g_GamePointer, &container, index);
+    return static_cast<Container*>(container);
+}
+
 Item* MemoryFunctions::getItem(Container *container, int index)
 {
     //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, int a2)
@@ -363,7 +376,7 @@ bool MemoryFunctions::isAttacking()
 }
 
 
-void MemoryFunctions::open(Item* item, Container* parent_container)
+int MemoryFunctions::open(Item* item, Container* parent_container)
 {
     using open_t = __int64(__fastcall *)(
         __int64 a1, // Player Base
@@ -374,7 +387,7 @@ void MemoryFunctions::open(Item* item, Container* parent_container)
     auto a1 = reinterpret_cast<__int64>(player_base);
     auto a2 = reinterpret_cast<uint64_t>(item);
     auto a3 = reinterpret_cast<uint64_t>(parent_container);
-    Open(a1, &a2, &a3);
+    return Open(a1, &a2, &a3);
 }
 
 
@@ -406,9 +419,9 @@ void MemoryFunctions::queue_autoWalk(int x, int y, int z) {
     }).get();
 }
 
-void MemoryFunctions::queue_open(Item* item, Container* parent_container) {
-    actionQueue.enqueue([item, parent_container]() {
-        open(item, parent_container);
+int MemoryFunctions::queue_open(Item* item, Container* parent_container) {
+    return actionQueue.enqueue([item, parent_container]() {
+        return open(item, parent_container);
     }).get();
 }
 
@@ -487,6 +500,12 @@ Item* MemoryFunctions::queue_getItem(Container* container, int index) {
 std::vector<Entity*> MemoryFunctions::queue_getSpectatorsInRangeEx(int radius) {
     return actionQueue.enqueue([radius]() {
         return getSpectatorsInRangeEx(radius);
+    }).get();
+}
+
+Container* MemoryFunctions::queue_getContainer(int index) {
+    return actionQueue.enqueue([index]() {
+        return getContainer(index);
     }).get();
 }
 

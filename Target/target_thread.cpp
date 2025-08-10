@@ -2,6 +2,8 @@
 #include "../Functions/memory_functions.h"
 #include <QThread>
 #include <iostream>
+
+#include "../Loot/loot_tab.h"
 #include "../Structs/medivia_struct.h"
 
 void TargetThread::run() {
@@ -18,30 +20,14 @@ void TargetThread::run() {
         idx = (idx + 1) % m_targets.size();
         closest_dist = 100;
         if (!MemoryFunctions::queue_isAttacking()) {
-            if (open_corpse && !m_looting.isEmpty())
-            {
+            if (open_corpse) {
                 open_corpse = false;
                 uint64_t tile = tile = MemoryFunctions::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
                 uint64_t top_thing = MemoryFunctions::queue_getTopThing(tile);
-                MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing), 0);
-                for (auto loot : m_looting)
-                {
-                    int item_id = loot.value("id").toString().toInt();
-                    int index = loot.value("action").toString().toInt();
-                    auto containers = MemoryFunctions::queue_getContainers();
-                    for (int j = 0; j < containers.size(); ++j)
-                    {
-                        if (j == index) continue;
-                        for (int i = containers[j]->number_of_items - 1; i >= 0; --i)
-                        {
-                            Item* item = MemoryFunctions::queue_getItem(containers[j], i);
-                            if (item->id == item_id)
-                            {
-                                MemoryFunctions::queue_move(item, containers[index], index);
-                            }
-                        }
-                    }
-                }
+                int index = MemoryFunctions::queue_open(reinterpret_cast<Item*>(top_thing), 0);
+                msleep(500);
+                emit requestLoot(index);
+                //LootTab::setLootEnabled(1, index);
             }
             closest_entity = nullptr;
             std::vector<Entity*> entities = MemoryFunctions::queue_getSpectatorsInRangeEx(dist_threshold);

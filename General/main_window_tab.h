@@ -1,36 +1,28 @@
-#ifndef MAIN_WINDOW_TAB_H
-#define MAIN_WINDOW_TAB_H
 #pragma once
+#include <QMainWindow>
 #include <QPushButton>
+#include "../Status/status_tab.h"
 #include "../Walker/walker_tab.h"
 #include "../Target/target_tab.h"
-class MainWindowTab : public QWidget {
-    Q_OBJECT
+#include "../Loot/loot_tab.h"
 
+
+class MainWindowTab : public QMainWindow {
+    Q_OBJECT
 public:
     MainWindowTab(QWidget *parent = nullptr);
+    ~MainWindowTab() override;
 
-private slots:
-    void targetLoot();
-    void walker();
-    void healing();
-    void settings();
-    void smartHotkeys();
-    void training();
 
 private:
-    QPushButton *targetLootTab_button;
-    QPushButton *walkerTab_button;
-    QPushButton *healingTab_button;
-    QPushButton *settingsTab_button;
-    QPushButton *smartHotkeysTab_button;
-    QPushButton *trainingTab_button;
 
-    WalkerTab* walker_tab = nullptr;
-    TargetTab* target_tab = nullptr;
+    QTabWidget *main_tabWidget;
+    StatusTab *status_tabWidget;
+    WalkerTab *walker_tabWidget;
+    TargetTab *target_tabWidget;
+    LootTab *loot_tabWidget;
 };
 
 
 
 
-#endif

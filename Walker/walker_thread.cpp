@@ -13,6 +13,7 @@ void WalkerThread::run()
     bool is_walking = false;
     int idx = find_wpt();
 
+
     while (m_running && !m_waypoints.isEmpty())
     {
 
@@ -32,9 +33,11 @@ void WalkerThread::run()
         int map_y = wpt["y"].toInt();
         int map_z = wpt["z"].toInt();
         std::string option = wpt["option"].toString().toStdString();
+        std::string direction = wpt["direction"].toString().toStdString();
+        std::string action = wpt["action"].toString().toStdString();
+        std::string label = wpt["label"].toString().toStdString();
 
-        if (option != "Center" && option != "Lure" &&
-            map_z != MemoryFunctions::map_view->LocalPlayer->z) {
+        if (direction != "C" && map_z != MemoryFunctions::map_view->LocalPlayer->z) {
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
             continue;
@@ -47,6 +50,7 @@ void WalkerThread::run()
             emit indexUpdate(idx);
             continue;
         }
+
         if (!MemoryFunctions::has_target || option == "Lure") {
             MemoryFunctions::queue_autoWalk(map_x, map_y, map_z);
         }
@@ -68,11 +72,12 @@ int WalkerThread::find_wpt()
         int map_y = wpt["y"].toInt();
         int map_z = wpt["z"].toInt();
         std::string option = wpt["option"].toString().toStdString();
+        std::string direction = wpt["direction"].toString().toStdString();
 
         if (MemoryFunctions::map_view->LocalPlayer->z == map_z &&
             abs(static_cast<int>(map_x - MemoryFunctions::map_view->LocalPlayer->x)) <= 7 &&
             abs(static_cast<int>(map_y - MemoryFunctions::map_view->LocalPlayer->y)) <= 5 &&
-            option == "Center"  || option == "Lure") {
+            direction == "C"  || option == "Lure") {
             std::cout << "Found wpt" << std::endl;
             return idx;
         }

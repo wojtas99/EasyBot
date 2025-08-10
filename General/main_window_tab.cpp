@@ -1,49 +1,28 @@
 #include "main_window_tab.h"
 #include <QApplication>
 #include <QGridLayout>
+#include <QTabWidget>
 
-MainWindowTab::MainWindowTab(QWidget *parent) : QWidget(parent) {
-    setFixedSize(400, 100);
+MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("EasyBot");
+    setFixedSize(500, 500);
 
     QGridLayout *layout = new QGridLayout(this);
 
-    walkerTab_button = new QPushButton("Walker", this);
-    targetLootTab_button = new QPushButton("Targeting", this);
-    healingTab_button = new QPushButton("Healing && Attack", this);
-    settingsTab_button = new QPushButton("Settings", this);
-    smartHotkeysTab_button = new QPushButton("Smart Hotkeys", this);
-    trainingTab_button = new QPushButton("Training", this);
+    main_tabWidget = new QTabWidget(this);
+    status_tabWidget = new StatusTab();
+    walker_tabWidget = new WalkerTab();
+    target_tabWidget = new TargetTab();
+    loot_tabWidget = new LootTab();
+    main_tabWidget->addTab(status_tabWidget, "Status");
+    main_tabWidget->addTab(walker_tabWidget, "Walker");
+    main_tabWidget->addTab(target_tabWidget, "Target");
+    main_tabWidget->addTab(loot_tabWidget, "Loot");
 
-    layout->addWidget(walkerTab_button, 0, 0);
-    layout->addWidget(targetLootTab_button, 1, 0);
-    layout->addWidget(healingTab_button, 0, 1);
-    layout->addWidget(settingsTab_button, 1, 1);
-    layout->addWidget(smartHotkeysTab_button, 0, 2);
-    layout->addWidget(trainingTab_button, 1, 2);
+    connect(status_tabWidget, &StatusTab::walkerToggled,walker_tabWidget,  &WalkerTab::setWalkerEnabled);
+    connect(target_tabWidget, &TargetTab::requestLoot,loot_tabWidget,   &LootTab::startLootThread,Qt::QueuedConnection);
 
-    setLayout(layout);
+    setCentralWidget(main_tabWidget);
+}
 
-    connect(walkerTab_button, &QPushButton::clicked, this, &MainWindowTab::walker);
-    connect(targetLootTab_button, &QPushButton::clicked, this, &MainWindowTab::targetLoot);
-    connect(healingTab_button, &QPushButton::clicked, this, &MainWindowTab::healing);
-    connect(settingsTab_button, &QPushButton::clicked, this, &MainWindowTab::settings);
-    connect(smartHotkeysTab_button, &QPushButton::clicked, this, &MainWindowTab::smartHotkeys);
-    connect(trainingTab_button, &QPushButton::clicked, this, &MainWindowTab::training);
-}
-void MainWindowTab::walker() {
-    if (!walker_tab) {
-        walker_tab = new WalkerTab();
-    }
-    walker_tab->show();
-}
-void MainWindowTab::targetLoot() {
-    if (!target_tab) {
-        target_tab = new TargetTab();
-    }
-    target_tab->show();
-}
-void MainWindowTab::healing() { /* Tu otwórz nowe okno lub dialog dla Healing */ }
-void MainWindowTab::settings() { /* Tu otwórz nowe okno lub dialog dla Settings */ }
-void MainWindowTab::smartHotkeys() { /* Tu otwórz nowe okno lub dialog dla SmartHotkeys */ }
-void MainWindowTab::training() { /* Tu otwórz nowe okno lub dialog dla Training */ }
+MainWindowTab::~MainWindowTab() {}

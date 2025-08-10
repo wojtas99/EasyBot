@@ -21,6 +21,10 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         General/main_window_tab.h
         Walker/walker_tab.cpp
         Walker/walker_tab.h
+        Loot/loot_tab.cpp
+        Loot/loot_tab.h
+        Loot/loot_thread.cpp
+        Loot/loot_thread.h
         Functions/memory_functions.cpp
         Functions/memory_functions.h
         General/select_client_tab.cpp
@@ -32,6 +36,8 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Target/target_tab.h
         Target/target_thread.cpp
         Target/target_thread.h
+        Status/status_tab.cpp
+        Status/status_tab.h
         PatternScans/pattern_scan.cpp
         PatternScans/pattern_scan.h
         safe_queue.h

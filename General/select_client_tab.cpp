@@ -31,16 +31,6 @@ void __stdcall hookedGameMainLoop() {
     MemoryFunctions::actionQueue.execute_all();
 }
 
-typedef void(__fastcall* tItemFunc)(__int64 a1, void (__fastcall ****a2)(__int64, __int64));
-tItemFunc originalItemFunc = nullptr;
-
-void __fastcall hookedItemFunc(__int64 a1, void (__fastcall ****a2)(__int64, __int64))
-{
-    uint64_t result = *reinterpret_cast<uint64_t*>(a2);
-    Item* item = reinterpret_cast<Item*>(result);
-    MemoryFunctions::talkChannel(std::to_string(item->id).c_str());
-    originalItemFunc(a1, a2);
-}
 typedef __int64(__fastcall* tOpenFunc)(__int64 a1,  uint64_t *a2, uint64_t *a3);
 tOpenFunc originalOpenFunc = nullptr;
 
@@ -68,21 +58,7 @@ void setupOpenHook(uint64_t openFuncAddress) {
     std::cout << "[HOOK] OpenFunc\n";
 }
 
-void setupItemHook(uint64_t itemFuncAddress) {
-    if (MH_CreateHook(reinterpret_cast<void*>(itemFuncAddress),
-                      &hookedItemFunc,
-                      reinterpret_cast<void**>(&originalItemFunc)) != MH_OK) {
-        std::cout << "[HOOK] Error (ItemFunc)\n";
-        return;
-                      }
 
-    if (MH_EnableHook(reinterpret_cast<void*>(itemFuncAddress)) != MH_OK) {
-        std::cout << "[HOOK] Error (ItemFunc)\n";
-        return;
-    }
-
-    std::cout << "[HOOK] ItemFunc\n";
-}
 
 void setupMainLoopHook(uint64_t gameLoopAddress) {
     if (MH_Initialize() != MH_OK)
@@ -110,7 +86,6 @@ void SelectClientTab::load_medivia() {
     main_window_tab->show();
     if (!m_hookInitialized) {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
-        setupItemHook(MemoryFunctions::base_module + 0x141A40);
         m_hookInitialized = true;
     }
 }

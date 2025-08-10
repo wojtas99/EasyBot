@@ -13,19 +13,19 @@ class TargetTab : public QWidget {
 
 public:
     explicit TargetTab(QWidget* parent = nullptr);
-
+    signals:
+    void requestLoot(int containerIndex);
 private slots:
 
     void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& action) const;
-    void addLoot(const QString& name, int item_id, int item_action) const;
 
     void startTargetThread(int state);
+
 
 private:
     QLabel* status_label;
 
     QListWidget* targetList_listWidget;
-    QListWidget* lootList_listWidget;
     QListWidget* profile_listWidget;
 
     QLineEdit* targetName_lineEdit;
@@ -38,7 +38,6 @@ private:
 
     void targetList();
     void profileList();
-    void lootList();
 
     TargetThread* targetThread = nullptr;
 };
