@@ -10,8 +10,10 @@ public:
     explicit StatusTab(QWidget* parent = nullptr);
     signals:
     void walkerToggled(bool on);
+    void healingToggled(bool on);
 private:
     QCheckBox* walker_checkBox = nullptr;
+    QCheckBox* healing_checkBox = nullptr;
 
 };
 

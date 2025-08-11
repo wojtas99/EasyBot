@@ -41,8 +41,8 @@ void WalkerTab::waypointList() {
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
 
-    auto addWaypoint_button = new QPushButton("Add Waypoint", this);
-    connect(addWaypoint_button, &QPushButton::clicked, this, &WalkerTab::addWaypoint);
+    auto add_button = new QPushButton("Add Waypoint", this);
+    connect(add_button, &QPushButton::clicked, this, &WalkerTab::addWaypoint);
 
     auto clearWaypointList_button = new QPushButton("Clear List", this);
     connect(clearWaypointList_button, &QPushButton::clicked, this, &WalkerTab::clearWaypointList);
@@ -98,7 +98,7 @@ void WalkerTab::waypointList() {
     layout_left->addWidget(clearWaypointList_button);
 
     auto layout_right = new QVBoxLayout();
-    layout_right->addWidget(addWaypoint_button);
+    layout_right->addWidget(add_button);
     layout_right->addWidget(directionsGroup);
     layout_right->addWidget(optionsGroup);
     layout_right->addWidget(action_textEdit);

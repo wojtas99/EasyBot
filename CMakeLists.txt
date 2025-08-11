@@ -41,6 +41,10 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         PatternScans/pattern_scan.cpp
         PatternScans/pattern_scan.h
         safe_queue.h
+        Heal/heal_tab.cpp
+        Heal/heal_tab.h
+        Heal/heal_thread.cpp
+        Heal/heal_thread.h
 )
 
 target_link_libraries(EasyBot PRIVATE

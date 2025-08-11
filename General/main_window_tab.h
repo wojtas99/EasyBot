@@ -5,6 +5,8 @@
 #include "../Walker/walker_tab.h"
 #include "../Target/target_tab.h"
 #include "../Loot/loot_tab.h"
+#include "../Heal/heal_tab.h"
+
 
 
 class MainWindowTab : public QMainWindow {
@@ -21,6 +23,7 @@ private:
     WalkerTab *walker_tabWidget;
     TargetTab *target_tabWidget;
     LootTab *loot_tabWidget;
+    HealTab *heal_tabWidget;
 };
 
 

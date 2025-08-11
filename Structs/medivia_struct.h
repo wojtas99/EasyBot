@@ -8,7 +8,7 @@ public:
     uint16_t z; //0x0040
     char pad_0042[906]; //0x0042
     uint32_t is_walking; //0x03CC
-    char pad_03D4[76]; //0x03D4
+    char pad_03D4[80]; //0x03D0
     uint64_t *head; //0x0420
     uint64_t *necklace; //0x0428
     uint64_t *container; //0x0430
@@ -19,7 +19,7 @@ public:
     uint64_t *boots; //0x0458
     uint64_t *ring; //0x0460
     uint64_t *arrow; //0x0468
-    char pad_0470[224];
+    char pad_0470[232]; // 0x00470
     double hp; //0x0558
     double max_hp; //0x0560
     double cap; //0x0568
