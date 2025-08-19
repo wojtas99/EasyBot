@@ -39,7 +39,6 @@ void __fastcall hookedOpenFunc(__int64 a1,  uint64_t *a2, uint64_t *a3)
 
     originalOpenFunc(a1, a2, a3);
 
-    MemoryFunctions::actionLoot();
 }
 
 void setupOpenHook(uint64_t openFuncAddress) {

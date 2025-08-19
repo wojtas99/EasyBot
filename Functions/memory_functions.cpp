@@ -104,30 +104,31 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
     }
 }
 
+//  Functions
 
-void MemoryFunctions::autoWalk(int x, int y, int z) {
-    // Decomp by IDA for Medivia __int64 __fastcall sub_7FF69838A0F0(unsigned __int64 a1, unsigned int *a2)
-    using autoWalk_t = __int64(__fastcall *)(
-        uint64_t a1,       // Local Player
-        int* a2            // Coords to move
+struct Position {
+    uint32_t x;
+    uint32_t y;
+    uint16_t z;
+};
+
+__int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
+    //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, __int64 a2)
+    using getTile_t = __int64(__fastcall*)(
+        __int64 a1,  // RCX - Tile Base ?
+        Position* a2 // RAX - Corrds of tile
         );
-    auto AutoWalk = reinterpret_cast<autoWalk_t>(move_func_address);
-    int pos[3] = {x, y, z};
-    AutoWalk(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
+    auto GetTile = reinterpret_cast<getTile_t>(MemoryFunctions::base_module + 0x298780);
+    __int64 a1 = base_module + 0xCDAAF8;
+    Position position{};
+    position.x = x;
+    position.y = y;
+    position.z = z;
+    __int64 result = GetTile(a1, &position);
+    result = *reinterpret_cast<__int64*>(result);
+    return result;
 }
 
-void MemoryFunctions::attack(Entity* entity) {
-    // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF79045E8B0(__int64 a1, volatile signed __int32 **a2, char a3)
-    using attack_t = volatile signed __int32 **(__fastcall *)(
-        __int64 a1, // Player Base
-        volatile signed __int32 **a2, // Target ID
-        char a3 // 0
-        );
-    auto Attack = reinterpret_cast<attack_t>(attack_func_address);
-    auto a1 = reinterpret_cast<__int64>(player_base);
-    volatile auto* a2 = reinterpret_cast<volatile signed __int32*>(entity);
-    Attack(a1, &a2, 0);
-}
 std::vector<Entity*> MemoryFunctions::getSpectatorsInRangeEx(int radius) {
     // Define a struct matching the output container (3 pointers: begin, end, capacity)
     struct EntityVector {
@@ -173,46 +174,38 @@ std::vector<Entity*> MemoryFunctions::getSpectatorsInRangeEx(int radius) {
     return std::vector<Entity*>(entities, entities_end);
 }
 
-struct Position {
-    uint32_t x;
-    uint32_t y;
-    uint16_t z;
-};
 
-__int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
-    //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, __int64 a2)
-    using getTile_t = __int64(__fastcall*)(
-        __int64 a1,  // RCX - Tile Base ?
-        Position* a2 // RAX - Corrds of tile
+void MemoryFunctions::autoWalk(int x, int y, int z) {
+    // Decomp by IDA for Medivia __int64 __fastcall sub_7FF69838A0F0(unsigned __int64 a1, unsigned int *a2)
+    using autoWalk_t = __int64(__fastcall *)(
+        uint64_t a1,       // Local Player
+        int* a2            // Coords to move
         );
-    auto GetTile = reinterpret_cast<getTile_t>(MemoryFunctions::base_module + 0x298750);
-    __int64 a1 = base_module + 0xCDAAF8;
-    Position position{};
-    position.x = x;
-    position.y = y;
-    position.z = z;
-    __int64 result = GetTile(a1, &position);
-    result = *reinterpret_cast<__int64*>(result);
-    return result;
+    auto AutoWalk = reinterpret_cast<autoWalk_t>(move_func_address);
+    int pos[3] = {x, y, z};
+    AutoWalk(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
 }
 
-__int64 MemoryFunctions::getTopThing( __int64 tile) {
-    //decomp by ida _QWORD *__fastcall sub_7FF719F81CC0(__int64 a1, _QWORD *a2)
-    using getTopThing_t = __int64(__fastcall*)(
-    __int64 a1,  // RCX - Tile ?
-    void* a2 // RAX - Result
-    );
-    auto GetTopThing = reinterpret_cast<getTopThing_t>(base_module + 0x351DC0);
-    void* a2 = nullptr;
-    GetTopThing(tile, &a2);
-    return reinterpret_cast<__int64>(a2);
+void MemoryFunctions::stop()
+{
+    //Decomp by IDA for Medivia void __fastcall sub_7FF780D51980(__int64 a1)
+    using stop_t = void(__fastcall*)(
+        __int64 a1  // RCX - Player Base
+        );
+    auto Stop = reinterpret_cast<stop_t>(MemoryFunctions::base_module + 0x1419B0);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    Stop(a1);
 }
+
+// Look = 0x141A70
+
 struct CollectKey {
     uint32_t x;      // offset 0x00 Nothing 0xFFFF
     uint32_t y;      // offset 0x04 Some kind of ID container
-    uint16_t z;         // offset 0x08 In which place move
+    uint16_t z;         // offset 0x08 Slot to move
     uint64_t ptrItem;   // offset 0x0C Item address
 };
+
 
 void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
@@ -230,151 +223,10 @@ void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     container.z = container_dst->capacity - 1;
     container.ptrItem = reinterpret_cast<uint64_t>(item_src);
 
-    auto Move = reinterpret_cast<move_t>(base_module + 0x141B00);
+    auto Move = reinterpret_cast<move_t>(base_module + 0x141B30);
 
     Move(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
 }
-
-
-std::vector<Container*> MemoryFunctions::getContainers() {
-    using getContainer_t = void(__fastcall*)(
-        void* a1,  // RCX - Player Base
-        void** a2, // RAX - result ptr
-        int a3     // R8 - Number of container
-        );
-    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC5E0);
-    void* container = nullptr;
-    void* g_GamePointer = player_base;
-    std::vector<Container*> resultContainers;
-    int i = 0;
-    while (true) {
-        GetContainer(g_GamePointer, &container, i);
-        if (container) {
-            resultContainers.push_back(reinterpret_cast<Container*>(container));
-        } else {
-            break;
-        }
-        ++i;
-    }
-    return resultContainers;
-}
-
-Container* MemoryFunctions::getContainer(int index) {
-    using getContainer_t = void(__fastcall*)(
-        void* a1,  // RCX - Player Base
-        void** a2, // RAX - result ptr
-        int a3     // R8 - Number of container
-        );
-    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC5E0);
-    void* container = nullptr;
-    void* g_GamePointer = player_base;
-    GetContainer(g_GamePointer, &container, index);
-    return static_cast<Container*>(container);
-}
-
-Item* MemoryFunctions::getItem(Container *container, int index)
-{
-    //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, int a2)
-    using getItem_t = __int64(__fastcall*)(
-        Container *a1,  // RCX - Container
-        void* a2, // RDX - Result
-        int index // R8 - Index numer
-        );
-    auto GetItem = reinterpret_cast<getItem_t>(MemoryFunctions::base_module + 0x1068B0);
-    void *a2 = nullptr;
-    GetItem(container, &a2, index);
-    return reinterpret_cast<Item*>(a2);
-}
-
-std::string MemoryFunctions::getName(Item* item)
-{
-    //Decomp by IDA for Medivia __int64 __fastcall sub_7FF6BA6B3C70(__int64 a1, __int64 a2)
-    using getName_t = __int64(__fastcall*)(
-        Item* a1,    // RCX
-        std::string* a2 // RDX - pointer to result string
-    );
-
-    auto GetName = reinterpret_cast<getName_t>(MemoryFunctions::base_module + 0x153C70);
-    std::string name;
-    __int64 result = GetName(item, &name);
-
-    std::cout << "Result ptr: 0x" << std::hex << result << '\n';
-    std::cout << "Name: " << name << '\n';
-    return name;
-}
-
-void MemoryFunctions::stop()
-{
-    //Decomp by IDA for Medivia void __fastcall sub_7FF780D51980(__int64 a1)
-    using stop_t = void(__fastcall*)(
-        __int64 a1  // RCX - Player Base
-        );
-    auto Stop = reinterpret_cast<stop_t>(MemoryFunctions::base_module + 0x141980);
-    auto a1 = reinterpret_cast<__int64>(player_base);
-    Stop(a1);
-}
-void MemoryFunctions::talkChannel(const char *message)
-{
-    //Decomp by IDA for Medivia void __fastcall sub_7FF771812E50(__int64 a1, int a2, int a3, __int128 *a4)
-    using talkChannel_t = void(__fastcall*)(
-        __int64 a1,  // RCX - Player Base
-        int a2,  // RDX - Msg type
-        int a3,  // R8 - Channel ID
-        void *a4 // R9 - Message
-        );
-    auto TalkChannel = reinterpret_cast<talkChannel_t>(MemoryFunctions::base_module + 0x142E50);
-    auto a1 = reinterpret_cast<__int64>(player_base);
-    uintptr_t a4[2];
-    a4[0] = reinterpret_cast<uintptr_t>(message); // Text To speak
-    a4[1] = strlen(message); // Lenght of the text
-    TalkChannel(a1, 1, 0, a4);
-}
-
-
-bool MemoryFunctions::isContainer(Item* item)
-{
-    //Decomp by IDA for Medivia bool __fastcall sub_7FF780DEEEE0(__int64 a1)
-    using isContainer_t = bool(__fastcall*)(
-        Item *a1  // RCX - Item
-        );
-    auto IsContainer = reinterpret_cast<isContainer_t>(MemoryFunctions::base_module + 0x1DEEE0);
-    return IsContainer(item);;
-}
-
-bool MemoryFunctions::isLyingCorpse(Item* item)
-{
-    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73F190(__int64 a1)
-    using isLyingCorpse_t = bool(__fastcall*)(
-        Item *a1  // RCX - Item
-        );
-    auto IsLyingCorpse = reinterpret_cast<isLyingCorpse_t>(MemoryFunctions::base_module + 0x1DF190);
-    bool result = IsLyingCorpse(item);
-    std::cout << result << std::endl;
-    return result;
-}
-
-bool MemoryFunctions::isAutoWalking()
-{
-    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA746450(__int64 a1)
-    using isAutoWalking_t = bool(__fastcall*)(
-        __int64 a1  // RCX - Player
-        );
-    auto IsAutoWalking = reinterpret_cast<isAutoWalking_t>(MemoryFunctions::base_module + 0x1E6450);
-    auto a1 = reinterpret_cast<__int64>(map_view->LocalPlayer);
-    return IsAutoWalking(a1);
-}
-
-bool MemoryFunctions::isAttacking()
-{
-    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73C250(__int64 a1)
-    using isAttacking_t = bool(__fastcall*)(
-        __int64 a1  // RCX - Player
-        );
-    auto IsAttacking = reinterpret_cast<isAttacking_t>(MemoryFunctions::base_module + 0x1DC250);
-    auto a1 = reinterpret_cast<__int64>(player_base);
-    return IsAttacking(a1);
-}
-
 
 int MemoryFunctions::open(Item* item, Container* parent_container)
 {
@@ -391,109 +243,134 @@ int MemoryFunctions::open(Item* item, Container* parent_container)
 }
 
 
-void MemoryFunctions::actionLoot() {
-    auto containers = getContainers();
-    for (int j = 0; j < containers.size(); ++j)
-    {
-        if (j == 1) continue;
-        for (int i = containers[j]->number_of_items - 1; i >= 0; --i)
-        {
-            Item* item = getItem(containers[j], i);
-            if (item->id == 2148)
-            {
-                move(item, containers[1], 1);
-            }
+void MemoryFunctions::attack(Entity* entity) {
+    // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF79045E8B0(__int64 a1, volatile signed __int32 **a2, char a3)
+    using attack_t = volatile signed __int32 **(__fastcall *)(
+        __int64 a1, // Player Base
+        volatile signed __int32 **a2, // Target ID
+        char a3 // 0
+        );
+    auto Attack = reinterpret_cast<attack_t>(attack_func_address);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    volatile auto* a2 = reinterpret_cast<volatile signed __int32*>(entity);
+    Attack(a1, &a2, 0);
+}
+
+void MemoryFunctions::talkChannel(const char *message)
+{
+    //Decomp by IDA for Medivia void __fastcall sub_7FF771812E50(__int64 a1, int a2, int a3, __int128 *a4)
+    using talkChannel_t = void(__fastcall*)(
+        __int64 a1,  // RCX - Player Base
+        int a2,  // RDX - Msg type
+        int a3,  // R8 - Channel ID
+        void *a4 // R9 - Message
+        );
+    auto TalkChannel = reinterpret_cast<talkChannel_t>(MemoryFunctions::base_module + 0x142E80);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    uintptr_t a4[2];
+    a4[0] = reinterpret_cast<uintptr_t>(message); // Text To speak
+    a4[1] = strlen(message); // Lenght of the text
+    TalkChannel(a1, 1, 0, a4);
+}
+
+bool MemoryFunctions::isAttacking()
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73C250(__int64 a1)
+    using isAttacking_t = bool(__fastcall*)(
+        __int64 a1  // RCX - Player
+        );
+    auto IsAttacking = reinterpret_cast<isAttacking_t>(MemoryFunctions::base_module + 0x1DC280);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    return IsAttacking(a1);
+}
+
+Container* MemoryFunctions::getContainer(int index) {
+    using getContainer_t = void(__fastcall*)(
+        void* a1,  // RCX - Player Base
+        void** a2, // RAX - result ptr
+        int a3     // R8 - Number of container
+        );
+    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC610);
+    void* container = nullptr;
+    void* g_GamePointer = player_base;
+    GetContainer(g_GamePointer, &container, index);
+    return static_cast<Container*>(container);
+}
+
+std::vector<Container*> MemoryFunctions::getContainers() {
+    using getContainer_t = void(__fastcall*)(
+        void* a1,  // RCX - Player Base
+        void** a2, // RAX - result ptr
+        int a3     // R8 - Number of container
+        );
+    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC610);
+    void* container = nullptr;
+    void* g_GamePointer = player_base;
+    std::vector<Container*> resultContainers;
+    int i = 0;
+    while (true) {
+        GetContainer(g_GamePointer, &container, i);
+        if (container) {
+            resultContainers.push_back(reinterpret_cast<Container*>(container));
+        } else {
+            break;
         }
+        ++i;
     }
+    return resultContainers;
 }
 
-void MemoryFunctions::queue_attack(Entity* entity) {
-    actionQueue.enqueue([entity]() {
-        attack(entity);
-    }).get();
+Item* MemoryFunctions::getItem(Container *container, int index)
+{
+    //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, int a2)
+    using getItem_t = __int64(__fastcall*)(
+        Container *a1,  // RCX - Container
+        void* a2, // RDX - Result
+        int index // R8 - Index numer
+        );
+    auto GetItem = reinterpret_cast<getItem_t>(MemoryFunctions::base_module + 0x1068B0);
+    void *a2 = nullptr;
+    GetItem(container, &a2, index);
+    return reinterpret_cast<Item*>(a2);
 }
 
-void MemoryFunctions::queue_autoWalk(int x, int y, int z) {
-    actionQueue.enqueue([x, y, z]() {
-        autoWalk(x, y, z);
-    }).get();
+bool MemoryFunctions::isContainer(Item* item)
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF780DEEEE0(__int64 a1)
+    using isContainer_t = bool(__fastcall*)(
+        Item *a1  // RCX - Item
+        );
+    auto IsContainer = reinterpret_cast<isContainer_t>(MemoryFunctions::base_module + 0x1DEF10);
+    return IsContainer(item);;
 }
 
-int MemoryFunctions::queue_open(Item* item, Container* parent_container) {
-    return actionQueue.enqueue([item, parent_container]() {
-        return open(item, parent_container);
-    }).get();
+bool MemoryFunctions::isLyingCorpse(Item* item)
+{
+    //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73F190(__int64 a1)
+    using isLyingCorpse_t = bool(__fastcall*)(
+        Item *a1  // RCX - Item
+        );
+    auto IsLyingCorpse = reinterpret_cast<isLyingCorpse_t>(MemoryFunctions::base_module + 0x1DF1C0);
+    bool result = IsLyingCorpse(item);
+    std::cout << result << std::endl;
+    return result;
 }
 
-std::string MemoryFunctions::queue_getName(Item* item) {
-    return actionQueue.enqueue([item]() {
-        return getName(item);
-    }).get();
-}
-
-void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot) {
-    actionQueue.enqueue([item_src, item_dest, slot]() {
-        move(item_src, item_dest, slot);
-    }).get();
-}
-
-void MemoryFunctions::queue_stop() {
-    actionQueue.enqueue([]() {
-        stop();
-    }).get();
-}
-
-void MemoryFunctions::queue_talkChannel(const char *message) {
-    actionQueue.enqueue([message]() {
-        talkChannel(message);
-    }).get();
-}
-
-std::vector<Container*> MemoryFunctions::queue_getContainers() {
-    return actionQueue.enqueue([]() {
-        return getContainers();
-    }).get();
+__int64 MemoryFunctions::getTopThing( __int64 tile) {
+    //decomp by ida _QWORD *__fastcall sub_7FF719F81CC0(__int64 a1, _QWORD *a2)
+    using getTopThing_t = __int64(__fastcall*)(
+    __int64 a1,  // RCX - Tile ?
+    void* a2 // RAX - Result
+    );
+    auto GetTopThing = reinterpret_cast<getTopThing_t>(base_module + 0x351E40);
+    void* a2 = nullptr;
+    GetTopThing(tile, &a2);
+    return reinterpret_cast<__int64>(a2);
 }
 
 __int64 MemoryFunctions::queue_getTile(uint32_t x, uint32_t y, uint16_t z) {
     return actionQueue.enqueue([x, y, z]() {
         return getTile(x, y, z);
-    }).get();
-}
-
-__int64 MemoryFunctions::queue_getTopThing(__int64 tile) {
-    return actionQueue.enqueue([tile]() {
-        return getTopThing(tile);
-    }).get();
-}
-
-bool MemoryFunctions::queue_isContainer(Item* item) {
-    return actionQueue.enqueue([item]() {
-        return isContainer(item);
-    }).get();
-}
-
-bool MemoryFunctions::queue_isAttacking() {
-    return actionQueue.enqueue([]() {
-        return isAttacking();
-    }).get();
-}
-
-bool MemoryFunctions::queue_isLyingCorpse(Item* item) {
-    return actionQueue.enqueue([item]() {
-        return isLyingCorpse(item);
-    }).get();
-}
-
-bool MemoryFunctions::queue_isAutoWalking() {
-    return actionQueue.enqueue([]() {
-        return isAutoWalking();
-    }).get();
-}
-
-Item* MemoryFunctions::queue_getItem(Container* container, int index) {
-    return actionQueue.enqueue([container, index]() {
-        return getItem(container, index);
     }).get();
 }
 
@@ -503,9 +380,83 @@ std::vector<Entity*> MemoryFunctions::queue_getSpectatorsInRangeEx(int radius) {
     }).get();
 }
 
+void MemoryFunctions::queue_autoWalk(int x, int y, int z) {
+    actionQueue.enqueue([x, y, z]() {
+        autoWalk(x, y, z);
+    }).get();
+}
+
+void MemoryFunctions::queue_stop() {
+    actionQueue.enqueue([]() {
+        stop();
+    }).get();
+}
+
+void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot) {
+    actionQueue.enqueue([item_src, item_dest, slot]() {
+        move(item_src, item_dest, slot);
+    }).get();
+}
+
+int MemoryFunctions::queue_open(Item* item, Container* parent_container) {
+    return actionQueue.enqueue([item, parent_container]() {
+        return open(item, parent_container);
+    }).get();
+}
+
+void MemoryFunctions::queue_attack(Entity* entity) {
+    actionQueue.enqueue([entity]() {
+        attack(entity);
+    }).get();
+}
+
+void MemoryFunctions::queue_talkChannel(const char *message) {
+    actionQueue.enqueue([message]() {
+        talkChannel(message);
+    }).get();
+}
+
+bool MemoryFunctions::queue_isAttacking() {
+    return actionQueue.enqueue([]() {
+        return isAttacking();
+    }).get();
+}
+
 Container* MemoryFunctions::queue_getContainer(int index) {
     return actionQueue.enqueue([index]() {
         return getContainer(index);
+    }).get();
+}
+
+std::vector<Container*> MemoryFunctions::queue_getContainers() {
+    return actionQueue.enqueue([]() {
+        return getContainers();
+    }).get();
+}
+
+
+Item* MemoryFunctions::queue_getItem(Container* container, int index) {
+    return actionQueue.enqueue([container, index]() {
+        return getItem(container, index);
+    }).get();
+}
+
+bool MemoryFunctions::queue_isContainer(Item* item) {
+    return actionQueue.enqueue([item]() {
+        return isContainer(item);
+    }).get();
+}
+
+
+bool MemoryFunctions::queue_isLyingCorpse(Item* item) {
+    return actionQueue.enqueue([item]() {
+        return isLyingCorpse(item);
+    }).get();
+}
+
+__int64 MemoryFunctions::queue_getTopThing(__int64 tile) {
+    return actionQueue.enqueue([tile]() {
+        return getTopThing(tile);
     }).get();
 }
 
