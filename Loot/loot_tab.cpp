@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <QCheckBox>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDir>
@@ -46,6 +47,8 @@ void LootTab::lootList() {
     auto item_name_lineEdit = new QLineEdit(this);
     item_name_lineEdit->setPlaceholderText("Item Name - Gold Coin");
 
+    auto open_next_bp_checkBox = new QCheckBox("Open Next BP");
+
     last_looked_item_id = new QLabel("Last Item ID: 0000", this);
 
     auto add_button = new QPushButton("Add", this);
@@ -54,6 +57,9 @@ void LootTab::lootList() {
 
     connect(add_button, &QPushButton::clicked, this, [this, item_id_lineEdit, container_name_lineEdit, item_name_lineEdit]() {
         addItem(item_id_lineEdit->text().toInt(), container_name_lineEdit->text(), item_name_lineEdit->text());
+        item_id_lineEdit->clear();
+        container_name_lineEdit->clear();
+        item_name_lineEdit->clear();
     });
 
 
@@ -67,6 +73,7 @@ void LootTab::lootList() {
     layout_right->addWidget(item_id_lineEdit);
     layout_right->addWidget(container_name_lineEdit);
     layout_right->addWidget(item_name_lineEdit);
+    layout_right->addWidget(open_next_bp_checkBox);
     layout_right->addWidget(last_looked_item_id);
 
     groupbox_layout->addLayout(layout_left);
@@ -199,7 +206,7 @@ void LootTab::clearItemList() const {
 
 void LootTab::addItem(int item_id, const QString& container_name, const QString& item_name) const
 {
-    auto* item = new QListWidgetItem(item_name) ;
+    auto* item = new QListWidgetItem(item_name + " -> " + container_name);
     QVariantMap data;
     data["name"] = item_name;
     data["id"] = item_id;
