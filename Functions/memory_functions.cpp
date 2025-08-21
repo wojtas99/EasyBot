@@ -14,13 +14,20 @@ bool MemoryFunctions::has_target = false;
 MemoryFunctions::LoadOption MemoryFunctions::load_functions_variant = LoadOption::Altaron;
 
 void* MemoryFunctions::main_func_address = nullptr;
+void* MemoryFunctions::getTile_func_address = nullptr;
+void* MemoryFunctions::getSpectatorsInRangeEx_func_address = nullptr;
+void* MemoryFunctions::autoWalk_func_address = nullptr;
+void* MemoryFunctions::stop_func_address = nullptr;
 void* MemoryFunctions::move_func_address = nullptr;
-void* MemoryFunctions::attack_func_address = nullptr;
 void* MemoryFunctions::open_func_address = nullptr;
-void* MemoryFunctions::collect_func_address = nullptr;
-void* MemoryFunctions::say_func_address = nullptr;
-void* MemoryFunctions::creature_func_address = nullptr;
-void* MemoryFunctions::chase_func_address = nullptr;
+void* MemoryFunctions::attack_func_address = nullptr;
+void* MemoryFunctions::talkChannel_func_address = nullptr;
+void* MemoryFunctions::isAttacking_func_address = nullptr;
+void* MemoryFunctions::getContainer_func_address = nullptr;
+void* MemoryFunctions::getItem_func_address = nullptr;
+void* MemoryFunctions::isContainer_func_address = nullptr;
+void* MemoryFunctions::isLyingCorpse_func_address = nullptr;
+void* MemoryFunctions::getTopThing_func_address = nullptr;
 
 
 MemoryFunctions::MemoryFunctions(LoadOption load_option) {
@@ -32,61 +39,27 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
         map_view = reinterpret_cast<MapView*>(address);
         player_base = reinterpret_cast<PlayerBase*>(base_module + 0xCDA878 - 0X118);
 
-        const BYTE MAIN_PATTERN[] = {
+        const BYTE main_PATTERN[] = {
             0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x55, 0x53, 0x48, 0x81, 0xEC,
             0x00, 0x00, 0x00, 0x00,
             0x66, 0x0F, 0x29, 0xBC, 0x24
         };
-        LPCSTR MAIN_MASK = "xxxxxxxxxxxxxxx????xxxxx";
+        LPCSTR main_MASK = "xxxxxxxxxxxxxxx????xxxxx";
 
-        main_func_address = FindPattern(MAIN_PATTERN, MAIN_MASK);
+        main_func_address = FindPattern(main_PATTERN, main_MASK);
 
         std::cout << "Main Loop Address: " << main_func_address << std::endl;
 
-        const BYTE MOVE_PATTERN[] = {
-            0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xEC,
-            0x00, 0x00, 0x00, 0x00,
-            0x48, 0x8D, 0xAC, 0x24,
-            0x00, 0x00, 0x00, 0x00,
-            0x48, 0xC7, 0x45,
-            0x00, 0x00, 0x00, 0x00, 0x00,
-            0x48, 0x89, 0xCE, 0x8B, 0x89
+        const BYTE getTile_PATTERN[] = {
+            0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x55, 0x53, 0x44, 0x8B, 0x02
         };
-        LPCSTR MOVE_MASK = "xxxxxxxxxxxxxxx????xxxx????xxx?????xxxxx";
+        LPCSTR getTile_MASK = "xxxxxxxxxxxxx";
 
-        move_func_address = FindPattern(MOVE_PATTERN, MOVE_MASK);
-        //4
+        getTile_func_address = FindPattern(getTile_PATTERN, getTile_MASK);
 
-        std::cout << "Move Func Address: "<< move_func_address << std::endl;
+        std::cout << "getTile Func Address: "<< getTile_func_address << std::endl;
 
-        const BYTE ATTACK_PATTERN[] = {
-            0x55, 0x56, 0x53, 0x48, 0x83, 0xEC, 0x00,
-            0x48, 0x8D, 0x6C, 0x24, 0x00,
-            0x48, 0xC7, 0x45,
-            0x00, 0x00, 0x00, 0x00, 0x00,
-            0x48, 0x89, 0x55
-        };
-        LPCSTR ATTACK_MASK = "xxxxxx?xxxx?xxx?????xxx";
-
-        attack_func_address = FindPattern(ATTACK_PATTERN, ATTACK_MASK);
-        //00007FF6113EE8B0
-        //5
-
-        std::cout << "Attack Func Address: " << attack_func_address << std::endl;
-
-
-        const BYTE OPEN_PATTERN[] = {
-            0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x00,
-            0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00,
-            0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24, 0x00, 0xBE
-        };
-        LPCSTR OPEN_MASK = "xxxxxxxxxxxx?xxx????xxxxxxx?x";
-
-
-        open_func_address = FindPattern(OPEN_PATTERN, OPEN_MASK);
-        std::cout << "Open Func Addres: " << open_func_address << std::endl;
-
-        const BYTE CREATURE_PATTERN[] = {
+        const BYTE getSpectatorsInRangeEx_PATTERN[] = {
             0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41,
             0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xEC,
             0x00, 0x00, 0x00, 0x00,
@@ -97,10 +70,146 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x4D, 0x89
         };
-        LPCSTR CREATURE_MASK = "xxxxxxxxxxxxxxx????xxxx????xxx?xxx?????xx";
+        LPCSTR getSpectatorsInRangeEx_MASK = "xxxxxxxxxxxxxxx????xxxx????xxx?xxx?????xx";
 
-        creature_func_address = FindPattern(CREATURE_PATTERN, CREATURE_MASK);
-        std::cout << "Creatures Func Address: " << creature_func_address << std::endl;
+        getSpectatorsInRangeEx_func_address = FindPattern(getSpectatorsInRangeEx_PATTERN, getSpectatorsInRangeEx_MASK);
+        std::cout << "getSpectatorsInRangeEx Func Address: " << getSpectatorsInRangeEx_func_address << std::endl;
+
+        const BYTE autoWalk_PATTERN[] = {
+            0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xEC,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0x8D, 0xAC, 0x24,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0xC7, 0x45,
+            0x00, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x89, 0xCE, 0x8B, 0x89
+        };
+        LPCSTR autoWalk_MASK = "xxxxxxxxxxxxxxx????xxxx????xxx?????xxxxx";
+
+        autoWalk_func_address = FindPattern(autoWalk_PATTERN, autoWalk_MASK);
+
+        std::cout << "autoWalk Func Address: "<< autoWalk_func_address << std::endl;
+
+        const BYTE stop_PATTERN[] = {
+            0x56, 0x48, 0x83, 0xEC,
+            0x00,
+            0x48, 0x8B, 0x05,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24,
+            0x00,
+            0x80, 0x39
+        };
+        LPCSTR stop_MASK = "xxxx?xxx????xxxxxxx?xx";
+
+        stop_func_address = FindPattern(stop_PATTERN, stop_MASK);
+
+        std::cout << "Stop Func Address: " << stop_func_address << std::endl;
+
+        const BYTE move_PATTERN[] = {
+            0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC,
+            0x00,
+            0x41, 0x83, 0xF9,
+        };
+        LPCSTR move_MASK = "xxxxxxxxxxxx?xxx";
+
+        move_func_address = FindPattern(move_PATTERN, move_MASK);
+
+        std::cout << "Move Func Address: " << move_func_address << std::endl;
+
+        const BYTE open_PATTERN[] = {
+            0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x00,
+            0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24, 0x00, 0xBE
+        };
+        LPCSTR open_MASK = "xxxxxxxxxxxx?xxx????xxxxxxx?x";
+
+
+        open_func_address = FindPattern(open_PATTERN, open_MASK);
+        std::cout << "Open Func Addres: " << open_func_address << std::endl;
+
+        const BYTE attack_PATTERN[] = {
+            0x55, 0x56, 0x53, 0x48, 0x83, 0xEC, 0x00,
+            0x48, 0x8D, 0x6C, 0x24, 0x00,
+            0x48, 0xC7, 0x45,
+            0x00, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x89, 0x55
+        };
+        LPCSTR attack_MASK = "xxxxxx?xxxx?xxx?????xxx";
+
+        attack_func_address = FindPattern(attack_PATTERN, attack_MASK);
+
+        std::cout << "Attack Func Address: " << attack_func_address << std::endl;
+
+        const BYTE talkChannel_PATTERN[] = {
+            0x48, 0x83, 0xEC, 0x00,
+            0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0,
+            0x48, 0x89, 0x44, 0x24, 0x00,
+            0x80, 0x39, 0x00,
+            0x75, 0x00,
+            0x48, 0x8B, 0x81, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x85, 0xC0,
+            0x74, 0x00,
+            0x80, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x74, 0x00,
+            0x80, 0x79, 0x00, 0x00,
+            0x75, 0x00,
+            0x48, 0x8B, 0x89, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x85, 0xC9,
+            0x74, 0x00,
+            0x48, 0x8B, 0x81, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x85, 0xC0,
+            0x74, 0x00,
+            0x80, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x75, 0x00,
+            0x49, 0x83, 0x79
+        };
+        LPCSTR talkChannel_MASK = "xxx?xxx????xxxxxxx?xx?x?xxx????xxxx?xx?????x?xx??x?xxx????xxxx?xxx????xxxx?xx?????x?xxx";
+
+        talkChannel_func_address = FindPattern(talkChannel_PATTERN, talkChannel_MASK);
+
+        std::cout << "TalkChannel Func Address: " << talkChannel_func_address << std::endl;
+
+        //isAttacking_func_address = nullptr;
+
+        const BYTE getContainer_PATTERN[] = {
+            0x56, 0x48, 0x83, 0xEC,
+            0x00,
+            0x48, 0x89, 0xD6, 0x48, 0x8B, 0x05,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24,
+            0x00,
+            0x44, 0x89, 0x44, 0x24
+        };
+        LPCSTR getContainer_MASK = "xxxx?xxxxxx????xxxxxxx?xxxx";
+
+        getContainer_func_address = FindPattern(getContainer_PATTERN, getContainer_MASK);
+
+        std::cout << "getContainer Func Address: " << getContainer_func_address << std::endl;
+
+        const BYTE getItem_PATTERN[] = {
+            0x48, 0x89, 0xD0, 0x45, 0x85, 0xC0, 0x78,
+            0x00,
+            0x44, 0x39, 0x81,
+        };
+        LPCSTR getItem_MASK = "xxxxxxx?xxx";
+
+        getItem_func_address = FindPattern(getItem_PATTERN, getItem_MASK);
+
+        std::cout << "getItem Func Address: " << getItem_func_address << std::endl;
+
+        //MemoryFunctions::isContainer_func_address = nullptr;
+        //MemoryFunctions::isLyingCorpse_func_address = nullptr;
+        const BYTE getTopThing_PATTERN[] = {
+            0x41, 0x56, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC,
+            0x00,
+            0x48, 0x89, 0xD6,0x48, 0x8B, 0x59,
+        };
+        LPCSTR getTopThing_MASK = "xxxxxxxx?xxxxxx";
+
+        getTopThing_func_address = FindPattern(getTopThing_PATTERN, getTopThing_MASK);
+
+        std::cout << "getTopThing Func Address: " << getTopThing_func_address << std::endl;
     }
 }
 
@@ -118,7 +227,7 @@ __int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
         __int64 a1,  // RCX - Tile Base ?
         Position* a2 // RAX - Corrds of tile
         );
-    auto GetTile = reinterpret_cast<getTile_t>(MemoryFunctions::base_module + 0x298780);
+    auto GetTile = reinterpret_cast<getTile_t>(getTile_func_address);
     __int64 a1 = base_module + 0xCDAAF8;
     Position position{};
     position.x = x;
@@ -161,7 +270,7 @@ std::vector<Entity*> MemoryFunctions::getSpectatorsInRangeEx(int radius) {
     int radiusY_pos = radius;
 
     // Call Function
-    auto GetSpectatorsInRangeEx = reinterpret_cast<getSpectatorsInRangeEx_t>(creature_func_address);
+    auto GetSpectatorsInRangeEx = reinterpret_cast<getSpectatorsInRangeEx_t>(getSpectatorsInRangeEx_func_address);
     GetSpectatorsInRangeEx(worldPtr, &outVec, baseCoordPtr, includeLayers,radiusX_neg, radiusX_pos, radiusY_neg, radiusY_pos);
 
     // Retrun empty vector if there are no Entities
@@ -181,7 +290,7 @@ void MemoryFunctions::autoWalk(int x, int y, int z) {
         uint64_t a1,       // Local Player
         int* a2            // Coords to move
         );
-    auto AutoWalk = reinterpret_cast<autoWalk_t>(move_func_address);
+    auto AutoWalk = reinterpret_cast<autoWalk_t>(autoWalk_func_address);
     int pos[3] = {x, y, z};
     AutoWalk(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
 }
@@ -192,7 +301,7 @@ void MemoryFunctions::stop()
     using stop_t = void(__fastcall*)(
         __int64 a1  // RCX - Player Base
         );
-    auto Stop = reinterpret_cast<stop_t>(MemoryFunctions::base_module + 0x1419B0);
+    auto Stop = reinterpret_cast<stop_t>(stop_func_address);
     auto a1 = reinterpret_cast<__int64>(player_base);
     Stop(a1);
 }
@@ -223,7 +332,7 @@ void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     container.z = container_dst->capacity - 1;
     container.ptrItem = reinterpret_cast<uint64_t>(item_src);
 
-    auto Move = reinterpret_cast<move_t>(base_module + 0x141B30);
+    auto Move = reinterpret_cast<move_t>(move_func_address);
 
     Move(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
 }
@@ -265,7 +374,7 @@ void MemoryFunctions::talkChannel(const char *message)
         int a3,  // R8 - Channel ID
         void *a4 // R9 - Message
         );
-    auto TalkChannel = reinterpret_cast<talkChannel_t>(MemoryFunctions::base_module + 0x142E80);
+    auto TalkChannel = reinterpret_cast<talkChannel_t>(talkChannel_func_address);
     auto a1 = reinterpret_cast<__int64>(player_base);
     uintptr_t a4[2];
     a4[0] = reinterpret_cast<uintptr_t>(message); // Text To speak
@@ -290,7 +399,7 @@ Container* MemoryFunctions::getContainer(int index) {
         void** a2, // RAX - result ptr
         int a3     // R8 - Number of container
         );
-    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC610);
+    auto GetContainer = reinterpret_cast<getContainer_t>(getContainer_func_address);
     void* container = nullptr;
     void* g_GamePointer = player_base;
     GetContainer(g_GamePointer, &container, index);
@@ -303,7 +412,7 @@ std::vector<Container*> MemoryFunctions::getContainers() {
         void** a2, // RAX - result ptr
         int a3     // R8 - Number of container
         );
-    auto GetContainer = reinterpret_cast<getContainer_t>(base_module + 0x1DC610);
+    auto GetContainer = reinterpret_cast<getContainer_t>(getContainer_func_address);
     void* container = nullptr;
     void* g_GamePointer = player_base;
     std::vector<Container*> resultContainers;
@@ -328,7 +437,7 @@ Item* MemoryFunctions::getItem(Container *container, int index)
         void* a2, // RDX - Result
         int index // R8 - Index numer
         );
-    auto GetItem = reinterpret_cast<getItem_t>(MemoryFunctions::base_module + 0x1068B0);
+    auto GetItem = reinterpret_cast<getItem_t>(getItem_func_address);
     void *a2 = nullptr;
     GetItem(container, &a2, index);
     return reinterpret_cast<Item*>(a2);
@@ -362,7 +471,7 @@ __int64 MemoryFunctions::getTopThing( __int64 tile) {
     __int64 a1,  // RCX - Tile ?
     void* a2 // RAX - Result
     );
-    auto GetTopThing = reinterpret_cast<getTopThing_t>(base_module + 0x351E40);
+    auto GetTopThing = reinterpret_cast<getTopThing_t>(getTopThing_func_address);
     void* a2 = nullptr;
     GetTopThing(tile, &a2);
     return reinterpret_cast<__int64>(a2);

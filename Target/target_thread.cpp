@@ -19,7 +19,7 @@ void TargetThread::run() {
         int hp_to = m_targets[idx].value("hpTo").toInt();
         idx = (idx + 1) % m_targets.size();
         closest_dist = 100;
-        if (!MemoryFunctions::queue_isAttacking()) {
+        if (MemoryFunctions::player_base->Entity == 0) {
             if (open_corpse) {
                 open_corpse = false;
                 uint64_t tile = tile = MemoryFunctions::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);

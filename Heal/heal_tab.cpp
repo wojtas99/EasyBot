@@ -37,8 +37,6 @@ void HealTab::healList() {
     auto groupbox = new QGroupBox("Healing", this);
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
-
-
     auto clearHealList_button = new QPushButton("Clear List", this);
     connect(clearHealList_button, &QPushButton::clicked, this, &HealTab::clearHealList);
 
@@ -61,13 +59,19 @@ void HealTab::healList() {
     above_lineEdit->setPlaceholderText("10");
     above_lineEdit->setValidator(new QIntValidator(0,99));
 
+    auto minMp_lineEdit = new QLineEdit(this);
+    minMp_lineEdit->setPlaceholderText("25");
+    minMp_lineEdit->setValidator(new QIntValidator(0,99999));
+
     auto layout1 = new QHBoxLayout(groupbox);
     layout1->addWidget(new QLabel("Below", this));
     layout1->addWidget(below_lineEdit);
     layout1->addWidget(new QLabel("-", this));
     layout1->addWidget(above_lineEdit);
 
-
+    auto layout2 = new QHBoxLayout(groupbox);
+    layout2->addWidget(new QLabel("Min MP", this));
+    layout2->addWidget(minMp_lineEdit);
 
 
     auto layout_left = new QVBoxLayout();
@@ -80,15 +84,21 @@ void HealTab::healList() {
     layout_right->addWidget(heal_lineEdit);
     layout_right->addWidget(condition_comboBox);
     layout_right->addLayout(layout1);
+    layout_right->addLayout(layout2);
 
 
     groupbox_layout->addLayout(layout_left);
     groupbox_layout->addLayout(layout_right);
 
-    connect(add_button, &QPushButton::clicked, this, [this, option_comboBox, heal_lineEdit, below_lineEdit, above_lineEdit, condition_comboBox]() {
+    connect(add_button, &QPushButton::clicked, this, [this, option_comboBox, heal_lineEdit, below_lineEdit, above_lineEdit, minMp_lineEdit, condition_comboBox]() {
 
     addHeal(option_comboBox->currentText(), heal_lineEdit->text(), below_lineEdit->text().toInt(),
-        above_lineEdit->text().toInt(), condition_comboBox->currentText());});
+        above_lineEdit->text().toInt(), minMp_lineEdit->text().toInt(), condition_comboBox->currentText());
+        heal_lineEdit->clear();
+        below_lineEdit->clear();
+        above_lineEdit->clear();
+        minMp_lineEdit->clear();
+        });
 
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
 }
@@ -206,13 +216,14 @@ void HealTab::clearHealList() const {
     healList_listWidget->clear();
 }
 
-void HealTab::addHeal(const QString& option, const QString& heal, int hpBelow, int hpAbove, const QString& contidion) const {
+void HealTab::addHeal(const QString& option, const QString& heal, int hpBelow, int hpAbove, int minMp, const QString& contidion) const {
     auto* item = new QListWidgetItem(option + " " + heal);
     QVariantMap data;
     data["option"] = option;
     data["heal"] = heal;
     data["hpBelow"] = hpBelow;
     data["hpAbove"] = hpAbove;
+    data["minMp"] = minMp;
     data["contidion"] = contidion;
 
     item->setData(Qt::UserRole, data);

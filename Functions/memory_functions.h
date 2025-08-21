@@ -20,8 +20,9 @@ public:
     static MapView* map_view;
     static PlayerBase* player_base;
     static uint64_t base_module;
-    static void* open_func_address;
+
     static void* main_func_address;
+
     static bool has_target;
 
     static SafeQueue actionQueue;
@@ -81,12 +82,20 @@ private:
     // Variables
     static uint64_t local_player_address;
     // Function Addresses
+    static void* getTile_func_address;
+    static void* getSpectatorsInRangeEx_func_address;
+    static void* autoWalk_func_address;
+    static void* stop_func_address;
     static void* move_func_address;
+    static void* open_func_address;
     static void* attack_func_address;
-    static void* collect_func_address;
-    static void* say_func_address;
-    static void* creature_func_address;
-    static void* chase_func_address;
+    static void* talkChannel_func_address;
+    static void* isAttacking_func_address;
+    static void* getContainer_func_address;
+    static void* getItem_func_address;
+    static void* isContainer_func_address;
+    static void* isLyingCorpse_func_address;
+    static void* getTopThing_func_address;
 
     static LoadOption load_functions_variant;
 };

@@ -16,15 +16,27 @@ void HealThread::run()
             auto option = item["option"];
             auto heal = item["heal"].toString().toStdString();
             auto below = item["hpBelow"].toDouble();
-            auto above = item["hpAbove"];
+            auto above = item["hpAbove"].toDouble();
+            auto min_mp = item["minMp"].toDouble();
             auto condition = item["contidion"];
             double current_hp = MemoryFunctions::map_view->LocalPlayer->hp;
             double current_maxhp = MemoryFunctions::map_view->LocalPlayer->max_hp;
-            current_hp = 100*(current_hp/current_maxhp);
-            if (below >= current_hp)
-            {
-                MemoryFunctions::queue_talkChannel(heal.c_str());
-                msleep(500);
+            double current_mp = MemoryFunctions::map_view->LocalPlayer->mp;
+            double current_maxmp = MemoryFunctions::map_view->LocalPlayer->max_mp;
+            if (condition == "HP%") {
+                current_hp = 100*(current_hp/current_maxhp);
+                if (below >= current_hp && current_hp >= above && current_mp >= min_mp)
+                {
+                    MemoryFunctions::queue_talkChannel(heal.c_str());
+                    msleep(500);
+                }
+            } else {
+                current_mp = 100*(current_mp/current_maxmp);
+                if (below >= current_mp &&  current_mp >= above)
+                {
+                    MemoryFunctions::queue_talkChannel(heal.c_str());
+                    msleep(500);
+                }
             }
             msleep(25);
         }
