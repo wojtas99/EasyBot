@@ -22,6 +22,7 @@ public:
     static uint64_t base_module;
 
     static void* main_func_address;
+    static void* look_func_address;
 
     static bool has_target;
 
@@ -42,6 +43,12 @@ public:
 
     static void queue_move(Item* item_src, Container* item_dest, int slot);
     static void move(Item* item_src, Container* container_dst, int slot);
+
+    static void queue_useWith(uint64_t item, uint64_t toThing);
+    static void useWith(uint64_t item, uint64_t toThing);
+
+    static uint64_t queue_findItemInContainers(uint32_t item_id);
+    static uint64_t findItemInContainers(uint32_t item_id);
 
     static int queue_open(Item* item,Container* parent_container);
     static int open(Item* item, Container* parent_container);
@@ -87,6 +94,8 @@ private:
     static void* autoWalk_func_address;
     static void* stop_func_address;
     static void* move_func_address;
+    static void* useWith_func_address;
+    static void* findItemInContainers_func_address;
     static void* open_func_address;
     static void* attack_func_address;
     static void* talkChannel_func_address;

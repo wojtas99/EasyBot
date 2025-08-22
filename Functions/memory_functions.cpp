@@ -18,7 +18,10 @@ void* MemoryFunctions::getTile_func_address = nullptr;
 void* MemoryFunctions::getSpectatorsInRangeEx_func_address = nullptr;
 void* MemoryFunctions::autoWalk_func_address = nullptr;
 void* MemoryFunctions::stop_func_address = nullptr;
+void* MemoryFunctions::look_func_address = nullptr;
 void* MemoryFunctions::move_func_address = nullptr;
+void* MemoryFunctions::useWith_func_address = nullptr;
+void* MemoryFunctions::findItemInContainers_func_address = nullptr;
 void* MemoryFunctions::open_func_address = nullptr;
 void* MemoryFunctions::attack_func_address = nullptr;
 void* MemoryFunctions::talkChannel_func_address = nullptr;
@@ -103,7 +106,61 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
 
         stop_func_address = FindPattern(stop_PATTERN, stop_MASK);
 
-        std::cout << "Stop Func Address: " << stop_func_address << std::endl;
+        std::cout << "stop Func Address: " << stop_func_address << std::endl;
+
+        const BYTE look_PATTERN[] = {
+    0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x00, 0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24, 0x00,
+    0x80, 0x39, 0x00,
+    0x75, 0x00,
+    0x48, 0x8B, 0x81, 0x00, 0x00, 0x00, 0x00,
+    0x48, 0x85, 0xC0,
+    0x74, 0x00,
+    0x80, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x74, 0x00,
+    0x80, 0x79, 0x00, 0x00,
+    0x75, 0x00,
+    0x48, 0x8B, 0xB1, 0x00, 0x00, 0x00, 0x00,
+    0x48, 0x85, 0xF6,
+    0x74, 0x00,
+    0x48, 0x8B, 0x86, 0x00, 0x00, 0x00, 0x00,
+    0x48, 0x85, 0xC0,
+    0x74, 0x00,
+    0x80, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x75, 0x00,
+    0x48, 0x8B, 0x0A,
+    0x48, 0x85, 0xC9,
+    0x74, 0x00,
+    0x48, 0x89, 0xD3,
+    0xE8, 0x00, 0x00, 0x00, 0x00,
+    0x89, 0xC7,
+    0x48, 0x8B, 0x0B,
+    0x48, 0x8B, 0x01,
+    0xFF, 0x50, 0x00,
+    0x48, 0x8B, 0x0B,
+    0x8B, 0x51, 0x00,
+    0x89, 0x54, 0x24, 0x00,
+    0x48, 0x8B, 0x49, 0x00,
+    0x48, 0x89, 0x4C, 0x24, 0x00,
+    0x48, 0x8D, 0x54, 0x24, 0x00,
+    0x48, 0x89, 0xF1,
+    0x41, 0x89, 0xC0,
+    0x41, 0x89, 0xF9,
+    0xE8, 0x00, 0x00, 0x00, 0x00,
+    0x48, 0x8B, 0x4C, 0x24, 0x00,
+    0x48, 0x31, 0xE1,
+    0x48, 0x3B, 0x0D, 0x00, 0x00, 0x00, 0x00,
+    0x75, 0x00,
+    0x48, 0x83, 0xC4, 0x00,
+    0x5B, 0x5F, 0x5E, 0xC3,
+    0xE8, 0x00, 0x00, 0x00, 0x00,
+    0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+    0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+    0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53
+        };
+        LPCSTR look_MASK = "xxxxxx?xxx????xxxxxxx?xx?x?xxx????xxxx?xx?????x?xx??x?xxx????xxxx?xxx????xxxx?xx?????x?xxxxxxx?xxxx????xxxxxxxxxx?xxxxx?xxx?xxx?xxxx?xxxx?xxxxxxxxxx????xxxx?xxxxxx????x?xxx?xxxxx????xxxxxxxxxxxxxxxxxxx";
+        look_func_address = FindPattern(look_PATTERN, look_MASK);
+
+        std::cout << "look Func Address: " << look_func_address << std::endl;
 
         const BYTE move_PATTERN[] = {
             0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC,
@@ -115,6 +172,39 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
         move_func_address = FindPattern(move_PATTERN, move_MASK);
 
         std::cout << "Move Func Address: " << move_func_address << std::endl;
+
+        const BYTE useWith_PATTERN[] = {
+            0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x55, 0x53, 0x48, 0x83, 0xEC,
+            0x00,0x48, 0x8B, 0x05,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0,0x48, 0x89, 0x44, 0x24,
+            0x00,
+            0x80, 0x39,
+            0x00,
+            0x0F, 0x85,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0x8B, 0x81
+        };
+        LPCSTR useWith_MASK = "xxxxxxxxxxxxx?xxx????xxxxxxx?xx?xx????xxx";
+
+        useWith_func_address = FindPattern(useWith_PATTERN, useWith_MASK);
+
+        std::cout << "useWith Func Address: " << useWith_func_address << std::endl;
+
+        const BYTE findItemInContainers_PATTERN[] = {
+            0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x55, 0x53, 0x48, 0x83, 0xEC,
+            0x00,
+            0x48, 0x89, 0x54, 0x24,
+            0x00,
+            0x48, 0x8B, 0x81,
+            0x00, 0x00, 0x00, 0x00,
+            0x4C, 0x8B, 0x38
+        };
+        LPCSTR findItemInContainers_MASK = "xxxxxxxxxxxxxxx?xxxx?xxx????xxx";
+
+        findItemInContainers_func_address = FindPattern(findItemInContainers_PATTERN, findItemInContainers_MASK);
+
+        std::cout << "findItemInContainers Func Address: " << findItemInContainers_func_address << std::endl;
 
         const BYTE open_PATTERN[] = {
             0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x00,
@@ -337,6 +427,34 @@ void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     Move(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
 }
 
+void MemoryFunctions::useWith(uint64_t item, uint64_t toThing) {
+    //Decomp by IDA for Medivia void __fastcall sub_7FF7131E1F80(__int64 a1, _QWORD *a2, _QWORD *a3)
+    using useWith_t = void(__fastcall *)(
+    uint64_t a1, // RCX - Player
+    uint64_t *a2, // RDX - item
+    uint64_t *a3 // R8 - toThing (for example Local Player)
+    );
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    auto UseWith = reinterpret_cast<useWith_t>(useWith_func_address);
+    UseWith(a1, &item, &toThing);
+}
+
+uint64_t MemoryFunctions::findItemInContainers(uint32_t item_id) {
+    //Decomp by IDA for Medivia _QWORD *__fastcall sub_7FF7131E2450(__int64 a1, _QWORD *a2, int a3, int a4)
+    using findItemInContainers_t = void(__fastcall *)(
+    uint64_t a1, // RCX - Player
+    void* result, // RDX - itemID
+    uint32_t itemId, // R8 - itemID
+    int subType,
+    uint8_t  tier
+    );
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    auto FindItemInContainers = reinterpret_cast<findItemInContainers_t>(findItemInContainers_func_address);
+    void *result = nullptr;
+    FindItemInContainers(a1, &result, item_id, 1, 1);
+    return reinterpret_cast<uint64_t>(result);
+}
+
 int MemoryFunctions::open(Item* item, Container* parent_container)
 {
     using open_t = __int64(__fastcall *)(
@@ -504,6 +622,18 @@ void MemoryFunctions::queue_stop() {
 void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot) {
     actionQueue.enqueue([item_src, item_dest, slot]() {
         move(item_src, item_dest, slot);
+    }).get();
+}
+
+void MemoryFunctions::queue_useWith(uint64_t item, uint64_t toThing) {
+    actionQueue.enqueue([item, toThing]() {
+        useWith(item, toThing);
+    }).get();
+}
+
+uint64_t MemoryFunctions::queue_findItemInContainers(uint32_t item_id) {
+    return actionQueue.enqueue([item_id]() {
+        return findItemInContainers(item_id);
     }).get();
 }
 

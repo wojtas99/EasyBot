@@ -31,33 +31,30 @@ void __stdcall hookedGameMainLoop() {
     MemoryFunctions::actionQueue.execute_all();
 }
 
-typedef __int64(__fastcall* tOpenFunc)(__int64 a1,  uint64_t *a2, uint64_t *a3);
-tOpenFunc originalOpenFunc = nullptr;
 
-void __fastcall hookedOpenFunc(__int64 a1,  uint64_t *a2, uint64_t *a3)
+typedef void(__fastcall* tLookFunc)(__int64 a1, void (__fastcall ****a2)(__int64, __int64));
+tLookFunc originalLookFunc = nullptr;
+
+void __fastcall hookedLookFunc(__int64 a1, void (__fastcall ****a2)(__int64, __int64))
 {
-
-    originalOpenFunc(a1, a2, a3);
-
+    uint64_t result = *reinterpret_cast<uint64_t*>(a2);
+    Item* item = reinterpret_cast<Item*>(result);
+    MemoryFunctions::talkChannel(std::to_string(item->id).c_str());
+    //std::cout << std::hex << MemoryFunctions::findItemInContainers(item->id) << std::endl;
+    originalLookFunc(a1, a2);
 }
 
-void setupOpenHook(uint64_t openFuncAddress) {
-    if (MH_CreateHook(reinterpret_cast<void*>(openFuncAddress),
-                      &hookedOpenFunc,
-                      reinterpret_cast<void**>(&originalOpenFunc)) != MH_OK) {
-        std::cout << "[HOOK] Error (OpenFunc)\n";
+void setupLookHook(uint64_t itemFuncAddress) {
+    if (MH_CreateHook(reinterpret_cast<void*>(itemFuncAddress),
+                      &hookedLookFunc,
+                      reinterpret_cast<void**>(&originalLookFunc)) != MH_OK) {
         return;
                       }
-
-    if (MH_EnableHook(reinterpret_cast<void*>(openFuncAddress)) != MH_OK) {
-        std::cout << "[HOOK] Error (OpenFunc)\n";
+    if (MH_EnableHook(reinterpret_cast<void*>(itemFuncAddress)) != MH_OK) {
         return;
     }
-
-    std::cout << "[HOOK] OpenFunc\n";
+    std::cout << "[HOOK] LookFunc Sucessfully\n";
 }
-
-
 
 void setupMainLoopHook(uint64_t gameLoopAddress) {
     if (MH_Initialize() != MH_OK)
@@ -67,7 +64,7 @@ void setupMainLoopHook(uint64_t gameLoopAddress) {
         return;
     if (MH_EnableHook(reinterpret_cast<void*>(gameLoopAddress)) != MH_OK)
         return;
-    std::cout << "Main Loop hooked successfully!\n";
+    std::cout << "[HOOK] MainFunc Sucessfully\n";
 }
 SafeQueue MemoryFunctions::actionQueue;
 
@@ -85,6 +82,7 @@ void SelectClientTab::load_medivia() {
     main_window_tab->show();
     if (!m_hookInitialized) {
         setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
+        setupLookHook(reinterpret_cast<uint64_t>(MemoryFunctions::look_func_address));
         m_hookInitialized = true;
     }
 }
