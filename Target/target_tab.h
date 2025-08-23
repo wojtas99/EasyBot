@@ -17,24 +17,14 @@ public:
     void requestLoot(int containerIndex);
 private slots:
 
-    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& action) const;
+    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count) const;
 
     void startTargetThread(int state);
 
 
 private:
-    QLabel* status_label;
-
     QListWidget* targetList_listWidget;
     QListWidget* profile_listWidget;
-
-    QLineEdit* targetName_lineEdit;
-    QLineEdit* hpFrom_lineEdit;
-    QLineEdit* hpTo_lineEdit;
-
-    QSlider* distance_slider;
-
-    QComboBox* action_comboBox;
 
     void targetList();
     void profileList();

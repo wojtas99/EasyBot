@@ -59,6 +59,9 @@ public:
     static void queue_talkChannel(const char *message);
     static void talkChannel(const char *message);
 
+    static void queue_setChaseMode(bool chaseMode);
+    static void setChaseMode(bool chaseMode);
+
     static bool queue_isAttacking();
     static bool isAttacking();
 
@@ -99,6 +102,7 @@ private:
     static void* open_func_address;
     static void* attack_func_address;
     static void* talkChannel_func_address;
+    static void* setChaseMode_func_address;
     static void* isAttacking_func_address;
     static void* getContainer_func_address;
     static void* getItem_func_address;

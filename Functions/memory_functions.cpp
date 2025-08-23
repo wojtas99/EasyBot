@@ -25,6 +25,7 @@ void* MemoryFunctions::findItemInContainers_func_address = nullptr;
 void* MemoryFunctions::open_func_address = nullptr;
 void* MemoryFunctions::attack_func_address = nullptr;
 void* MemoryFunctions::talkChannel_func_address = nullptr;
+void* MemoryFunctions::setChaseMode_func_address = nullptr;
 void* MemoryFunctions::isAttacking_func_address = nullptr;
 void* MemoryFunctions::getContainer_func_address = nullptr;
 void* MemoryFunctions::getItem_func_address = nullptr;
@@ -260,6 +261,23 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
 
         std::cout << "TalkChannel Func Address: " << talkChannel_func_address << std::endl;
 
+        const BYTE setChaseMode_PATTERN[] = {
+            0x56, 0x48, 0x83, 0xEC,
+            0x00,
+            0x48, 0x89, 0xD6, 0x48, 0x8B, 0x05,
+            0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24,
+            0x00,
+            0x44, 0x89, 0x44, 0x24
+        };
+        LPCSTR setChaseMode_MASK = "xxxx?xxxxxx????xxxxxxx?xxxx";
+
+        setChaseMode_func_address = FindPattern(setChaseMode_PATTERN, setChaseMode_MASK);
+        //\x55\x56\x48\x83\xec\x00\x48\x8d\x6c\x24\x00\x48\xc7\x45\x00\x00\x00\x00\x00\x80\x39\x00\x0f\x85\x00\x00\x00\x00\x48\x8b\x81\x00\x00\x00\x00\x48\x85\xc0\x0f\x84\x00\x00\x00\x00\x80\xb8\x00\x00\x00\x00\x00\x0f\x84\x00\x00\x00\x00\x80\x79\x00\x00\x0f\x85\x00\x00\x00\x00\x48\x8b\x81\x00\x00\x00\x00\x48\x85\xc0\x0f\x84\x00\x00\x00\x00\x4c\x8b\x80\x00\x00\x00\x00\x4d\x85\xc0\x0f\x84\x00\x00\x00\x00\x41\x80\xb8\x00\x00\x00\x00\x00\x0f\x85\x00\x00\x00\x00\x39\x51\x00\x0f\x84\x00\x00\x00\x00\x89\x51\x00\x44\x0f\xb6\x49\x00\x44\x8b\x51
+        //xxxxx?xxxx?xxx?????xx?xx????xxx????xxxxx????xx?????xx????xx??xx????xxx????xxxxx????xxx????xxxxx????xxx?????xx????xx?xx????xx?xxxx?xxx
+
+        std::cout << "setChaseMode Func Address: " << setChaseMode_func_address << std::endl;
+
         //isAttacking_func_address = nullptr;
 
         const BYTE getContainer_PATTERN[] = {
@@ -288,7 +306,22 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
 
         std::cout << "getItem Func Address: " << getItem_func_address << std::endl;
 
-        //MemoryFunctions::isContainer_func_address = nullptr;
+        const BYTE isContainer_PATTERN[] = {
+            0x48, 0x89, 0xD0, 0x45, 0x85, 0xC0, 0x78,
+            0x00,
+            0x44, 0x39, 0x81,
+        };
+        //LPCSTR isContainer_MASK = "xxx?xxx?xxxxxx?x?xxx??xxxxxxxxxxxxx?xxx?xxxxxx?x?xxx??xxxxxxxxxxxxx?xxx?xxxxxx?x?xxx??xxxxxxxxxxxxx?xxx?xxxxxx?x?xxx??xxxxxxxxxxxxx?xxx?xxxxxx????x?xxx?????xxxxxxxxxxxxxxxxxxxxxxx?xxx?xxxxxx";
+        LPCSTR isContainer_MASK = "xxxxxxx?xxx";
+        isContainer_func_address = FindPattern(isContainer_PATTERN, isContainer_MASK);
+
+        //48 8b 41 ? 48 8b 49 ? 48 29 c1 48 83 f9 ? 72 ? 48 83 78 ? ? 0f 95 c0 c3 31 c0 c3 cc cc cc 48 8b 41 ? 48
+        //8b 49 ? 48 29 c1 48 83 f9 ? 72 ? 48 83 78 ? ? 0f 95 c0 c3 31 c0 c3 cc cc cc 48 8b 41 ? 48 8b 49 ? 48 29
+        //c1 48 83 f9 ? 72 ? 48 83 78 ? ? 0f 95 c0 c3 31 c0 c3 cc cc cc 48 8b 41 ? 48 8b 49 ? 48 29 c1 48 83 f9 ?
+        //72 ? 48 83 78 ? ? 0f 95 c0 c3 31 c0 c3 cc cc cc 48 8b 41 ? 48 8b 49 ? 48 29 c1 48 81
+        std::cout << "isContainer Func Address: " << isContainer_func_address << std::endl;
+
+
         //MemoryFunctions::isLyingCorpse_func_address = nullptr;
         const BYTE getTopThing_PATTERN[] = {
             0x41, 0x56, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC,
@@ -500,6 +533,19 @@ void MemoryFunctions::talkChannel(const char *message)
     TalkChannel(a1, 1, 0, a4);
 }
 
+void MemoryFunctions::setChaseMode(bool chaseMode)
+{
+    //Decomp by IDA for Medivia void __fastcall sub_7FF61E1460B0(__int64 a1, unsigned int a2)
+    using setChaseMode_t = void(__fastcall*)(
+        uint64_t a1,  // RCX - Player Base
+        unsigned int a2  // RDX - Chase mode 0 - No chase / 1 (True) - Chase
+        );
+    auto SetChaseMode = reinterpret_cast<setChaseMode_t>(base_module + 0x1460B0);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    SetChaseMode(a1, chaseMode);
+}
+
+
 bool MemoryFunctions::isAttacking()
 {
     //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73C250(__int64 a1)
@@ -567,7 +613,7 @@ bool MemoryFunctions::isContainer(Item* item)
     using isContainer_t = bool(__fastcall*)(
         Item *a1  // RCX - Item
         );
-    auto IsContainer = reinterpret_cast<isContainer_t>(MemoryFunctions::base_module + 0x1DEF10);
+    auto IsContainer = reinterpret_cast<isContainer_t>(isContainer_func_address);
     return IsContainer(item);;
 }
 
@@ -654,6 +700,13 @@ void MemoryFunctions::queue_talkChannel(const char *message) {
         talkChannel(message);
     }).get();
 }
+
+void MemoryFunctions::queue_setChaseMode(bool chaseMode) {
+    actionQueue.enqueue([chaseMode]() {
+        setChaseMode(chaseMode);
+    }).get();
+}
+
 
 bool MemoryFunctions::queue_isAttacking() {
     return actionQueue.enqueue([]() {

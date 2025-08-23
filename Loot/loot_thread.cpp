@@ -19,8 +19,10 @@ void LootThread::run() {
                 for (int j = 0; j < containers.size(); ++j) {
                     if (containers[j]->name == container_name) {
                         if (containers[j]->number_of_items == containers[j]->capacity) {
-                            MemoryFunctions::queue_open(containers[j]->item, containers[j]);
-                            msleep(300);
+                            for (int k = containers[j]->number_of_items - 1; k >= 0; --k) {
+                                Item* open = MemoryFunctions::queue_getItem(containers[j], k);
+                                MemoryFunctions::queue_open(open, containers[j]);
+                            }
                         }
                         MemoryFunctions::queue_move(item, containers[j], j);
                     }
