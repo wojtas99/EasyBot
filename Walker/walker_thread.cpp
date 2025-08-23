@@ -6,18 +6,39 @@
 #include <QThread>
 
 #include "../Target/target_thread.h"
-
+#include "../BridgeAPI/EasyApi.h"
 void WalkerThread::run()
 {
+
+    m_labelIndex.clear();
+    for (int i = 0; i < m_waypoints.size(); ++i) {
+        const auto &wp = m_waypoints[i];
+        if (wp.value("option").toString() == "Label") {
+            const QString name = wp.value("label").toString().trimmed();
+            if (!name.isEmpty() && !m_labelIndex.contains(name))
+                m_labelIndex.insert(name, i);
+        }
+    }
+    ScriptRuntime runtime;
     int timer = 0, x = 0, y = 0;
     bool is_walking = false;
     int idx = find_wpt();
+
+    bool jumped = false; // NEW
+    EasyApi::onLabel = [this, &idx, &jumped](const QString& name) { // NEW
+        auto it = m_labelIndex.constFind(name);
+        if (it != m_labelIndex.cend()) {
+            idx = it.value();
+            jumped = true;
+            emit indexUpdate(idx);
+        }
+    };
 
 
     while (m_running && !m_waypoints.isEmpty())
     {
 
-        if (timer/1000 >= 0.5) { // Check if character is moving every 500 ms
+        if (timer >= 500) { // Check if character is moving every 500 ms
             if (x == MemoryFunctions::map_view->LocalPlayer->x && y == MemoryFunctions::map_view->LocalPlayer->y) {
                 is_walking = false;
             } else {
@@ -34,8 +55,14 @@ void WalkerThread::run()
         int map_z = wpt["z"].toInt();
         std::string option = wpt["option"].toString().toStdString();
         std::string direction = wpt["direction"].toString().toStdString();
-        std::string action = wpt["action"].toString().toStdString();
-        std::string label = wpt["label"].toString().toStdString();
+        const QString action = wpt["action"].toString().trimmed();
+
+        if (!action.isEmpty()) {
+            ScriptResult res;
+            runtime.exec(action, res);
+            if (jumped) { jumped = false; continue; }
+        }
+
 
         if (direction != "C" && map_z != MemoryFunctions::map_view->LocalPlayer->z) {
             idx = (idx + 1) % m_waypoints.size();

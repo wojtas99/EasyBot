@@ -3,6 +3,7 @@
 #include <QThread>
 #include <QVariantMap>
 #include <QList>
+#include "../BridgeAPI/ScriptRuntime.h"
 
 class WalkerThread : public QThread {
     Q_OBJECT
@@ -15,13 +16,13 @@ public:
     int find_wpt();
     void stop() noexcept { m_running = false; }
 
-
     signals:
         void indexUpdate(int wpt_index);
 
 private:
     QList<QVariantMap> m_waypoints;
     std::atomic<bool> m_running{true};
+    QHash<QString,int> m_labelIndex;
 };
 
 #endif // WALKER_THREAD_H

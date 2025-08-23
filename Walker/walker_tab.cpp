@@ -258,9 +258,13 @@ void WalkerTab::addWaypoint() const
     uint32_t x = MemoryFunctions::map_view->LocalPlayer->x;
     uint32_t y = MemoryFunctions::map_view->LocalPlayer->y;
     uint16_t z = MemoryFunctions::map_view->LocalPlayer->z;
+    QString itemText;
+    if (option == "Label") {
+        itemText = action_textEdit->toPlainText().trimmed();
+    } else {
+        itemText = QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
+    }
 
-    const QString itemText =
-        QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
 
     auto* item = new QListWidgetItem(itemText);
     static const QMap<QString, QPoint> dirOffsets = {
@@ -287,7 +291,8 @@ void WalkerTab::addWaypoint() const
     data["label"] = "";
     data["action"] = "";
     if (option == "Label") {data["label"] = action_textEdit->toPlainText();}
-    if (option == "Action") {data["Action"] = action_textEdit->toPlainText();}
+    if (option == "Action") {data["action"] = action_textEdit->toPlainText();}
+    action_textEdit->clear();
 
     item->setData(Qt::UserRole, data);
     waypointList_listWidget->addItem(item);
@@ -304,6 +309,7 @@ void WalkerTab::setWalkerEnabled(bool on) {
         }
 
         walkerThread = new WalkerThread(waypoints);
+        connect(walkerThread, &WalkerThread::indexUpdate,this,&WalkerTab::onWalkerIndexUpdate,Qt::QueuedConnection);
         walkerThread->start();
     } else {
         if (!walkerThread) return;
@@ -311,5 +317,15 @@ void WalkerTab::setWalkerEnabled(bool on) {
         walkerThread->wait();
         delete walkerThread;
         walkerThread = nullptr;
+    }
+}
+
+void WalkerTab::onWalkerIndexUpdate(int idx) {
+    if (!waypointList_listWidget) return;
+    if (idx >= 0 && idx < waypointList_listWidget->count()) {
+        waypointList_listWidget->setCurrentRow(idx);
+        waypointList_listWidget->scrollToItem(
+            waypointList_listWidget->item(idx),
+            QAbstractItemView::PositionAtCenter);
     }
 }

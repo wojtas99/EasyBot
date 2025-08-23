@@ -10,7 +10,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_PREFIX_PATH "C:/Qt/5.15.2/msvc2019_64/lib/cmake")
 #set(CMAKE_PREFIX_PATH "C:/Qt/5.15.2/msvc2019/lib/cmake")
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Qml)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 link_directories(${CMAKE_SOURCE_DIR}/lib)
@@ -45,10 +45,16 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Heal/heal_tab.h
         Heal/heal_thread.cpp
         Heal/heal_thread.h
+        BridgeAPI/EasyApi.cpp
+        BridgeAPI/EasyApi.h
+        BridgeAPI/ScriptRuntime.cpp
+        BridgeAPI/ScriptRuntime.h
 )
 
 target_link_libraries(EasyBot PRIVATE
         Qt5::Widgets
+        Qt5::Core
+        Qt5::Qml
         libMinHook.x64.lib
 )
 

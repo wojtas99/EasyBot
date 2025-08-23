@@ -68,7 +68,7 @@ bool inject(const std::string& dllPath, const std::string& exePath, QWidget* par
 
     // Pliki Qt do skopiowania (dodaj inne, jeśli trzeba)
     std::vector<std::string> qtDlls = {
-        "Qt5Core.dll", "Qt5Gui.dll", "Qt5Widgets.dll"
+        "Qt5Core.dll", "Qt5Gui.dll", "Qt5Widgets.dll", "Qt5Qml.dll", "Qt5Svg.dll", "Qt5Network.dll"
     };
 
     // ---- KOPIOWANIE ----

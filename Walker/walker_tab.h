@@ -41,6 +41,9 @@ private:
     void profileList();
 
     WalkerThread* walkerThread = nullptr;
+
+    private slots:
+    void onWalkerIndexUpdate(int idx);
 };
 
 
