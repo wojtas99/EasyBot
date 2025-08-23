@@ -23,6 +23,7 @@ void* MemoryFunctions::move_func_address = nullptr;
 void* MemoryFunctions::useWith_func_address = nullptr;
 void* MemoryFunctions::findItemInContainers_func_address = nullptr;
 void* MemoryFunctions::open_func_address = nullptr;
+void* MemoryFunctions::close_func_address = nullptr;
 void* MemoryFunctions::attack_func_address = nullptr;
 void* MemoryFunctions::talkChannel_func_address = nullptr;
 void* MemoryFunctions::setChaseMode_func_address = nullptr;
@@ -216,7 +217,18 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
 
 
         open_func_address = FindPattern(open_PATTERN, open_MASK);
-        std::cout << "Open Func Addres: " << open_func_address << std::endl;
+        std::cout << "open Func Addres: " << open_func_address << std::endl;
+
+        const BYTE close_PATTERN[] = {
+            0x41, 0x57, 0x41, 0x56, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x00,
+            0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x31, 0xE0, 0x48, 0x89, 0x44, 0x24, 0x00, 0xBE
+        };
+        LPCSTR close_MASK = "xxxxxxxxxxxx?xxx????xxxxxxx?x";
+
+
+        close_func_address = FindPattern(close_PATTERN, close_MASK);
+        std::cout << "close Func Addres: " << close_func_address << std::endl;
 
         const BYTE attack_PATTERN[] = {
             0x55, 0x56, 0x53, 0x48, 0x83, 0xEC, 0x00,
@@ -502,6 +514,26 @@ int MemoryFunctions::open(Item* item, Container* parent_container)
     return Open(a1, &a2, &a3);
 }
 
+void MemoryFunctions::close(std::string container_name)
+{
+    using close_t = __int64(__fastcall *)(
+        __int64 a1, // Player Base
+        uint64_t *a2 // Container ID
+    );
+    std::transform(container_name.begin(), container_name.end(), container_name.begin(),[](unsigned char c){ return std::tolower(c); });
+    auto Close = reinterpret_cast<close_t>(base_module + 0x142760);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    std::vector<Container*> containers = getContainers();
+    for (auto container : containers) {
+
+        if (container->name == container_name) {
+            auto tmp = reinterpret_cast<uint64_t>(container);
+            Close(a1, &tmp);
+        }
+    }
+}
+
+
 
 void MemoryFunctions::attack(Entity* entity) {
     // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF79045E8B0(__int64 a1, volatile signed __int32 **a2, char a3)
@@ -686,6 +718,12 @@ uint64_t MemoryFunctions::queue_findItemInContainers(uint32_t item_id) {
 int MemoryFunctions::queue_open(Item* item, Container* parent_container) {
     return actionQueue.enqueue([item, parent_container]() {
         return open(item, parent_container);
+    }).get();
+}
+
+void MemoryFunctions::queue_close(std::string container_name) {
+    return actionQueue.enqueue([container_name]() {
+        return close(container_name);
     }).get();
 }
 

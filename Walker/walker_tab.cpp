@@ -222,13 +222,18 @@ void WalkerTab::loadProfile() const {
     for (const QJsonValue& v : arr) {
         const QJsonObject obj = v.toObject();
         const QString option    = obj.value("option").toString();
+        const QString label    = obj.value("label").toString();
         const QString direction = obj.value("direction").toString();
         const uint32_t x = obj.value("x").toInt();
         const uint32_t y = obj.value("y").toInt();
         const uint16_t z = static_cast<uint16_t>(obj.value("z").toInt());
 
-        const QString itemText =
-            QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
+        QString itemText;
+        if (option == "Label") {
+            itemText = label;
+        } else {
+            itemText = QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
+        }
 
         auto* item = new QListWidgetItem(itemText);
         item->setData(Qt::UserRole, obj.toVariantMap());

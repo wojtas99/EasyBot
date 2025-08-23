@@ -53,6 +53,9 @@ public:
     static int queue_open(Item* item,Container* parent_container);
     static int open(Item* item, Container* parent_container);
 
+    static void queue_close(std::string container_name);
+    static void close(std::string container_name);
+
     static void queue_attack(Entity* entity);
     static void attack(Entity* target);
 
@@ -100,6 +103,7 @@ private:
     static void* useWith_func_address;
     static void* findItemInContainers_func_address;
     static void* open_func_address;
+    static void* close_func_address;
     static void* attack_func_address;
     static void* talkChannel_func_address;
     static void* setChaseMode_func_address;
