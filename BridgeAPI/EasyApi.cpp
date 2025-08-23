@@ -31,6 +31,11 @@ void EasyApi::close(const QString& container_name) {
     MemoryFunctions::queue_close(u.constData());
 }
 
+void EasyApi::open(const QString& container_name) {
+    const QByteArray u = container_name.toUtf8();
+    MemoryFunctions::queue_open(u.constData());
+}
+
 
 std::function<void(const QString&)> EasyApi::onLabel = {};
 

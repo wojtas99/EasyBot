@@ -22,6 +22,7 @@ public:
 
     Q_INVOKABLE void say(const QString& msg);
     Q_INVOKABLE void close(const QString& container_name);
+    Q_INVOKABLE void open(const QString& container_name);
 
     Q_INVOKABLE void sleep(int ms);
 

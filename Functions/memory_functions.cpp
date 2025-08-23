@@ -514,6 +514,29 @@ int MemoryFunctions::open(Item* item, Container* parent_container)
     return Open(a1, &a2, &a3);
 }
 
+void MemoryFunctions::open(std::string container_name){
+    using open_t = __int64(__fastcall *)(
+        __int64 a1, // Player Base
+        uint64_t *a2, // Item ID
+        uint64_t *a3 // Parent Container ID
+    );
+    std::transform(container_name.begin(), container_name.end(), container_name.begin(),[](unsigned char c){ return std::tolower(c); });
+    auto Open = reinterpret_cast<open_t>(open_func_address);
+    auto a1 = reinterpret_cast<__int64>(player_base);
+    auto containers = getContainers();
+    for (auto container : containers) {
+        for (int i = 0; i < container->number_of_items; ++i) {
+            auto item = getItem(container, i);
+            std::cout << item->name << std::endl;
+            if (item->name == container_name) {
+                auto a2 = reinterpret_cast<uint64_t>(item);
+                auto tmp = reinterpret_cast<uint64_t>(container);
+                Open(a1, &a2, &tmp);
+            }
+        }
+    }
+}
+
 void MemoryFunctions::close(std::string container_name)
 {
     using close_t = __int64(__fastcall *)(
@@ -718,6 +741,11 @@ uint64_t MemoryFunctions::queue_findItemInContainers(uint32_t item_id) {
 int MemoryFunctions::queue_open(Item* item, Container* parent_container) {
     return actionQueue.enqueue([item, parent_container]() {
         return open(item, parent_container);
+    }).get();
+}
+void MemoryFunctions::queue_open(std::string container_name) {
+    actionQueue.enqueue([container_name]() {
+        open(container_name);
     }).get();
 }
 

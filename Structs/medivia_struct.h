@@ -72,7 +72,9 @@ public:
 class Item
 {
 public:
-    char pad_0000[160]; // 0x0000
+    char pad_0000[72]; // 0x0000
+    char name[32]; // 0x0048
+    char pad_0068[56]; // 0x0068
     uint16_t id; // 0xA0
     char pad_00A2[2]; // 0x00A2
     uint16_t count; // 0x00A4
