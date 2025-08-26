@@ -3,7 +3,7 @@
 #include <psapi.h>
 #include <cstdint> // dla uintptr_t
 
-LPVOID FindPattern(const BYTE* lpPattern, LPCSTR szMask)
+uint64_t FindPattern(const BYTE* lpPattern, LPCSTR szMask)
 {
     HMODULE hModule = GetModuleHandle(NULL);
     MODULEINFO moduleInfo = { 0 };
@@ -25,7 +25,7 @@ LPVOID FindPattern(const BYTE* lpPattern, LPCSTR szMask)
                 break;
         }
         if (i == pattern_length)
-            return addr;
+            return reinterpret_cast<uint64_t>(addr);
     }
     return NULL;
 }

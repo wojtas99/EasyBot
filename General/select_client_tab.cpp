@@ -1,6 +1,6 @@
 #include "select_client_tab.h"
 #include <QGridLayout>
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 #include "../include/MinHook.h"
 #include <iostream>
 #include <QMessageBox>
@@ -28,7 +28,7 @@ tGameMainLoop originalGameMainLoop = nullptr;
 
 void __stdcall hookedGameMainLoop() {
     originalGameMainLoop();
-    MemoryFunctions::actionQueue.execute_all();
+    Game::actionQueue.execute_all();
 }
 
 
@@ -39,7 +39,7 @@ void __fastcall hookedLookFunc(__int64 a1, void (__fastcall ****a2)(__int64, __i
 {
     uint64_t result = *reinterpret_cast<uint64_t*>(a2);
     Item* item = reinterpret_cast<Item*>(result);
-    MemoryFunctions::talkChannel(std::to_string(item->id).c_str());
+    Game::talkChannel(std::to_string(item->id).c_str());
     //std::cout << std::hex << MemoryFunctions::findItemInContainers(item->id) << std::endl;
     originalLookFunc(a1, a2);
 }
@@ -66,23 +66,23 @@ void setupMainLoopHook(uint64_t gameLoopAddress) {
         return;
     std::cout << "[HOOK] MainFunc Sucessfully\n";
 }
-SafeQueue MemoryFunctions::actionQueue;
+SafeQueue Game::actionQueue;
 
 void SelectClientTab::load_altaron() {
-    MemoryFunctions mf(MemoryFunctions::LoadOption::Altaron);
+    Game mf(Game::LoadOption::Altaron);
     this->close();
     main_window_tab = new MainWindowTab();
     main_window_tab->show();
 }
 
 void SelectClientTab::load_medivia() {
-    MemoryFunctions mf(MemoryFunctions::LoadOption::Medivia);
+    Game mf(Game::LoadOption::Medivia);
     this->close();
     main_window_tab = new MainWindowTab();
     main_window_tab->show();
     if (!m_hookInitialized) {
-        setupMainLoopHook(reinterpret_cast<uint64_t>(MemoryFunctions::main_func_address));
-        setupLookHook(reinterpret_cast<uint64_t>(MemoryFunctions::look_func_address));
+        setupMainLoopHook(Game::main_func_address);
+        setupLookHook(Game::look_func_address);
         m_hookInitialized = true;
     }
 }

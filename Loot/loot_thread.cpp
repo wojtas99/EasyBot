@@ -1,37 +1,69 @@
 #include "loot_thread.h"
+#include <algorithm>
+#include <cctype>
 #include <iostream>
-#include "../Functions/memory_functions.h"
+#include <string>
+#include <unordered_map>
+
+#include "../Functions/Game.h"
 #include "../Structs/medivia_struct.h"
 
+inline std::string to_lower_copy(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c){ return static_cast<char>(std::tolower(c)); });
+    return s;
+}
+void ensure_space_in(Container* dest) {
+    for (int k = dest->number_of_items - 1; k >= 0; --k) {
+        if (Item* open = Game::queue_getItem(dest, k)) {
+            Game::queue_open(open, dest);
+        }
+    }
+}
+
+struct DestInfo {
+    Container* ptr{};
+    int index{-1};
+};
+
 void LootThread::run() {
-    Container* container = MemoryFunctions::queue_getContainer(m_container_index);
-    if (!container || m_items.isEmpty() || container->number_of_items <= 0)
-        return;
-    auto containers = MemoryFunctions::queue_getContainers();
-    for (auto loot : m_items) {
-        int item_id = loot.value("id").toInt();
-        std::string container_name = loot.value("container").toString().toStdString();
-        for (int i = container->number_of_items -1; i >= 0; i--) {
-            Item* item = MemoryFunctions::queue_getItem(container, i);
-            if (item->id == item_id)
-            {
-                std::transform(container_name.begin(), container_name.end(), container_name.begin(),[](unsigned char c){ return std::tolower(c); });
-                for (int j = 0; j < containers.size(); ++j) {
-                    if (containers[j]->name == container_name) {
-                        if (containers[j]->number_of_items == containers[j]->capacity) {
-                            for (int k = containers[j]->number_of_items - 1; k >= 0; --k) {
-                                Item* open = MemoryFunctions::queue_getItem(containers[j], k);
-                                MemoryFunctions::queue_open(open, containers[j]);
-                            }
-                        }
-                        MemoryFunctions::queue_move(item, containers[j], j);
-                    }
+    while (m_running && !m_items.empty()) {
+        const auto containers = Game::queue_getContainers();
+        if (containers.empty()) {
+            msleep(100);
+            continue;
+        }
+        std::unordered_map<std::string, DestInfo> by_name;
+        by_name.reserve(containers.size());
+        for (int idx = 0; idx < static_cast<int>(containers.size()); ++idx) {
+            Container* c = containers[idx];
+            if (!c) continue;
+            by_name.emplace(c->name, DestInfo{c, idx});
+        }
+        for (const auto& loot : m_items) {
+            const int desired_item_id = loot.value("id").toInt();
+            std::string desired_container_name = to_lower_copy(loot.value("container").toString().toStdString());
+
+            const auto itDest = by_name.find(desired_container_name);
+            if (itDest == by_name.end()) {
+                continue;
+            }
+            Container* const dest = itDest->second.ptr;
+            const int dest_index   = itDest->second.index;
+            if (!dest || dest_index < 0) continue;
+
+            for (Container* src : containers) {
+                if (!src || src == dest) continue;
+                for (int slot = src->number_of_items - 1; slot >= 0; --slot) {
+                    Item* item = Game::queue_getItem(src, slot);
+                    if (!item)               continue;
+                    if (item->id != desired_item_id) continue;
+                    if (dest->capacity == dest->number_of_items) {ensure_space_in(dest); msleep(500);}
+                    Game::queue_move(item, dest, dest_index);
+                    msleep(rand() % 500 + 500);
                 }
             }
         }
+        msleep(100);
     }
-
 }
-
-
-

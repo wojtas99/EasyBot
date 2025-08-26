@@ -13,8 +13,6 @@ class TargetTab : public QWidget {
 
 public:
     explicit TargetTab(QWidget* parent = nullptr);
-    signals:
-    void requestLoot(int containerIndex);
 public slots:
     void setTargetEnabled(bool on);
 

@@ -1,11 +1,11 @@
 #include "EasyApi.h"
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 #include <QByteArray>
 #include <QHash>
 #include <QThread>
 
 static inline auto* LP() {
-    return MemoryFunctions::map_view->LocalPlayer;
+    return Game::map_view->LocalPlayer;
 }
 
 EasyApi::EasyApi(QObject* parent) : QObject(parent) {}
@@ -23,19 +23,13 @@ int    EasyApi::z() const       { return LP() ? int(LP()->z)  : 0; }
 
 void EasyApi::say(const QString& msg) {
     const QByteArray u = msg.toUtf8();
-    MemoryFunctions::queue_talkChannel(u.constData());
+    Game::queue_talkChannel(u.constData());
 }
 
 void EasyApi::close(const QString& container_name) {
     const QByteArray u = container_name.toUtf8();
-    MemoryFunctions::queue_close(u.constData());
+    Game::queue_close(u.constData());
 }
-
-void EasyApi::open(const QString& container_name) {
-    const QByteArray u = container_name.toUtf8();
-    MemoryFunctions::queue_open(u.constData());
-}
-
 
 std::function<void(const QString&)> EasyApi::onLabel = {};
 

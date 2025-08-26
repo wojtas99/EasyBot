@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 #include <QThread>
 
 #include "../Target/target_thread.h"
@@ -39,13 +39,13 @@ void WalkerThread::run()
     {
 
         if (timer >= 500) { // Check if character is moving every 500 ms
-            if (x == MemoryFunctions::map_view->LocalPlayer->x && y == MemoryFunctions::map_view->LocalPlayer->y) {
+            if (x == Game::map_view->LocalPlayer->x && y == Game::map_view->LocalPlayer->y) {
                 is_walking = false;
             } else {
                 is_walking = true;
             }
-            x = MemoryFunctions::map_view->LocalPlayer->x;
-            y = MemoryFunctions::map_view->LocalPlayer->y;
+            x = Game::map_view->LocalPlayer->x;
+            y = Game::map_view->LocalPlayer->y;
             timer = 0;
         }
 
@@ -64,26 +64,26 @@ void WalkerThread::run()
         }
 
 
-        if (direction != "C" && map_z != MemoryFunctions::map_view->LocalPlayer->z) {
+        if (direction != "C" && map_z != Game::map_view->LocalPlayer->z) {
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
             continue;
         }
 
-        if (MemoryFunctions::map_view->LocalPlayer->x == map_x &&
-            MemoryFunctions::map_view->LocalPlayer->y == map_y &&
-            MemoryFunctions::map_view->LocalPlayer->z == map_z) {
+        if (Game::map_view->LocalPlayer->x == map_x &&
+            Game::map_view->LocalPlayer->y == map_y &&
+            Game::map_view->LocalPlayer->z == map_z) {
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
             continue;
         }
 
-        if (!MemoryFunctions::has_target || option == "Lure") {
-            MemoryFunctions::queue_autoWalk(map_x, map_y, map_z);
+        if (!Game::has_target || option == "Lure") {
+            Game::queue_autoWalk(map_x, map_y, map_z);
         }
-        if (MemoryFunctions::queue_isAttacking() && option != "Lure" && is_walking)
+        if (Game::queue_isAttacking() && option != "Lure" && is_walking)
         {
-            MemoryFunctions::queue_stop();
+            Game::queue_stop();
             is_walking = false;
         }
         msleep(25);
@@ -101,9 +101,9 @@ int WalkerThread::find_wpt()
         std::string option = wpt["option"].toString().toStdString();
         std::string direction = wpt["direction"].toString().toStdString();
 
-        if (MemoryFunctions::map_view->LocalPlayer->z == map_z &&
-            abs(static_cast<int>(map_x - MemoryFunctions::map_view->LocalPlayer->x)) <= 7 &&
-            abs(static_cast<int>(map_y - MemoryFunctions::map_view->LocalPlayer->y)) <= 5 &&
+        if (Game::map_view->LocalPlayer->z == map_z &&
+            abs(static_cast<int>(map_x - Game::map_view->LocalPlayer->x)) <= 7 &&
+            abs(static_cast<int>(map_y - Game::map_view->LocalPlayer->y)) <= 5 &&
             direction == "C"  || option == "Lure") {
             std::cout << "Found wpt" << std::endl;
             return idx;

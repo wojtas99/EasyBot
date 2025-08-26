@@ -1,6 +1,6 @@
 #include "heal_thread.h"
 #include <iostream>
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 #include <QThread>
 
 
@@ -18,23 +18,23 @@ void HealThread::run()
             auto above = item["hpAbove"].toDouble();
             auto min_mp = item["minMp"].toDouble();
             auto condition = item["contidion"];
-            double current_hp = MemoryFunctions::map_view->LocalPlayer->hp;
-            double current_maxhp = MemoryFunctions::map_view->LocalPlayer->max_hp;
-            double current_mp = MemoryFunctions::map_view->LocalPlayer->mp;
-            double current_maxmp = MemoryFunctions::map_view->LocalPlayer->max_mp;
+            double current_hp = Game::map_view->LocalPlayer->hp;
+            double current_maxhp = Game::map_view->LocalPlayer->max_hp;
+            double current_mp = Game::map_view->LocalPlayer->mp;
+            double current_maxmp = Game::map_view->LocalPlayer->max_mp;
             if (condition == "HP%") {
                 current_hp = 100*(current_hp/current_maxhp);
                 if (below >= current_hp && current_hp >= above && current_mp >= min_mp)
                 {
                     if (option == "Say") {
                         auto heal = item["heal"].toString().toStdString();
-                        MemoryFunctions::queue_talkChannel(heal.c_str());
+                        Game::queue_talkChannel(heal.c_str());
                     } else {
                         auto heal = item["heal"].toInt();
-                        auto item = MemoryFunctions::queue_findItemInContainers(heal);
-                        auto player = reinterpret_cast<uint64_t>(MemoryFunctions::map_view->LocalPlayer);
+                        auto item = Game::queue_findItemInContainers(heal);
+                        auto player = reinterpret_cast<uint64_t>(Game::map_view->LocalPlayer);
                         if (item) {
-                            MemoryFunctions::queue_useWith(item, player);
+                            Game::queue_useWith(item, player);
                         }
                     }
                     msleep(500);
@@ -45,13 +45,13 @@ void HealThread::run()
                 {
                     if (option == "Say") {
                         auto heal = item["heal"].toString().toStdString();
-                        MemoryFunctions::queue_talkChannel(heal.c_str());
+                        Game::queue_talkChannel(heal.c_str());
                     } else {
-                        auto player = reinterpret_cast<uint64_t>(MemoryFunctions::map_view->LocalPlayer);
+                        auto player = reinterpret_cast<uint64_t>(Game::map_view->LocalPlayer);
                         auto heal = item["heal"].toInt();
-                        auto item = MemoryFunctions::queue_findItemInContainers(heal);
+                        auto item = Game::queue_findItemInContainers(heal);
                         if (item) {
-                            MemoryFunctions::queue_useWith(item, player);
+                            Game::queue_useWith(item, player);
                         }
                     }
                     msleep(500);

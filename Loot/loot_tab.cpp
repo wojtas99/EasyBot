@@ -215,19 +215,23 @@ void LootTab::addItem(int item_id, const QString& container_name, const QString&
     item->setData(Qt::UserRole, data);
     lootList_listWidget->addItem(item);
 }
-void LootTab::startLootThread(int container_index) {
-    if (lootThread) {
+void LootTab::setLootEnabled(bool on) {
+    if (on) {
+        if (lootThread) return;
+        QList<QVariantMap> items;
+        for (int i = 0; i < lootList_listWidget->count(); ++i) {
+            QListWidgetItem* item = lootList_listWidget->item(i);
+            QVariantMap data = item->data(Qt::UserRole).toMap();
+            items.append(data);
+        }
+        lootThread = new LootThread(items);
+        std::cout << "Loot Thread created" << std::endl;
+        lootThread->start();
+    } else {
+        if (!lootThread) return;
         lootThread->stop();
         lootThread->wait();
         delete lootThread;
         lootThread = nullptr;
     }
-    QList<QVariantMap> items;
-    for (int i = 0; i < lootList_listWidget->count(); ++i) {
-        QListWidgetItem* item = lootList_listWidget->item(i);
-        QVariantMap data = item->data(Qt::UserRole).toMap();
-        items.append(data);
-    }
-    lootThread = new LootThread(items, container_index);
-    lootThread->start();
 }

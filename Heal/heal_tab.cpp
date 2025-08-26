@@ -14,7 +14,7 @@
 #include <QSaveFile>
 #include <QRadioButton>
 
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 
 HealTab::HealTab(QWidget* parent) : QWidget(parent) {
     setWindowTitle("Heal");

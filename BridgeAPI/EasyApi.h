@@ -20,13 +20,12 @@ public:
     Q_INVOKABLE int y() const;
     Q_INVOKABLE int z() const;
 
-    Q_INVOKABLE void say(const QString& msg);
-    Q_INVOKABLE void close(const QString& container_name);
-    Q_INVOKABLE void open(const QString& container_name);
+    Q_INVOKABLE static void say(const QString& msg);
+    Q_INVOKABLE static void close(const QString& container_name);
 
-    Q_INVOKABLE void sleep(int ms);
+    Q_INVOKABLE static void sleep(int ms);
 
-    Q_INVOKABLE void label(const QString& name);
+    Q_INVOKABLE static void label(const QString& name);
     static std::function<void(const QString&)> onLabel;
 
 

@@ -8,7 +8,7 @@
 #include "../safe_queue.h"
 
 
-class MemoryFunctions {
+class Game {
 
 public:
     enum class LoadOption {
@@ -21,8 +21,8 @@ public:
     static PlayerBase* player_base;
     static uint64_t base_module;
 
-    static void* main_func_address;
-    static void* look_func_address;
+    static uint64_t main_func_address;
+    static uint64_t look_func_address;
 
     static bool has_target;
 
@@ -86,35 +86,36 @@ public:
     static bool queue_isLyingCorpse(Item* item);
     static bool isLyingCorpse(Item* item);
 
-    static __int64 queue_getTopThing(__int64 tile);
-    static __int64 getTopThing(__int64 tile);
+    static uint64_t queue_getTopThing(uint64_t tile);
+    static uint64_t getTopThing(uint64_t tile);
 
 
-    explicit MemoryFunctions(LoadOption load_option);
+    explicit Game(LoadOption load_option);
+    ~Game();
 
 
 private:
     // Variables
     static uint64_t local_player_address;
     // Function Addresses
-    static void* getTile_func_address;
-    static void* getSpectatorsInRangeEx_func_address;
-    static void* autoWalk_func_address;
-    static void* stop_func_address;
-    static void* move_func_address;
-    static void* useWith_func_address;
-    static void* findItemInContainers_func_address;
-    static void* open_func_address;
-    static void* close_func_address;
-    static void* attack_func_address;
-    static void* talkChannel_func_address;
-    static void* setChaseMode_func_address;
-    static void* isAttacking_func_address;
-    static void* getContainer_func_address;
-    static void* getItem_func_address;
-    static void* isContainer_func_address;
-    static void* isLyingCorpse_func_address;
-    static void* getTopThing_func_address;
+    static uint64_t getTile_func_address;
+    static uint64_t getSpectatorsInRangeEx_func_address;
+    static uint64_t autoWalk_func_address;
+    static uint64_t stop_func_address;
+    static uint64_t move_func_address;
+    static uint64_t useWith_func_address;
+    static uint64_t findItemInContainers_func_address;
+    static uint64_t open_func_address;
+    static uint64_t close_func_address;
+    static uint64_t attack_func_address;
+    static uint64_t talkChannel_func_address;
+    static uint64_t setChaseMode_func_address;
+    static uint64_t isAttacking_func_address;
+    static uint64_t getContainer_func_address;
+    static uint64_t getItem_func_address;
+    static uint64_t isContainer_func_address;
+    static uint64_t isLyingCorpse_func_address;
+    static uint64_t getTopThing_func_address;
 
     static LoadOption load_functions_variant;
 };

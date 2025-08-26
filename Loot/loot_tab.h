@@ -15,7 +15,7 @@ public:
     explicit LootTab(QWidget* parent = nullptr);
 
 public slots:
-    void startLootThread(int container_index);
+    void setLootEnabled(bool on);
 
 private:
     QListWidget* lootList_listWidget;

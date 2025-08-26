@@ -25,8 +25,8 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Loot/loot_tab.h
         Loot/loot_thread.cpp
         Loot/loot_thread.h
-        Functions/memory_functions.cpp
-        Functions/memory_functions.h
+        Functions/Game.cpp
+        Functions/Game.h
         General/select_client_tab.cpp
         General/select_client_tab.h
         Walker/walker_thread.cpp

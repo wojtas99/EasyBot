@@ -15,7 +15,7 @@
 #include <QRadioButton>
 #include <QSpinBox>
 
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 
 WalkerTab::WalkerTab(QWidget* parent) : QWidget(parent) {
     setWindowTitle("Walker");
@@ -260,9 +260,9 @@ void WalkerTab::addWaypoint() const
     const QString direction = dirBtn->text();
     const QString option    = optBtn->text();
 
-    uint32_t x = MemoryFunctions::map_view->LocalPlayer->x;
-    uint32_t y = MemoryFunctions::map_view->LocalPlayer->y;
-    uint16_t z = MemoryFunctions::map_view->LocalPlayer->z;
+    uint32_t x = Game::map_view->LocalPlayer->x;
+    uint32_t y = Game::map_view->LocalPlayer->y;
+    uint16_t z = Game::map_view->LocalPlayer->z;
     QString itemText;
     if (option == "Label") {
         itemText = action_textEdit->toPlainText().trimmed();

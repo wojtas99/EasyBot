@@ -7,8 +7,6 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("EasyBot");
     setFixedSize(500, 500);
 
-    QGridLayout *layout = new QGridLayout(this);
-
     main_tabWidget = new QTabWidget(this);
     status_tabWidget = new StatusTab();
     walker_tabWidget = new WalkerTab();
@@ -23,8 +21,8 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
 
     connect(status_tabWidget, &StatusTab::walkerToggled,walker_tabWidget,  &WalkerTab::setWalkerEnabled);
     connect(status_tabWidget, &StatusTab::targetToggled,target_tabWidget,  &TargetTab::setTargetEnabled);
+    connect(status_tabWidget, &StatusTab::lootToggled,loot_tabWidget,  &LootTab::setLootEnabled);
     connect(status_tabWidget, &StatusTab::healingToggled,heal_tabWidget,  &HealTab::setHealEnabled);
-    connect(target_tabWidget, &TargetTab::requestLoot,loot_tabWidget,   &LootTab::startLootThread,Qt::QueuedConnection);
 
     setCentralWidget(main_tabWidget);
 }

@@ -12,7 +12,7 @@
 #include <QLineEdit>
 #include <QSlider>
 
-#include "../Functions/memory_functions.h"
+#include "../Functions/Game.h"
 
 TargetTab::TargetTab(QWidget* parent) : QWidget(parent) {
     setWindowTitle("Targeting");
@@ -199,7 +199,6 @@ void TargetTab::setTargetEnabled(bool on) {
                 targets.append(data);
             }
             targetThread = new TargetThread(targets);
-            connect(targetThread, &TargetThread::requestLoot,this,&TargetTab::requestLoot);
             std::cout << "Target Thread created" << std::endl;
             targetThread->start();
     } else {

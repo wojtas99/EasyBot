@@ -2,7 +2,7 @@
 #include <iostream>
 #include <QApplication>
 
-#include "Functions/memory_functions.h"
+#include "Functions/Game.h"
 #include "General/select_client_tab.h"
 #include "Structs/medivia_struct.h"
 #include <filesystem>

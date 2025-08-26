@@ -1,41 +1,38 @@
-#include "memory_functions.h"
+#include "Game.h"
 #include <iostream>
 #include <qglobal.h>
-#include <DbgHelp.h>
-
 #include "../PatternScans/pattern_scan.h"
-#include "../include/MinHook.h"
-MapView* MemoryFunctions::map_view = nullptr;
-PlayerBase* MemoryFunctions::player_base = nullptr;
-uint64_t MemoryFunctions::base_module = 0;
-uint64_t MemoryFunctions::local_player_address = 0;
-bool MemoryFunctions::has_target = false;
 
-MemoryFunctions::LoadOption MemoryFunctions::load_functions_variant = LoadOption::Altaron;
+MapView* Game::map_view = nullptr;
+PlayerBase* Game::player_base = nullptr;
+uint64_t Game::base_module = 0;
+uint64_t Game::local_player_address = 0;
+bool Game::has_target = false;
 
-void* MemoryFunctions::main_func_address = nullptr;
-void* MemoryFunctions::getTile_func_address = nullptr;
-void* MemoryFunctions::getSpectatorsInRangeEx_func_address = nullptr;
-void* MemoryFunctions::autoWalk_func_address = nullptr;
-void* MemoryFunctions::stop_func_address = nullptr;
-void* MemoryFunctions::look_func_address = nullptr;
-void* MemoryFunctions::move_func_address = nullptr;
-void* MemoryFunctions::useWith_func_address = nullptr;
-void* MemoryFunctions::findItemInContainers_func_address = nullptr;
-void* MemoryFunctions::open_func_address = nullptr;
-void* MemoryFunctions::close_func_address = nullptr;
-void* MemoryFunctions::attack_func_address = nullptr;
-void* MemoryFunctions::talkChannel_func_address = nullptr;
-void* MemoryFunctions::setChaseMode_func_address = nullptr;
-void* MemoryFunctions::isAttacking_func_address = nullptr;
-void* MemoryFunctions::getContainer_func_address = nullptr;
-void* MemoryFunctions::getItem_func_address = nullptr;
-void* MemoryFunctions::isContainer_func_address = nullptr;
-void* MemoryFunctions::isLyingCorpse_func_address = nullptr;
-void* MemoryFunctions::getTopThing_func_address = nullptr;
+Game::LoadOption Game::load_functions_variant = LoadOption::Altaron;
 
+uint64_t Game::main_func_address;
+uint64_t Game::getTile_func_address;
+uint64_t Game::getSpectatorsInRangeEx_func_address;
+uint64_t Game::autoWalk_func_address;
+uint64_t Game::stop_func_address;
+uint64_t Game::look_func_address;
+uint64_t Game::move_func_address;
+uint64_t Game::useWith_func_address;
+uint64_t Game::findItemInContainers_func_address;
+uint64_t Game::open_func_address;
+uint64_t Game::close_func_address;
+uint64_t Game::attack_func_address;
+uint64_t Game::talkChannel_func_address;
+uint64_t Game::setChaseMode_func_address;
+uint64_t Game::isAttacking_func_address;
+uint64_t Game::getContainer_func_address;
+uint64_t Game::getItem_func_address;
+uint64_t Game::isContainer_func_address;
+uint64_t Game::isLyingCorpse_func_address;
+uint64_t Game::getTopThing_func_address;
 
-MemoryFunctions::MemoryFunctions(LoadOption load_option) {
+Game::Game(LoadOption load_option) {
     load_functions_variant = load_option;
     base_module = reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
     if (load_option == LoadOption::Medivia) { // Loading Medivia Memories
@@ -348,6 +345,8 @@ MemoryFunctions::MemoryFunctions(LoadOption load_option) {
     }
 }
 
+Game::~Game() = default;
+
 //  Functions
 
 struct Position {
@@ -356,7 +355,7 @@ struct Position {
     uint16_t z;
 };
 
-__int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
+__int64 Game::getTile(uint32_t x, uint32_t y, uint16_t z) {
     //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, __int64 a2)
     using getTile_t = __int64(__fastcall*)(
         __int64 a1,  // RCX - Tile Base ?
@@ -373,7 +372,7 @@ __int64 MemoryFunctions::getTile(uint32_t x, uint32_t y, uint16_t z) {
     return result;
 }
 
-std::vector<Entity*> MemoryFunctions::getSpectatorsInRangeEx(int radius) {
+std::vector<Entity*> Game::getSpectatorsInRangeEx(int radius) {
     // Define a struct matching the output container (3 pointers: begin, end, capacity)
     struct EntityVector {
         void* begin;
@@ -419,7 +418,7 @@ std::vector<Entity*> MemoryFunctions::getSpectatorsInRangeEx(int radius) {
 }
 
 
-void MemoryFunctions::autoWalk(int x, int y, int z) {
+void Game::autoWalk(int x, int y, int z) {
     // Decomp by IDA for Medivia __int64 __fastcall sub_7FF69838A0F0(unsigned __int64 a1, unsigned int *a2)
     using autoWalk_t = __int64(__fastcall *)(
         uint64_t a1,       // Local Player
@@ -430,7 +429,7 @@ void MemoryFunctions::autoWalk(int x, int y, int z) {
     AutoWalk(reinterpret_cast<uint64_t>(map_view->LocalPlayer), pos);
 }
 
-void MemoryFunctions::stop()
+void Game::stop()
 {
     //Decomp by IDA for Medivia void __fastcall sub_7FF780D51980(__int64 a1)
     using stop_t = void(__fastcall*)(
@@ -451,7 +450,7 @@ struct CollectKey {
 };
 
 
-void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
+void Game::move(Item* item_src, Container* container_dst, int slot) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF791A31B00(__int64 a1, void (__fastcall ****a2)(__int64, __int64), __int64 a3, int a4)
     using move_t = void(__fastcall *)(
     __int64 a1, // RCX - Player Base
@@ -472,7 +471,7 @@ void MemoryFunctions::move(Item* item_src, Container* container_dst, int slot) {
     Move(a1, reinterpret_cast<__int64>(&container.ptrItem), reinterpret_cast<__int64>(&container), item_src->count);
 }
 
-void MemoryFunctions::useWith(uint64_t item, uint64_t toThing) {
+void Game::useWith(uint64_t item, uint64_t toThing) {
     //Decomp by IDA for Medivia void __fastcall sub_7FF7131E1F80(__int64 a1, _QWORD *a2, _QWORD *a3)
     using useWith_t = void(__fastcall *)(
     uint64_t a1, // RCX - Player
@@ -484,7 +483,7 @@ void MemoryFunctions::useWith(uint64_t item, uint64_t toThing) {
     UseWith(a1, &item, &toThing);
 }
 
-uint64_t MemoryFunctions::findItemInContainers(uint32_t item_id) {
+uint64_t Game::findItemInContainers(uint32_t item_id) {
     //Decomp by IDA for Medivia _QWORD *__fastcall sub_7FF7131E2450(__int64 a1, _QWORD *a2, int a3, int a4)
     using findItemInContainers_t = void(__fastcall *)(
     uint64_t a1, // RCX - Player
@@ -500,7 +499,7 @@ uint64_t MemoryFunctions::findItemInContainers(uint32_t item_id) {
     return reinterpret_cast<uint64_t>(result);
 }
 
-int MemoryFunctions::open(Item* item, Container* parent_container)
+int Game::open(Item* item, Container* parent_container)
 {
     using open_t = __int64(__fastcall *)(
         __int64 a1, // Player Base
@@ -514,7 +513,7 @@ int MemoryFunctions::open(Item* item, Container* parent_container)
     return Open(a1, &a2, &a3);
 }
 
-void MemoryFunctions::open(std::string container_name){
+void Game::open(std::string container_name){
     using open_t = __int64(__fastcall *)(
         __int64 a1, // Player Base
         uint64_t *a2, // Item ID
@@ -537,7 +536,7 @@ void MemoryFunctions::open(std::string container_name){
     }
 }
 
-void MemoryFunctions::close(std::string container_name)
+void Game::close(std::string container_name)
 {
     using close_t = __int64(__fastcall *)(
         __int64 a1, // Player Base
@@ -558,7 +557,7 @@ void MemoryFunctions::close(std::string container_name)
 
 
 
-void MemoryFunctions::attack(Entity* entity) {
+void Game::attack(Entity* entity) {
     // Decomp by IDA for Medivia volatile signed __int32 **__fastcall sub_7FF79045E8B0(__int64 a1, volatile signed __int32 **a2, char a3)
     using attack_t = volatile signed __int32 **(__fastcall *)(
         __int64 a1, // Player Base
@@ -571,7 +570,7 @@ void MemoryFunctions::attack(Entity* entity) {
     Attack(a1, &a2, 0);
 }
 
-void MemoryFunctions::talkChannel(const char *message)
+void Game::talkChannel(const char *message)
 {
     //Decomp by IDA for Medivia void __fastcall sub_7FF771812E50(__int64 a1, int a2, int a3, __int128 *a4)
     using talkChannel_t = void(__fastcall*)(
@@ -588,7 +587,7 @@ void MemoryFunctions::talkChannel(const char *message)
     TalkChannel(a1, 1, 0, a4);
 }
 
-void MemoryFunctions::setChaseMode(bool chaseMode)
+void Game::setChaseMode(bool chaseMode)
 {
     //Decomp by IDA for Medivia void __fastcall sub_7FF61E1460B0(__int64 a1, unsigned int a2)
     using setChaseMode_t = void(__fastcall*)(
@@ -601,18 +600,18 @@ void MemoryFunctions::setChaseMode(bool chaseMode)
 }
 
 
-bool MemoryFunctions::isAttacking()
+bool Game::isAttacking()
 {
     //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73C250(__int64 a1)
     using isAttacking_t = bool(__fastcall*)(
         __int64 a1  // RCX - Player
         );
-    auto IsAttacking = reinterpret_cast<isAttacking_t>(MemoryFunctions::base_module + 0x1DC280);
+    auto IsAttacking = reinterpret_cast<isAttacking_t>(Game::base_module + 0x1DC280);
     auto a1 = reinterpret_cast<__int64>(player_base);
     return IsAttacking(a1);
 }
 
-Container* MemoryFunctions::getContainer(int index) {
+Container* Game::getContainer(int index) {
     using getContainer_t = void(__fastcall*)(
         void* a1,  // RCX - Player Base
         void** a2, // RAX - result ptr
@@ -625,7 +624,7 @@ Container* MemoryFunctions::getContainer(int index) {
     return static_cast<Container*>(container);
 }
 
-std::vector<Container*> MemoryFunctions::getContainers() {
+std::vector<Container*> Game::getContainers() {
     using getContainer_t = void(__fastcall*)(
         void* a1,  // RCX - Player Base
         void** a2, // RAX - result ptr
@@ -648,7 +647,7 @@ std::vector<Container*> MemoryFunctions::getContainers() {
     return resultContainers;
 }
 
-Item* MemoryFunctions::getItem(Container *container, int index)
+Item* Game::getItem(Container *container, int index)
 {
     //Decomp by IDA for Medivia __int64 *__fastcall sub_7FF719EC8750(__int64 a1, int a2)
     using getItem_t = __int64(__fastcall*)(
@@ -662,7 +661,7 @@ Item* MemoryFunctions::getItem(Container *container, int index)
     return reinterpret_cast<Item*>(a2);
 }
 
-bool MemoryFunctions::isContainer(Item* item)
+bool Game::isContainer(Item* item)
 {
     //Decomp by IDA for Medivia bool __fastcall sub_7FF780DEEEE0(__int64 a1)
     using isContainer_t = bool(__fastcall*)(
@@ -672,19 +671,19 @@ bool MemoryFunctions::isContainer(Item* item)
     return IsContainer(item);;
 }
 
-bool MemoryFunctions::isLyingCorpse(Item* item)
+bool Game::isLyingCorpse(Item* item)
 {
     //Decomp by IDA for Medivia bool __fastcall sub_7FF6BA73F190(__int64 a1)
     using isLyingCorpse_t = bool(__fastcall*)(
         Item *a1  // RCX - Item
         );
-    auto IsLyingCorpse = reinterpret_cast<isLyingCorpse_t>(MemoryFunctions::base_module + 0x1DF1C0);
+    auto IsLyingCorpse = reinterpret_cast<isLyingCorpse_t>(Game::base_module + 0x1DF1C0);
     bool result = IsLyingCorpse(item);
     std::cout << result << std::endl;
     return result;
 }
 
-__int64 MemoryFunctions::getTopThing( __int64 tile) {
+uint64_t Game::getTopThing(uint64_t tile) {
     //decomp by ida _QWORD *__fastcall sub_7FF719F81CC0(__int64 a1, _QWORD *a2)
     using getTopThing_t = __int64(__fastcall*)(
     __int64 a1,  // RCX - Tile ?
@@ -696,123 +695,123 @@ __int64 MemoryFunctions::getTopThing( __int64 tile) {
     return reinterpret_cast<__int64>(a2);
 }
 
-__int64 MemoryFunctions::queue_getTile(uint32_t x, uint32_t y, uint16_t z) {
+__int64 Game::queue_getTile(uint32_t x, uint32_t y, uint16_t z) {
     return actionQueue.enqueue([x, y, z]() {
         return getTile(x, y, z);
     }).get();
 }
 
-std::vector<Entity*> MemoryFunctions::queue_getSpectatorsInRangeEx(int radius) {
+std::vector<Entity*> Game::queue_getSpectatorsInRangeEx(int radius) {
     return actionQueue.enqueue([radius]() {
         return getSpectatorsInRangeEx(radius);
     }).get();
 }
 
-void MemoryFunctions::queue_autoWalk(int x, int y, int z) {
+void Game::queue_autoWalk(int x, int y, int z) {
     actionQueue.enqueue([x, y, z]() {
         autoWalk(x, y, z);
     }).get();
 }
 
-void MemoryFunctions::queue_stop() {
+void Game::queue_stop() {
     actionQueue.enqueue([]() {
         stop();
     }).get();
 }
 
-void MemoryFunctions::queue_move(Item* item_src, Container* item_dest, int slot) {
+void Game::queue_move(Item* item_src, Container* item_dest, int slot) {
     actionQueue.enqueue([item_src, item_dest, slot]() {
         move(item_src, item_dest, slot);
     }).get();
 }
 
-void MemoryFunctions::queue_useWith(uint64_t item, uint64_t toThing) {
+void Game::queue_useWith(uint64_t item, uint64_t toThing) {
     actionQueue.enqueue([item, toThing]() {
         useWith(item, toThing);
     }).get();
 }
 
-uint64_t MemoryFunctions::queue_findItemInContainers(uint32_t item_id) {
+uint64_t Game::queue_findItemInContainers(uint32_t item_id) {
     return actionQueue.enqueue([item_id]() {
         return findItemInContainers(item_id);
     }).get();
 }
 
-int MemoryFunctions::queue_open(Item* item, Container* parent_container) {
+int Game::queue_open(Item* item, Container* parent_container) {
     return actionQueue.enqueue([item, parent_container]() {
         return open(item, parent_container);
     }).get();
 }
-void MemoryFunctions::queue_open(std::string container_name) {
+void Game::queue_open(std::string container_name) {
     actionQueue.enqueue([container_name]() {
         open(container_name);
     }).get();
 }
 
-void MemoryFunctions::queue_close(std::string container_name) {
+void Game::queue_close(std::string container_name) {
     return actionQueue.enqueue([container_name]() {
         return close(container_name);
     }).get();
 }
 
-void MemoryFunctions::queue_attack(Entity* entity) {
+void Game::queue_attack(Entity* entity) {
     actionQueue.enqueue([entity]() {
         attack(entity);
     }).get();
 }
 
-void MemoryFunctions::queue_talkChannel(const char *message) {
+void Game::queue_talkChannel(const char *message) {
     actionQueue.enqueue([message]() {
         talkChannel(message);
     }).get();
 }
 
-void MemoryFunctions::queue_setChaseMode(bool chaseMode) {
+void Game::queue_setChaseMode(bool chaseMode) {
     actionQueue.enqueue([chaseMode]() {
         setChaseMode(chaseMode);
     }).get();
 }
 
 
-bool MemoryFunctions::queue_isAttacking() {
+bool Game::queue_isAttacking() {
     return actionQueue.enqueue([]() {
         return isAttacking();
     }).get();
 }
 
-Container* MemoryFunctions::queue_getContainer(int index) {
+Container* Game::queue_getContainer(int index) {
     return actionQueue.enqueue([index]() {
         return getContainer(index);
     }).get();
 }
 
-std::vector<Container*> MemoryFunctions::queue_getContainers() {
+std::vector<Container*> Game::queue_getContainers() {
     return actionQueue.enqueue([]() {
         return getContainers();
     }).get();
 }
 
 
-Item* MemoryFunctions::queue_getItem(Container* container, int index) {
+Item* Game::queue_getItem(Container* container, int index) {
     return actionQueue.enqueue([container, index]() {
         return getItem(container, index);
     }).get();
 }
 
-bool MemoryFunctions::queue_isContainer(Item* item) {
+bool Game::queue_isContainer(Item* item) {
     return actionQueue.enqueue([item]() {
         return isContainer(item);
     }).get();
 }
 
 
-bool MemoryFunctions::queue_isLyingCorpse(Item* item) {
+bool Game::queue_isLyingCorpse(Item* item) {
     return actionQueue.enqueue([item]() {
         return isLyingCorpse(item);
     }).get();
 }
 
-__int64 MemoryFunctions::queue_getTopThing(__int64 tile) {
+uint64_t Game::queue_getTopThing(uint64_t tile) {
     return actionQueue.enqueue([tile]() {
         return getTopThing(tile);
     }).get();
