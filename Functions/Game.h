@@ -25,6 +25,7 @@ public:
     static uint64_t look_func_address;
 
     static bool has_target;
+    static bool has_loot;
 
     static SafeQueue actionQueue;
 

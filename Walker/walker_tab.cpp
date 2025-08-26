@@ -24,6 +24,19 @@ WalkerTab::WalkerTab(QWidget* parent) : QWidget(parent) {
     connect(waypointList_listWidget, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem* item) {
     delete waypointList_listWidget->takeItem(waypointList_listWidget->row(item));});
 
+    connect(waypointList_listWidget, &QListWidget::itemSelectionChanged, this, [this]() {
+    auto* item = waypointList_listWidget->currentItem();
+    const QVariantMap map = item->data(Qt::UserRole).toMap();
+    const QString action  = map.value("action").toString();
+
+    if (map.value("option").toString() == "Action") {
+        action_textEdit->setPlainText(action);
+    } else {
+        action_textEdit->clear();
+    }
+});
+
+
     profile_listWidget = new QListWidget(this);
     profile_lineEdit = new QLineEdit(this);
 

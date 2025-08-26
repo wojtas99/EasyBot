@@ -61,6 +61,7 @@ void WalkerThread::run()
             ScriptResult res;
             runtime.exec(action, res);
             if (jumped) { jumped = false; continue; }
+            msleep(500);
         }
 
 
@@ -78,7 +79,7 @@ void WalkerThread::run()
             continue;
         }
 
-        if (!Game::has_target || option == "Lure") {
+        if ((!Game::has_loot && !Game::has_target) || option == "Lure") {
             Game::queue_autoWalk(map_x, map_y, map_z);
         }
         if (Game::queue_isAttacking() && option != "Lure" && is_walking)

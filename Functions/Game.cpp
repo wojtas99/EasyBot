@@ -8,6 +8,7 @@ PlayerBase* Game::player_base = nullptr;
 uint64_t Game::base_module = 0;
 uint64_t Game::local_player_address = 0;
 bool Game::has_target = false;
+bool Game::has_loot = false;
 
 Game::LoadOption Game::load_functions_variant = LoadOption::Altaron;
 

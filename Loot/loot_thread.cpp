@@ -28,6 +28,7 @@ struct DestInfo {
 
 void LootThread::run() {
     while (m_running && !m_items.empty()) {
+        Game::has_loot = true;
         const auto containers = Game::queue_getContainers();
         if (containers.empty()) {
             msleep(100);
@@ -64,6 +65,7 @@ void LootThread::run() {
                 }
             }
         }
+        if (!Game::has_target) {Game::has_loot = false;}
         msleep(100);
     }
 }
