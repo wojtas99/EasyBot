@@ -15,11 +15,8 @@ public:
     explicit TargetTab(QWidget* parent = nullptr);
     signals:
     void requestLoot(int containerIndex);
-private slots:
-
-    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count) const;
-
-    void startTargetThread(int state);
+public slots:
+    void setTargetEnabled(bool on);
 
 
 private:
@@ -28,6 +25,8 @@ private:
 
     void targetList();
     void profileList();
+    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count) const;
+
 
     TargetThread* targetThread = nullptr;
 };

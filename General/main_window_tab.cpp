@@ -22,6 +22,7 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     main_tabWidget->addTab(heal_tabWidget, "Heal");
 
     connect(status_tabWidget, &StatusTab::walkerToggled,walker_tabWidget,  &WalkerTab::setWalkerEnabled);
+    connect(status_tabWidget, &StatusTab::targetToggled,target_tabWidget,  &TargetTab::setTargetEnabled);
     connect(status_tabWidget, &StatusTab::healingToggled,heal_tabWidget,  &HealTab::setHealEnabled);
     connect(target_tabWidget, &TargetTab::requestLoot,loot_tabWidget,   &LootTab::startLootThread,Qt::QueuedConnection);
 

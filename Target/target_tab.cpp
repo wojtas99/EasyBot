@@ -34,7 +34,6 @@ void TargetTab::targetList() {
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
     auto* add_button = new QPushButton("Add", this);
-    auto start_checkBox = new QCheckBox("Start Targeting", this);
 
     auto targetName_lineEdit = new QLineEdit(this);
     targetName_lineEdit->setPlaceholderText("Orc | * - all monsters");
@@ -98,8 +97,6 @@ void TargetTab::targetList() {
     });
 
 
-    connect(start_checkBox, &QCheckBox::stateChanged, this, &TargetTab::startTargetThread);
-
     auto groupbox2_layout = new QVBoxLayout();
 
     auto layout1 = new QHBoxLayout();
@@ -143,7 +140,7 @@ void TargetTab::targetList() {
     groupbox2_layout->addLayout(layout4);
     groupbox2_layout->addLayout(layout5);
     groupbox2_layout->addLayout(layout6);
-    groupbox2_layout->addWidget(start_checkBox);
+
     groupbox2_layout->addStretch();
 
     groupbox_layout->addWidget(targetList_listWidget);
@@ -192,9 +189,9 @@ void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distanc
     targetList_listWidget->addItem(item);
 }
 
-void TargetTab::startTargetThread(int state) {
-    if (state) {
-        if (!targetThread) {
+void TargetTab::setTargetEnabled(bool on) {
+    if (on) {
+        if (targetThread) return;
             QList<QVariantMap> targets;
             for (int i = 0; i < targetList_listWidget->count(); ++i) {
                 QListWidgetItem* item = targetList_listWidget->item(i);
@@ -205,13 +202,11 @@ void TargetTab::startTargetThread(int state) {
             connect(targetThread, &TargetThread::requestLoot,this,&TargetTab::requestLoot);
             std::cout << "Target Thread created" << std::endl;
             targetThread->start();
-        }
     } else {
-        if (targetThread) {
-            targetThread->stop();
-            targetThread->wait();
-            delete targetThread;
-            targetThread = nullptr;
-        }
+        if (!targetThread) return;
+        targetThread->stop();
+        targetThread->wait();
+        delete targetThread;
+        targetThread = nullptr;
     }
 }
