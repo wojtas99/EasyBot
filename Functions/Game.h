@@ -53,8 +53,9 @@ public:
 
     static int queue_open(Item* item,Container* parent_container);
     static int open(Item* item, Container* parent_container);
-    static void queue_open(std::string container_name);
-    static void open(std::string container_name);
+
+    static void queue_openAll(int index);
+    static void openAll(int index);
 
     static void queue_close(std::string container_name);
     static void close(std::string container_name);

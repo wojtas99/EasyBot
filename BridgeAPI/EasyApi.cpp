@@ -31,6 +31,10 @@ void EasyApi::close(const QString& container_name) {
     Game::queue_close(u.constData());
 }
 
+void EasyApi::openAll(int index) {
+    Game::queue_openAll(index);
+}
+
 std::function<void(const QString&)> EasyApi::onLabel = {};
 
 void EasyApi::label(const QString& name) {

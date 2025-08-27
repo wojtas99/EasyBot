@@ -1,4 +1,20 @@
 #pragma once
+
+class Item
+{
+public:
+    char pad_0000[72]; // 0x0000
+    char name[32]; // 0x0048
+    char pad_0068[56]; // 0x0068
+    uint16_t id; // 0xA0
+    char pad_00A2[2]; // 0x00A2
+    uint16_t count; // 0x00A4
+    char pad_00A6[146]; // 0x00A6
+    uint32_t x; // 0x0138
+    uint32_t y; // 0x013C
+    uint16_t z; // 0x0140
+
+};
 class LocalPlayer
 {
 public:
@@ -11,7 +27,7 @@ public:
     char pad_03D4[80]; //0x03D0
     uint64_t *head; //0x0420
     uint64_t *necklace; //0x0428
-    uint64_t *container; //0x0430
+    Item *container; //0x0430
     uint64_t *armor; //0x0438
     uint64_t *right_hand; //0x0440
     uint64_t *left_hand; //0x0448
@@ -67,22 +83,6 @@ public:
     uint16_t z; //0x0088
     char pad_008A[6]; //0x008A
     uint16_t walkable; //0x0090
-};
-
-class Item
-{
-public:
-    char pad_0000[72]; // 0x0000
-    char name[32]; // 0x0048
-    char pad_0068[56]; // 0x0068
-    uint16_t id; // 0xA0
-    char pad_00A2[2]; // 0x00A2
-    uint16_t count; // 0x00A4
-    char pad_00A6[146]; // 0x00A6
-    uint32_t x; // 0x0138
-    uint32_t y; // 0x013C
-    uint16_t z; // 0x0140
-
 };
 
 class Container {

@@ -514,29 +514,6 @@ int Game::open(Item* item, Container* parent_container)
     return Open(a1, &a2, &a3);
 }
 
-void Game::open(std::string container_name){
-    using open_t = __int64(__fastcall *)(
-        __int64 a1, // Player Base
-        uint64_t *a2, // Item ID
-        uint64_t *a3 // Parent Container ID
-    );
-    std::transform(container_name.begin(), container_name.end(), container_name.begin(),[](unsigned char c){ return std::tolower(c); });
-    auto Open = reinterpret_cast<open_t>(open_func_address);
-    auto a1 = reinterpret_cast<__int64>(player_base);
-    auto containers = getContainers();
-    for (auto container : containers) {
-        for (int i = 0; i < container->number_of_items; ++i) {
-            auto item = getItem(container, i);
-            std::cout << item->name << std::endl;
-            if (item->name == container_name) {
-                auto a2 = reinterpret_cast<uint64_t>(item);
-                auto tmp = reinterpret_cast<uint64_t>(container);
-                Open(a1, &a2, &tmp);
-            }
-        }
-    }
-}
-
 void Game::close(std::string container_name)
 {
     using close_t = __int64(__fastcall *)(
@@ -548,7 +525,6 @@ void Game::close(std::string container_name)
     auto a1 = reinterpret_cast<__int64>(player_base);
     std::vector<Container*> containers = getContainers();
     for (auto container : containers) {
-
         if (container->name == container_name) {
             auto tmp = reinterpret_cast<uint64_t>(container);
             Close(a1, &tmp);
@@ -659,7 +635,7 @@ Item* Game::getItem(Container *container, int index)
     auto GetItem = reinterpret_cast<getItem_t>(getItem_func_address);
     void *a2 = nullptr;
     GetItem(container, &a2, index);
-    return reinterpret_cast<Item*>(a2);
+    return static_cast<Item*>(a2);
 }
 
 bool Game::isContainer(Item* item)
@@ -694,6 +670,14 @@ uint64_t Game::getTopThing(uint64_t tile) {
     void* a2 = nullptr;
     GetTopThing(tile, &a2);
     return reinterpret_cast<__int64>(a2);
+}
+
+void Game::openAll(int index) {
+    auto container = getContainer(index);
+    for (int i = 0; i < container->number_of_items; ++i) {
+        auto item = getItem(container, i);
+        open(item, 0);
+    }
 }
 
 __int64 Game::queue_getTile(uint32_t x, uint32_t y, uint16_t z) {
@@ -741,11 +725,6 @@ uint64_t Game::queue_findItemInContainers(uint32_t item_id) {
 int Game::queue_open(Item* item, Container* parent_container) {
     return actionQueue.enqueue([item, parent_container]() {
         return open(item, parent_container);
-    }).get();
-}
-void Game::queue_open(std::string container_name) {
-    actionQueue.enqueue([container_name]() {
-        open(container_name);
     }).get();
 }
 
@@ -815,6 +794,14 @@ bool Game::queue_isLyingCorpse(Item* item) {
 uint64_t Game::queue_getTopThing(uint64_t tile) {
     return actionQueue.enqueue([tile]() {
         return getTopThing(tile);
+    }).get();
+}
+
+
+
+void Game::queue_openAll(int index) {
+    actionQueue.enqueue([index]() {
+        openAll(index);
     }).get();
 }
 
