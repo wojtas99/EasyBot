@@ -33,8 +33,7 @@ WalkerTab::WalkerTab(QWidget* parent) : QWidget(parent) {
         action_textEdit->setPlainText(action);
     } else {
         action_textEdit->clear();
-    }
-});
+    }});
 
 
     profile_listWidget = new QListWidget(this);

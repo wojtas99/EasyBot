@@ -59,7 +59,7 @@ void WalkerThread::run()
             ScriptResult res;
             runtime.exec(action, res);
             if (jumped) { jumped = false; continue; }
-            msleep(500);
+            msleep(1500);
         }
 
 
