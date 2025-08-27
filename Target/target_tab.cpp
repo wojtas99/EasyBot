@@ -72,17 +72,21 @@ void TargetTab::targetList() {
     count_comboBox->addItem("4");
     count_comboBox->addItem("5");
 
+    auto openCorpse_checkBox = new QCheckBox("Open Corpse");
 
-    connect(add_button, &QPushButton::clicked, this, [this, hpFrom_lineEdit, hpTo_lineEdit, distance_slider, desiredStance_comboBox, targetName_lineEdit, monsterAttacks_comboBox, count_comboBox]() {
+
+    connect(add_button, &QPushButton::clicked, this, [this, hpFrom_lineEdit, hpTo_lineEdit,
+        distance_slider, desiredStance_comboBox, targetName_lineEdit, monsterAttacks_comboBox, count_comboBox, openCorpse_checkBox]() {
         int hpFrom = hpFrom_lineEdit->text().toInt();
         int hpTo = hpTo_lineEdit->text().toInt();
         int distance = distance_slider->value();
         int count = count_comboBox->currentIndex();
+        bool openCorpse = openCorpse_checkBox->isChecked();
 
         QString desiredStance = desiredStance_comboBox->currentText();
         QString monsterAttacks = monsterAttacks_comboBox->currentText();
 
-        addTarget(targetName_lineEdit->text(), hpFrom, hpTo, distance, desiredStance, monsterAttacks, count);
+        addTarget(targetName_lineEdit->text(), hpFrom, hpTo, distance, desiredStance, monsterAttacks, count, openCorpse);
         hpFrom_lineEdit->clear();
         hpTo_lineEdit->clear();
         targetName_lineEdit->clear();
@@ -125,12 +129,14 @@ void TargetTab::targetList() {
 
     layout4->addWidget(new QLabel("Count", this));
     layout4->addWidget(count_comboBox);
+    layout4->addWidget(openCorpse_checkBox);
 
     layout5->addWidget(new QLabel("Desired Stance", this));
     layout5->addWidget(desiredStance_comboBox);
 
     layout6->addWidget(new QLabel("Monster Attacks", this));
     layout6->addWidget(monsterAttacks_comboBox);
+
 
 
 
@@ -174,7 +180,7 @@ void TargetTab::profileList()
     dynamic_cast<QGridLayout*>(layout())->setColumnStretch(1, 1);
 }
 
-void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count) const {
+void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count, bool open) const {
     auto* item = new QListWidgetItem(name);
     QVariantMap data;
     data["name"] = name;
@@ -184,6 +190,7 @@ void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distanc
     data["desiredStance"] = desiredStance;
     data["monsterAttacks"] = monsterAttacks;
     data["count"] = count + 1;
+    data["open"] = open;
 
     item->setData(Qt::UserRole, data);
     targetList_listWidget->addItem(item);

@@ -23,7 +23,7 @@ private:
 
     void targetList();
     void profileList();
-    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count) const;
+    void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count, bool open) const;
 
 
     TargetThread* targetThread = nullptr;
