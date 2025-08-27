@@ -50,7 +50,8 @@ void TargetThread::run() {
                 std::vector<Entity*> entities = Game::queue_getSpectatorsInRangeEx(dist_threshold);
                 for (Entity* entity : entities) {
                     if ((entity->name == target_name || target_name == "*") &&
-                    hp_from >= entity->hp && entity->hp > hp_to) {
+                    hp_from >= entity->hp && entity->hp > hp_to &&
+                    entity->z == Game::map_view->LocalPlayer->z) {
                         target = get_Closest(entity, target);
                         count -= 1;
                     }
@@ -67,7 +68,7 @@ void TargetThread::run() {
             } else {
                 target = Game::player_base->Entity;
                 if (target) {
-                    if (target-> x != 65535 && target-> x != 65535 && target-> x != 255) {
+                    if (target-> x != 65535 && target-> y != 65535 && target-> z != 255) {
                         enemy_coords[0] = target-> x;
                         enemy_coords[1] = target-> y;
                         enemy_coords[2] = target-> z;
