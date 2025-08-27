@@ -20,7 +20,7 @@ private:
 
     QLineEdit* profile_lineEdit;
 
-    //void addHeal(const QString& option, const QString& heal, int hpBelow, int hpAbove, int minMp, const QString& contidion) const;
+    void addSpell(const QString& option, const QString& spell, int minHp, int minMp, int count, const QString& targetName, int hpFrom, int hpTo, int dist) const;
     void saveProfile() const;
     void loadProfile() const;
     void spellList();

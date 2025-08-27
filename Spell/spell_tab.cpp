@@ -36,6 +36,8 @@ void SpellTab::spellList() {
     auto groupbox = new QGroupBox("Spells", this);
     auto groupbox_layout = new QVBoxLayout(groupbox);
 
+    auto add_button = new QPushButton("Add Spell", this);
+
     auto option_comboBox = new QComboBox();
     option_comboBox->addItem("Say");
     option_comboBox->addItem("Use on target");
@@ -49,11 +51,10 @@ void SpellTab::spellList() {
     auto count_lineEdit = new QLineEdit();
     count_lineEdit->setPlaceholderText("2");
     count_lineEdit->setValidator(new QIntValidator(1, 15));
-    count_lineEdit->setMinimumWidth(40);
 
     auto spell_lineEdit = new QLineEdit();
     spell_lineEdit->setPlaceholderText("Spell name | ItemID");
-    spell_lineEdit->setMinimumWidth(200);
+    spell_lineEdit->setMinimumWidth(100);
 
     auto minHp_lineEdit = new QLineEdit();
     minHp_lineEdit->setPlaceholderText("50");
@@ -61,7 +62,7 @@ void SpellTab::spellList() {
 
     auto targetHpFrom_lineEdit = new QLineEdit();
     targetHpFrom_lineEdit->setPlaceholderText("100");
-    targetHpFrom_lineEdit->setValidator(new QIntValidator(100, 1));
+    targetHpFrom_lineEdit->setValidator(new QIntValidator(0, 100));
 
     auto targetHpTo_lineEdit = new QLineEdit();
     targetHpTo_lineEdit->setPlaceholderText("0");
@@ -71,29 +72,51 @@ void SpellTab::spellList() {
     minMp_lineEdit->setPlaceholderText("300");
     minMp_lineEdit->setValidator(new QIntValidator(0, 9999));
 
+    auto dist_lineEdit = new QLineEdit();
+    dist_lineEdit->setPlaceholderText("3");
+    dist_lineEdit->setValidator(new QIntValidator(1, 7));
+
     auto layout1 = new QHBoxLayout();
     auto layout2 = new QHBoxLayout();
 
     layout1->addWidget(option_comboBox);
+    layout1->addWidget(new QLabel("Name:"));
+    layout1->addWidget(target_lineEdit);
     layout1->addWidget(spell_lineEdit);
-    layout1->addWidget(new QLabel("Min HP%:"));
-    layout1->addWidget(minHp_lineEdit);
-    layout1->addWidget(new QLabel("Min MP:"));
-    layout1->addWidget(minMp_lineEdit);
 
-    layout2->addWidget(new QLabel("Count:"));
-    layout2->addWidget(count_lineEdit);
-    layout2->addWidget(new QLabel("Name:"));
-    layout2->addWidget(target_lineEdit);
+    layout2->addWidget(new QLabel("Min HP%:"));
+    layout2->addWidget(minHp_lineEdit);
+    layout2->addWidget(new QLabel("Min MP:"));
+    layout2->addWidget(minMp_lineEdit);
+
     layout2->addWidget(new QLabel("HP% range", this));
     layout2->addWidget(targetHpFrom_lineEdit);
     layout2->addWidget(new QLabel("to", this));
     layout2->addWidget(targetHpTo_lineEdit);
+    layout2->addWidget(new QLabel("Count:"));
+    layout2->addWidget(count_lineEdit);
+    layout2->addWidget(new QLabel("Dist:"));
+    layout2->addWidget(dist_lineEdit);
 
     groupbox_layout->addWidget(spellList_listWidget);
     groupbox_layout->addLayout(layout1);
     groupbox_layout->addLayout(layout2);
+    groupbox_layout->addWidget(add_button);
+    connect(add_button, &QPushButton::clicked, this, [this, option_comboBox, spell_lineEdit, minHp_lineEdit, minMp_lineEdit, count_lineEdit, target_lineEdit,
+        targetHpFrom_lineEdit, targetHpTo_lineEdit, dist_lineEdit]() {
 
+    addSpell(option_comboBox->currentText(), spell_lineEdit->text(), minHp_lineEdit->text().toInt(),
+    minMp_lineEdit->text().toInt(), count_lineEdit->text().toInt(), target_lineEdit->text(),
+    targetHpFrom_lineEdit->text().toInt(), targetHpTo_lineEdit->text().toInt(), dist_lineEdit->text().toInt());
+        spell_lineEdit->clear();
+        minHp_lineEdit->clear();
+        minMp_lineEdit->clear();
+        count_lineEdit->clear();
+        target_lineEdit->clear();
+        targetHpFrom_lineEdit->clear();
+        targetHpTo_lineEdit->clear();
+        dist_lineEdit->clear();
+    });
 
 
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
@@ -131,7 +154,6 @@ void SpellTab::profileList() {
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0);
 
 }
-
 
 void SpellTab::saveProfile() const {
     const QString name = profile_lineEdit->text().trimmed();
@@ -217,7 +239,6 @@ void SpellTab::setSpellEnabled(bool on) {
             auto* item = spellList_listWidget->item(i);
             spells.append(item->data(Qt::UserRole).toMap());
         }
-
         spellThread = new SpellThread(spells);
         spellThread->start();
     } else {
@@ -227,4 +248,23 @@ void SpellTab::setSpellEnabled(bool on) {
         delete spellThread;
         spellThread = nullptr;
     }
+}
+
+void SpellTab::addSpell(const QString& option, const QString& spell, int minHp, int minMp, int count, const QString& targetName, int hpFrom, int hpTo, int dist) const {
+    QString name = option + " " + spell + " -> " + targetName;
+    auto* item = new QListWidgetItem(option + " " + spell + " -> " + targetName);
+    QVariantMap data;
+    data["option"] = option.toStdString().c_str();
+    data["spell"] = spell.toStdString().c_str();
+    data["minHp"] = minHp;
+    data["minMp"] = minMp;
+    data["count"] = count;
+    data["targetName"] = targetName.toStdString().c_str();
+    data["hpFrom"] = hpFrom;
+    data["hpTo"] = hpTo;
+    data["dist"] = dist;
+
+    item->setData(Qt::UserRole, data);
+    spellList_listWidget->addItem(item);
+
 }

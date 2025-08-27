@@ -10,13 +10,9 @@ class SelectClientTab : public QWidget {
 
 public:
     SelectClientTab(QWidget *parent = nullptr);
-
-private slots:
-    void load_altaron();
     void load_medivia();
 
 private:
-    QPushButton *altaron_button;
     QPushButton *medivia_button;
 
     MainWindowTab *main_window_tab = nullptr;

@@ -31,10 +31,10 @@ void HealThread::run()
                         Game::queue_talkChannel(heal.c_str());
                     } else {
                         auto heal = item["heal"].toInt();
-                        auto item = Game::queue_findItemInContainers(heal);
+                        auto item_use = Game::queue_findItemInContainers(heal);
                         auto player = reinterpret_cast<uint64_t>(Game::map_view->LocalPlayer);
-                        if (item) {
-                            Game::queue_useWith(item, player);
+                        if (item_use) {
+                            Game::queue_useWith(item_use, player);
                         }
                     }
                     msleep(500);

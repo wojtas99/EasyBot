@@ -11,15 +11,12 @@ SelectClientTab::SelectClientTab(QWidget *parent) : QWidget(parent) {
 
     QGridLayout *layout = new QGridLayout(this);
 
-    altaron_button = new QPushButton("Altaron", this);
     medivia_button = new QPushButton("Medivia", this);
 
-    layout->addWidget(altaron_button, 0, 0);
-    layout->addWidget(medivia_button, 1, 0);
+    layout->addWidget(medivia_button, 0, 0);
 
     setLayout(layout);
 
-    connect(altaron_button, &QPushButton::clicked, this, &SelectClientTab::load_altaron);
     connect(medivia_button, &QPushButton::clicked, this, &SelectClientTab::load_medivia);
 }
 
@@ -40,7 +37,6 @@ void __fastcall hookedLookFunc(__int64 a1, void (__fastcall ****a2)(__int64, __i
     uint64_t result = *reinterpret_cast<uint64_t*>(a2);
     Item* item = reinterpret_cast<Item*>(result);
     Game::talkChannel(std::to_string(item->id).c_str());
-    //std::cout << std::hex << MemoryFunctions::findItemInContainers(item->id) << std::endl;
     originalLookFunc(a1, a2);
 }
 
@@ -67,13 +63,6 @@ void setupMainLoopHook(uint64_t gameLoopAddress) {
     std::cout << "[HOOK] MainFunc Sucessfully\n";
 }
 SafeQueue Game::actionQueue;
-
-void SelectClientTab::load_altaron() {
-    Game mf(Game::LoadOption::Altaron);
-    this->close();
-    main_window_tab = new MainWindowTab();
-    main_window_tab->show();
-}
 
 void SelectClientTab::load_medivia() {
     Game mf(Game::LoadOption::Medivia);
