@@ -18,9 +18,9 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
     std::filesystem::create_directories("Save");
     std::filesystem::create_directories("Save/Waypoints");
 
-    AllocConsole();
-    FILE* f;
-    freopen_s(&f, "CONOUT$", "w", stdout);
+    //AllocConsole();
+    //FILE* f;
+    //freopen_s(&f, "CONOUT$", "w", stdout);
     int argc = 1;
     QApplication app(argc, nullptr);
     SelectClientTab w;
@@ -36,8 +36,8 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
     "QLabel { color: #f0f0f0; }";
     app.setStyleSheet(darkStyle);
     app.exec();
-    fclose(f);
-    FreeConsole();
+    //fclose(f);
+    //FreeConsole();
 
     CreateThread(0, 0, EjectThread, 0, 0, 0);
     return 0;
