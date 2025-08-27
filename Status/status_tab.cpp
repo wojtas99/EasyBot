@@ -21,6 +21,9 @@ StatusTab::StatusTab(QWidget* parent) : QWidget(parent) {
     healing_checkBox = new QCheckBox("Enable Healing", g);
     healing_checkBox->setChecked(false);
     v->addWidget(healing_checkBox);
+    spells_checkBox = new QCheckBox("Enable Spells", g);
+    spells_checkBox->setChecked(false);
+    v->addWidget(spells_checkBox);
     v->addStretch();
 
     auto* root = new QVBoxLayout(this);
@@ -31,5 +34,6 @@ StatusTab::StatusTab(QWidget* parent) : QWidget(parent) {
     connect(target_checkBox, &QCheckBox::toggled, this, &StatusTab::targetToggled);
     connect(loot_checkBox, &QCheckBox::toggled, this, &StatusTab::lootToggled);
     connect(healing_checkBox, &QCheckBox::toggled, this, &StatusTab::healingToggled);
+    connect(spells_checkBox, &QCheckBox::toggled, this, &StatusTab::spellsToggled);
 }
 

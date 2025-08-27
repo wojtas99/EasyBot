@@ -49,6 +49,10 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         BridgeAPI/EasyApi.h
         BridgeAPI/ScriptRuntime.cpp
         BridgeAPI/ScriptRuntime.h
+        Spell/spell_tab.cpp
+        Spell/spell_tab.h
+        Spell/spell_thread.cpp
+        Spell/spell_thread.h
 )
 
 target_link_libraries(EasyBot PRIVATE

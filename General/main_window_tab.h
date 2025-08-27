@@ -6,6 +6,7 @@
 #include "../Target/target_tab.h"
 #include "../Loot/loot_tab.h"
 #include "../Heal/heal_tab.h"
+#include "../Spell/spell_tab.h"
 
 
 
@@ -24,6 +25,7 @@ private:
     TargetTab *target_tabWidget;
     LootTab *loot_tabWidget;
     HealTab *heal_tabWidget;
+    SpellTab *spell_tabWidget;
 };
 
 

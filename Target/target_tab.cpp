@@ -36,7 +36,7 @@ void TargetTab::targetList() {
     auto* add_button = new QPushButton("Add", this);
 
     auto targetName_lineEdit = new QLineEdit(this);
-    targetName_lineEdit->setPlaceholderText("Orc | * - all monsters");
+    targetName_lineEdit->setPlaceholderText("Orc | * - All targets");
 
     auto hpFrom_lineEdit = new QLineEdit(this);
     hpFrom_lineEdit->setPlaceholderText("100");

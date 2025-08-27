@@ -1,4 +1,7 @@
 #include "target_thread.h"
+
+#include <iostream>
+
 #include "../Functions/Game.h"
 #include <QThread>
 
@@ -18,6 +21,7 @@ Entity* get_Closest(Entity* target, Entity* compare) {
 }
 
 void TargetThread::run() {
+    int enemy_coords[3] = {0, 0, 0};
     bool open_corpse = false;
     Entity *target = nullptr;
     while (m_running && !m_targets.isEmpty()) {
@@ -31,12 +35,16 @@ void TargetThread::run() {
             std::string monsterAttacks = m_target.value("monsterAttacks").toString().toStdString();
             bool open = m_target.value("open").toBool();
             if (Game::player_base->Entity == 0) {
-                if (open_corpse) {
+                if (open_corpse && target) {
                     open_corpse = false;
-                    //uint64_t tile = tile = Game::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
-                    //uint64_t top_thing = Game::queue_getTopThing(tile);
-                    //int index = Game::queue_open(reinterpret_cast<Item*>(top_thing), 0);
-                    msleep(500);
+                    uint64_t tile = Game::queue_getTile(enemy_coords[0], enemy_coords[1], enemy_coords[2]);
+                    if (tile) {
+                        uint64_t top_thing = Game::queue_getTopThing(tile);
+                        if (top_thing) {
+                            Game::queue_open(reinterpret_cast<Item*>(top_thing), 0);
+                            msleep(500);
+                        }
+                    }
                 }
                 target = nullptr;
                 std::vector<Entity*> entities = Game::queue_getSpectatorsInRangeEx(dist_threshold);
@@ -50,11 +58,21 @@ void TargetThread::run() {
                 if (target && count <= 0) {
                     Game::has_target = true;
                     Game::queue_stop();
+                    msleep(500);
                     open_corpse = open;
                     Game::queue_attack(target);
                     msleep(500);
                     if (desiredStance == "Chase") {Game::queue_setChaseMode(true);}
                 } else {Game::has_target = false;}
+            } else {
+                target = Game::player_base->Entity;
+                if (target) {
+                    if (target-> x != 65535 && target-> x != 65535 && target-> x != 255) {
+                        enemy_coords[0] = target-> x;
+                        enemy_coords[1] = target-> y;
+                        enemy_coords[2] = target-> z;
+                    }
+                }
             }
             msleep(50);
         }

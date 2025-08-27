@@ -52,7 +52,7 @@ class PlayerBase
 public:
     char pad_0000[272]; //0x0000
     LocalPlayer *LocalPlayer; //0x0110
-    void *Entity; //0x0118
+    Entity *Entity; //0x0118
 };
 
 

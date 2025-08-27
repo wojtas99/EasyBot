@@ -22,9 +22,8 @@ void WalkerThread::run()
     ScriptRuntime runtime;
     int timer = 0, x = 0, y = 0;
     bool is_walking = false;
-    int idx = find_wpt();
-
-    bool jumped = false; // NEW
+    bool jumped = false;
+    int idx = 0;
     EasyApi::onLabel = [this, &idx, &jumped](const QString& name) { // NEW
         auto it = m_labelIndex.constFind(name);
         if (it != m_labelIndex.cend()) {
@@ -33,8 +32,7 @@ void WalkerThread::run()
             emit indexUpdate(idx);
         }
     };
-
-
+    idx = find_wpt();
     while (m_running && !m_waypoints.isEmpty())
     {
 
@@ -87,8 +85,8 @@ void WalkerThread::run()
             Game::queue_stop();
             is_walking = false;
         }
-        msleep(25);
-        timer += 25;
+        msleep(100);
+        timer += 100;
     }
 }
 
@@ -110,7 +108,6 @@ int WalkerThread::find_wpt()
             return idx;
         }
     }
-
     return 0;
 }
 

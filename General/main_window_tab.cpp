@@ -13,16 +13,19 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     target_tabWidget = new TargetTab();
     loot_tabWidget = new LootTab();
     heal_tabWidget = new HealTab();
+    spell_tabWidget = new SpellTab();
     main_tabWidget->addTab(status_tabWidget, "Status");
     main_tabWidget->addTab(walker_tabWidget, "Walker");
     main_tabWidget->addTab(target_tabWidget, "Target");
     main_tabWidget->addTab(loot_tabWidget, "Loot");
     main_tabWidget->addTab(heal_tabWidget, "Heal");
+    main_tabWidget->addTab(spell_tabWidget, "Spell");
 
     connect(status_tabWidget, &StatusTab::walkerToggled,walker_tabWidget,  &WalkerTab::setWalkerEnabled);
     connect(status_tabWidget, &StatusTab::targetToggled,target_tabWidget,  &TargetTab::setTargetEnabled);
     connect(status_tabWidget, &StatusTab::lootToggled,loot_tabWidget,  &LootTab::setLootEnabled);
     connect(status_tabWidget, &StatusTab::healingToggled,heal_tabWidget,  &HealTab::setHealEnabled);
+    connect(status_tabWidget, &StatusTab::healingToggled,spell_tabWidget,  &SpellTab::setSpellEnabled);
 
     setCentralWidget(main_tabWidget);
 }

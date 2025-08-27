@@ -13,11 +13,13 @@ public:
     void targetToggled(bool on);
     void lootToggled(bool on);
     void healingToggled(bool on);
+    void spellsToggled(bool on);
 private:
     QCheckBox* walker_checkBox = nullptr;
     QCheckBox* target_checkBox = nullptr;
     QCheckBox* loot_checkBox = nullptr;
     QCheckBox* healing_checkBox = nullptr;
+    QCheckBox* spells_checkBox = nullptr;
 
 };
 
