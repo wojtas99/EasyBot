@@ -25,7 +25,7 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     connect(status_tabWidget, &StatusTab::targetToggled,target_tabWidget,  &TargetTab::setTargetEnabled);
     connect(status_tabWidget, &StatusTab::lootToggled,loot_tabWidget,  &LootTab::setLootEnabled);
     connect(status_tabWidget, &StatusTab::healingToggled,heal_tabWidget,  &HealTab::setHealEnabled);
-    connect(status_tabWidget, &StatusTab::healingToggled,spell_tabWidget,  &SpellTab::setSpellEnabled);
+    connect(status_tabWidget, &StatusTab::spellsToggled,spell_tabWidget,  &SpellTab::setSpellEnabled);
 
     setCentralWidget(main_tabWidget);
 }
