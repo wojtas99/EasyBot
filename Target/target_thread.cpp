@@ -5,6 +5,18 @@
 #include "../Loot/loot_tab.h"
 #include "../Structs/medivia_struct.h"
 
+Entity* get_Closest(Entity* target, Entity* compare) {
+    if (!compare) {return target;}
+    int target_x = abs(static_cast<int>(target->x - Game::map_view->LocalPlayer->x));
+    int target_y = abs(static_cast<int>(target->y - Game::map_view->LocalPlayer->y));
+    int compare_x = abs(static_cast<int>(compare->x - Game::map_view->LocalPlayer->x));
+    int compare_y = abs(static_cast<int>(compare->y - Game::map_view->LocalPlayer->y));
+    int target_dist = target_x + target_y;
+    int compare_dist = compare_x + compare_y;
+    if (compare_dist < target_dist) {return compare;}
+    return target;
+}
+
 void TargetThread::run() {
     bool open_corpse = false;
     Entity *target = nullptr;
@@ -31,7 +43,7 @@ void TargetThread::run() {
                 for (Entity* entity : entities) {
                     if ((entity->name == target_name || target_name == "*") &&
                     hp_from >= entity->hp && entity->hp > hp_to) {
-                        target = entity;
+                        target = get_Closest(entity, target);
                         count -= 1;
                     }
                 }
@@ -39,9 +51,9 @@ void TargetThread::run() {
                     Game::has_target = true;
                     Game::queue_stop();
                     open_corpse = open;
-                    if (desiredStance == "Chase") {Game::queue_setChaseMode(true);}
                     Game::queue_attack(target);
                     msleep(500);
+                    if (desiredStance == "Chase") {Game::queue_setChaseMode(true);}
                 } else {Game::has_target = false;}
             }
             msleep(50);
