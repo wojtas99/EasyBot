@@ -36,7 +36,7 @@ void SpellThread::run()
             current_hp = 100*(current_hp/current_maxhp);
             std::cout << count << std::endl;
             std::cout << current_hp << std::endl;
-            std::cout << option.toString().toStdString() << std::endl;
+            std::cout << option << std::endl;
             if (target && count <= 0 && current_hp >= minHp && Game::map_view->LocalPlayer->mp >= minMp) {
                 if (option == "Say") {
                     auto spell = item["spell"].toString().toStdString().c_str();
