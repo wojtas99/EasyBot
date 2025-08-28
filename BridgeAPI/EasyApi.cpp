@@ -61,14 +61,14 @@ void EasyApi::sleep(int ms) {
     }
 }
 
-QVariantList spectatorsInRange(int radius) const {
+QVariantList EasyApi::getSpectatorsInRangeEx(int radius) {
     QVariantList out;
-    const auto entities = Game::getSpectatorsInRangeEx(radius);
+    const auto entities = Game::queue_getSpectatorsInRangeEx(radius);
     out.reserve(int(entities.size()));
     for (auto* entity : entities) {
         if (!entity) continue;
         QVariantMap m;
-        m["id"] = quint64(reinterpret_cast<uint64_t>(entity));
+        m["id"]   = quint64(reinterpret_cast<uint64_t>(entity));
         m["name"] = QString::fromStdString(entity->name);
         m["x"] = entity->x;
         m["y"] = entity->y;

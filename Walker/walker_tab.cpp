@@ -140,6 +140,9 @@ void WalkerTab::waypointList() {
             action_textEdit->setPlaceholderText("if (api.cap() < 400) { api.label(\"Bank\") } else { api.label(\"Start\")}\n""api.sleep(1000);");
         } else if (t == "Use") {
             action_textEdit->setPlaceholderText("0 - Use \n""2148 - Use ItemID");
+        } else {
+            action_textEdit->setPlaceholderText("");
+            action_textEdit->setText("");
         }
         });
 
