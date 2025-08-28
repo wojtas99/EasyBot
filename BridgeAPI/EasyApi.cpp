@@ -78,3 +78,19 @@ QVariantList EasyApi::getSpectatorsInRangeEx(int radius) {
     }
     return out;
 }
+
+QVariantMap EasyApi::getTopThing(int x, int y, int z) {
+    QVariantMap out;
+    const auto tile = Game::queue_getTile(x, y, z);
+    if (!tile) return out;
+    const auto top = Game::queue_getTopThing(tile);
+    if (!top) return out;
+    auto* item = reinterpret_cast<Item*>(top);
+    out["id"]   = quint64(reinterpret_cast<uint64_t>(item));
+    out["x"] = item->x;
+    out["y"] = item->y;
+    out["z"] = item->z;
+    out["count"] = item->count;
+    return out;
+}
+

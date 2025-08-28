@@ -23,6 +23,7 @@ public:
     Q_INVOKABLE static void openAll(int index);
     Q_INVOKABLE static void useWith(int item_id, int x, int y, int z);
     Q_INVOKABLE static QVariantList getSpectatorsInRangeEx(int radius);
+    Q_INVOKABLE static QVariantMap getTopThing(int x, int y, int z);
 
     Q_INVOKABLE static void sleep(int ms);
 
