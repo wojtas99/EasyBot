@@ -1,9 +1,65 @@
 #include "main_window_tab.h"
+
+#include <iostream>
 #include <QApplication>
 #include <QGridLayout>
 #include <QTabWidget>
+SafeQueue Game::actionQueue;
+static MainWindowTab* s_mainWindow = nullptr;
 
+typedef void(__stdcall* tGameMainLoop)();
+tGameMainLoop originalGameMainLoop = nullptr;
+
+void __stdcall hookedGameMainLoop() {
+    originalGameMainLoop();
+    Game::actionQueue.execute_all();
+}
+
+
+typedef void(__fastcall* tLookFunc)(__int64 a1, void (__fastcall ****a2)(__int64, __int64));
+tLookFunc originalLookFunc = nullptr;
+
+void __fastcall hookedLookFunc(__int64 a1, void (__fastcall ****a2)(__int64, __int64))
+{
+    uint64_t result = *reinterpret_cast<uint64_t*>(a2);
+    Item* item = reinterpret_cast<Item*>(result);
+    int id = item->id;
+    QMetaObject::invokeMethod(s_mainWindow->loot_tabWidget, [w = s_mainWindow->loot_tabWidget, id](){
+    w->updateLastLookedItem(id);}, Qt::QueuedConnection);
+    //Game::talkChannel(std::to_string(item->id).c_str());
+    originalLookFunc(a1, a2);
+}
+
+void setupLookHook(uint64_t itemFuncAddress) {
+    if (MH_CreateHook(reinterpret_cast<void*>(itemFuncAddress),
+                      &hookedLookFunc,
+                      reinterpret_cast<void**>(&originalLookFunc)) != MH_OK) {
+        return;
+                      }
+    if (MH_EnableHook(reinterpret_cast<void*>(itemFuncAddress)) != MH_OK) {
+        return;
+    }
+    std::cout << "[HOOK] LookFunc Sucessfully\n";
+}
+
+void setupMainLoopHook(uint64_t gameLoopAddress) {
+    if (MH_Initialize() != MH_OK)
+        return;
+    if (MH_CreateHook(reinterpret_cast<void*>(gameLoopAddress), &hookedGameMainLoop,
+                      reinterpret_cast<void**>(&originalGameMainLoop)) != MH_OK)
+        return;
+    if (MH_EnableHook(reinterpret_cast<void*>(gameLoopAddress)) != MH_OK)
+        return;
+    std::cout << "[HOOK] MainFunc Sucessfully\n";
+}
 MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
+    s_mainWindow = this;
+    if (!m_hookInitialized) {
+        setupMainLoopHook(Game::main_func_address);
+        setupLookHook(Game::look_func_address);
+        m_hookInitialized = true;
+    }
+
     setWindowTitle("EasyBot");
     setFixedSize(500, 500);
 

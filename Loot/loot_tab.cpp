@@ -89,8 +89,6 @@ void LootTab::lootList() {
     auto item_name_lineEdit = new QLineEdit(this);
     item_name_lineEdit->setPlaceholderText("Item Name - Gold Coin");
 
-    auto open_next_bp_checkBox = new QCheckBox("Open Next BP");
-
     last_looked_item_id = new QLabel("Last Item ID: 0000", this);
 
     auto add_button = new QPushButton("Add", this);
@@ -105,7 +103,6 @@ void LootTab::lootList() {
     });
 
 
-
     auto layout_left = new QVBoxLayout();
     layout_left->addWidget(lootList_listWidget);
     layout_left->addWidget(clearItemList_button);
@@ -115,7 +112,6 @@ void LootTab::lootList() {
     layout_right->addWidget(item_id_lineEdit);
     layout_right->addWidget(container_name_lineEdit);
     layout_right->addWidget(item_name_lineEdit);
-    layout_right->addWidget(open_next_bp_checkBox);
     layout_right->addWidget(last_looked_item_id);
 
     groupbox_layout->addLayout(layout_left);
@@ -166,6 +162,7 @@ void LootTab::clearList() const {
 }
 
 // End Profile Functions
+
 void LootTab::setLootEnabled(bool on) {
     if (on) {
         if (lootThread) return;
@@ -185,4 +182,9 @@ void LootTab::setLootEnabled(bool on) {
         delete lootThread;
         lootThread = nullptr;
     }
+}
+
+void LootTab::updateLastLookedItem(int id) const {
+    if (last_looked_item_id)
+        last_looked_item_id->setText(QString("Last Item ID: %1").arg(id));
 }

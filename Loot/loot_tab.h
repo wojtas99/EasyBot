@@ -16,6 +16,7 @@ public:
 
 public slots:
     void setLootEnabled(bool on);
+    void updateLastLookedItem(int id) const;
     signals:
     bool saveProfileSignal(const QString& tab, const QString& profileName, QList<QVariantMap> m_items);
     QList<QVariantMap> loadProfileSignal(const QString& tab, const QString& profileName);
