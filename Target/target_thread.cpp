@@ -41,8 +41,9 @@ void TargetThread::run() {
                     if (tile) {
                         uint64_t top_thing = Game::queue_getTopThing(tile);
                         if (top_thing) {
-                            Game::queue_open(reinterpret_cast<Item*>(top_thing), 0);
-                            msleep(500);
+                            if (Game::queue_open(reinterpret_cast<Item*>(top_thing), 0)) {
+                                msleep(500);
+                            }
                         }
                     }
                 }
