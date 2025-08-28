@@ -86,7 +86,7 @@ QVariantMap EasyApi::getTopThing(int x, int y, int z) {
     const auto top = Game::queue_getTopThing(tile);
     if (!top) return out;
     auto* item = reinterpret_cast<Item*>(top);
-    out["id"]   = quint64(reinterpret_cast<uint64_t>(item));
+    out["id"]= item->id;
     out["x"] = item->x;
     out["y"] = item->y;
     out["z"] = item->z;
