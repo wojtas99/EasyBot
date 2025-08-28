@@ -16,26 +16,23 @@ public:
 
 public slots:
     void setLootEnabled(bool on);
+    signals:
+    bool saveProfileSignal(const QString& tab, const QString& profileName, QList<QVariantMap> m_items);
+    QList<QVariantMap> loadProfileSignal(const QString& tab, const QString& profileName);
 
 private:
     QListWidget* lootList_listWidget;
-
     QListWidget *profile_listWidget;
-    QLineEdit *profile_lineEdit;
-
     QLabel *last_looked_item_id;
-
-
-    void addItem(int item_id, const QString& container_name, const QString& item_name) const;
-
-
-    void clearItemList() const;
-    void saveProfile() const;
-    void loadProfile() const;
-
 
     void lootList();
     void profileList();
+
+    void clearList() const;
+    void loadProfile(const QString& profileName);
+    void saveProfile(const QString& profileName);
+
+    void addItem(int item_id, const QString& container_name, const QString& item_name) const;
 
     LootThread* lootThread = nullptr;
 

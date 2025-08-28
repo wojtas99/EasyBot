@@ -1,7 +1,6 @@
 #include "walker_tab.h"
 
 #include <filesystem>
-#include <QCheckBox>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDir>
@@ -13,17 +12,14 @@
 #include <QMessageBox>
 #include <QSaveFile>
 #include <QRadioButton>
-#include <QSpinBox>
 
 #include "../Functions/Game.h"
 
 WalkerTab::WalkerTab(QWidget* parent) : QWidget(parent) {
     setWindowTitle("Walker");
-
     waypointList_listWidget = new QListWidget(this);
     connect(waypointList_listWidget, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem* item) {
     delete waypointList_listWidget->takeItem(waypointList_listWidget->row(item));});
-
     connect(waypointList_listWidget, &QListWidget::itemSelectionChanged, this, [this]() {
     auto* item = waypointList_listWidget->currentItem();
     const QVariantMap map = item->data(Qt::UserRole).toMap();
@@ -34,18 +30,57 @@ WalkerTab::WalkerTab(QWidget* parent) : QWidget(parent) {
     } else {
         action_textEdit->clear();
     }});
-
-
     profile_listWidget = new QListWidget(this);
-    profile_lineEdit = new QLineEdit(this);
-
     action_textEdit = new QTextEdit(this);
     action_textEdit->setEnabled(false);
     auto* layout = new QGridLayout(this);
     setLayout(layout);
     waypointList();
     profileList();
+}
 
+void WalkerTab::profileList() {
+    auto groupbox = new QGroupBox("Save && Load", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto profileName = new QLineEdit();
+
+    auto save_button = new QPushButton("Save");
+    auto load_button = new QPushButton("Load");
+
+    auto layout1 = new QHBoxLayout();
+    auto layout2 = new QHBoxLayout();
+
+    QDir dir("Save/Waypoints");
+    QStringList filters("*.json");
+    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
+    for (const QFileInfo& file : files) {
+        profile_listWidget->addItem(file.baseName());
+    }
+
+    layout1->addWidget(new QLabel("Name", this));
+    layout1->addWidget(profileName);
+
+    connect(save_button, &QPushButton::clicked, [this, profileName](){
+        saveProfile(profileName->text());
+        profileName->clear();
+    });
+
+    connect(load_button, &QPushButton::clicked, [this, profileName](){
+        waypointList_listWidget->clear();
+        if (!profileName->text().isEmpty()) { loadProfile(profileName->text());}
+        else if (!profile_listWidget->currentItem()->text().isEmpty()) {loadProfile(profile_listWidget->currentItem()->text());}
+        profileName->clear();
+    });
+
+    layout2->addWidget(save_button);
+    layout2->addWidget(load_button);
+
+    groupbox_layout->addWidget(profile_listWidget);
+    groupbox_layout->addLayout(layout1);
+    groupbox_layout->addLayout(layout2);
+    groupbox->setFixedSize(QSize(200, 160));
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
 }
 
 void WalkerTab::waypointList() {
@@ -56,8 +91,8 @@ void WalkerTab::waypointList() {
     auto add_button = new QPushButton("Add Waypoint", this);
     connect(add_button, &QPushButton::clicked, this, &WalkerTab::addWaypoint);
 
-    auto clearWaypointList_button = new QPushButton("Clear List", this);
-    connect(clearWaypointList_button, &QPushButton::clicked, this, &WalkerTab::clearWaypointList);
+    auto clearList_button = new QPushButton("Clear List", this);
+    connect(clearList_button, &QPushButton::clicked, this, &WalkerTab::clearList);
 
 
     // --- Directions ---
@@ -107,7 +142,7 @@ void WalkerTab::waypointList() {
 
     auto layout_left = new QVBoxLayout();
     layout_left->addWidget(waypointList_listWidget);
-    layout_left->addWidget(clearWaypointList_button);
+    layout_left->addWidget(clearList_button);
 
     auto layout_right = new QVBoxLayout();
     layout_right->addWidget(add_button);
@@ -122,150 +157,7 @@ void WalkerTab::waypointList() {
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
 }
 
-
-
-void WalkerTab::profileList() {
-    auto groupbox = new QGroupBox("Save && Load", this);
-    auto groupbox_layout = new QVBoxLayout(groupbox);
-
-    auto save_button = new QPushButton("Save");
-    auto load_button = new QPushButton("Load");
-    connect(save_button, &QPushButton::clicked, this, &WalkerTab::saveProfile);
-    connect(load_button, &QPushButton::clicked, this, &WalkerTab::loadProfile);
-
-    QDir dir("Save/Waypoints");
-    QStringList filters("*.json");
-    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
-    for (const QFileInfo& file : files) {
-        profile_listWidget->addItem(file.baseName());
-    }
-
-    auto layout1 = new QHBoxLayout();
-    auto layout2 = new QHBoxLayout();
-    layout1->addWidget(new QLabel("Name", this));
-    layout1->addWidget(profile_lineEdit);
-    layout2->addWidget(save_button);
-    layout2->addWidget(load_button);
-
-    groupbox_layout->addWidget(profile_listWidget);
-    groupbox_layout->addLayout(layout1);
-    groupbox_layout->addLayout(layout2);
-
-    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0);
-
-}
-
-
-void WalkerTab::saveProfile() const {
-    const QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Save", "Give profile name.");
-        return;
-    }
-    if (waypointList_listWidget->count() == 0) {
-        QMessageBox::information(nullptr, "Save", "There is no waypoints to save.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Waypoints")).filePath(name + ".json");
-
-    QJsonArray wptArray;
-    for (int i = 0; i < waypointList_listWidget->count(); ++i) {
-        const auto* item = waypointList_listWidget->item(i);
-        const QVariantMap map = item->data(Qt::UserRole).toMap();
-        wptArray.append(QJsonObject::fromVariantMap(map));
-    }
-
-    QJsonObject root;
-    root["version"] = 1;
-    root["waypoints"] = wptArray;
-
-    QSaveFile file(fullPath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(nullptr, "Save", "Can't open file:\n" + file.errorString());
-        return;
-    }
-    const QByteArray json = QJsonDocument(root).toJson(QJsonDocument::Indented);
-    if (file.write(json) == -1) {
-        QMessageBox::critical(nullptr, "Save", "Save Error:\n" + file.errorString());
-        return;
-    }
-    if (!file.commit()) {
-        QMessageBox::critical(nullptr, "Save", "Commit error:\n" + file.errorString());
-        return;
-    }
-
-    if (profile_listWidget->findItems(name, Qt::MatchExactly).isEmpty())
-        profile_listWidget->addItem(name);
-
-    QMessageBox::information(nullptr, "Save", "Profile saved: " + name);
-}
-
-void WalkerTab::loadProfile() const {
-    QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty() && profile_listWidget->currentItem())
-        name = profile_listWidget->currentItem()->text();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Load", "Choose or write profile name.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Waypoints")).filePath(name + ".json");
-    QFile file(fullPath);
-    if (!file.exists()) {
-        QMessageBox::warning(nullptr, "Load", "File do not exist:\n" + fullPath);
-        return;
-    }
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(nullptr, "Load", "Can not open file:\n" + file.errorString());
-        return;
-    }
-
-    QJsonParseError perr{};
-    const QJsonObject root =  QJsonDocument::fromJson(file.readAll(), &perr).object();
-    const QJsonArray arr = root.value("waypoints").toArray();
-    if (arr.isEmpty()) {
-        QMessageBox::information(nullptr, "Load", "No waypoints in file.");
-        waypointList_listWidget->clear();
-        return;
-    }
-
-    waypointList_listWidget->clear();
-    for (const QJsonValue& v : arr) {
-        const QJsonObject obj = v.toObject();
-        const QString option    = obj.value("option").toString();
-        const QString label    = obj.value("label").toString();
-        const QString direction = obj.value("direction").toString();
-        const uint32_t x = obj.value("x").toInt();
-        const uint32_t y = obj.value("y").toInt();
-        const uint16_t z = static_cast<uint16_t>(obj.value("z").toInt());
-
-        QString itemText;
-        if (option == "Label") {
-            itemText = label;
-        } else {
-            itemText = QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
-        }
-
-        auto* item = new QListWidgetItem(itemText);
-        item->setData(Qt::UserRole, obj.toVariantMap());
-        waypointList_listWidget->addItem(item);
-    }
-
-    profile_lineEdit->setText(name);
-    const auto matches = profile_listWidget->findItems(name, Qt::MatchExactly);
-    if (!matches.isEmpty())
-        profile_listWidget->setCurrentItem(matches.first());
-
-    QMessageBox::information(nullptr, "Load", "Profile loaded: " + name);
-}
-
-void WalkerTab::clearWaypointList() const {
-    waypointList_listWidget->clear();
-}
-
-void WalkerTab::addWaypoint() const
-{
+void WalkerTab::addWaypoint() const {
     auto* dirBtn = directions_buttonGroup ? directions_buttonGroup->checkedButton() : nullptr;
     auto* optBtn = options_buttonGroup ? options_buttonGroup->checkedButton() : nullptr;
 
@@ -315,6 +207,58 @@ void WalkerTab::addWaypoint() const
     waypointList_listWidget->addItem(item);
 }
 
+// Start Profile Functions
+
+void WalkerTab::loadProfile(const QString& profileName) {
+    QList<QVariantMap> m_loaded = loadProfileSignal("Waypoints", profileName);
+    for (auto item: m_loaded) {
+        QString itemText;
+        auto option = item.value("option").toString();
+        auto label = item.value("label").toString();
+        auto x = item.value("x").toInt();
+        auto y = item.value("y").toInt();
+        auto z = item.value("z").toInt();
+        auto direction = item.value("direction").toString();
+        if (option == "Label") {
+            itemText = label;
+        } else {
+            itemText = QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
+        }
+        auto* data = new QListWidgetItem(itemText);
+        data->setData(Qt::UserRole, item);
+        waypointList_listWidget->addItem(data);
+    }
+}
+
+void WalkerTab::saveProfile(const QString& profileName) {
+    QList<QVariantMap> targets;
+    for (int i = 0; i < waypointList_listWidget->count(); ++i) {
+        QListWidgetItem* item = waypointList_listWidget->item(i);
+        QVariantMap data = item->data(Qt::UserRole).toMap();
+        targets.append(data);
+    }
+    if (saveProfileSignal("Waypoints", profileName, targets)) {
+        profile_listWidget->addItem(profileName);
+    }
+}
+
+void WalkerTab::clearList() const {
+    waypointList_listWidget->clear();
+}
+
+// End Profile Functions
+
+void WalkerTab::onWalkerIndexUpdate(int idx) const
+{
+    if (!waypointList_listWidget) return;
+    if (idx >= 0 && idx < waypointList_listWidget->count()) {
+        waypointList_listWidget->setCurrentRow(idx);
+        waypointList_listWidget->scrollToItem(
+            waypointList_listWidget->item(idx),
+            QAbstractItemView::PositionAtCenter);
+    }
+}
+
 void WalkerTab::setWalkerEnabled(bool on) {
     if (on) {
         if (walkerThread) return;
@@ -334,15 +278,5 @@ void WalkerTab::setWalkerEnabled(bool on) {
         walkerThread->wait();
         delete walkerThread;
         walkerThread = nullptr;
-    }
-}
-
-void WalkerTab::onWalkerIndexUpdate(int idx) {
-    if (!waypointList_listWidget) return;
-    if (idx >= 0 && idx < waypointList_listWidget->count()) {
-        waypointList_listWidget->setCurrentRow(idx);
-        waypointList_listWidget->scrollToItem(
-            waypointList_listWidget->item(idx),
-            QAbstractItemView::PositionAtCenter);
     }
 }

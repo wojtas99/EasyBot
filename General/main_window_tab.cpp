@@ -27,7 +27,23 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     connect(status_tabWidget, &StatusTab::healingToggled,heal_tabWidget,  &HealTab::setHealEnabled);
     connect(status_tabWidget, &StatusTab::spellsToggled,spell_tabWidget,  &SpellTab::setSpellEnabled);
 
+
+    connect(target_tabWidget, &TargetTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
+    connect(walker_tabWidget, &WalkerTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
+    connect(loot_tabWidget, &LootTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
+    connect(heal_tabWidget, &HealTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
+    connect(spell_tabWidget, &SpellTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
+
+    connect(target_tabWidget, &TargetTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
+    connect(walker_tabWidget, &WalkerTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
+    connect(loot_tabWidget, &LootTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
+    connect(heal_tabWidget, &HealTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
+    connect(spell_tabWidget, &SpellTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
+
     setCentralWidget(main_tabWidget);
 }
 
 MainWindowTab::~MainWindowTab() {}
+
+
+

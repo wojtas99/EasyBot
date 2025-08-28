@@ -8,6 +8,9 @@ class StatusTab : public QWidget {
 
 public:
     explicit StatusTab(QWidget* parent = nullptr);
+public slots:
+    static bool saveProfile(const QString& tab, const QString& profileName, const QList<QVariantMap>& m_items);
+    static QList<QVariantMap> loadProfile(const QString& tab, const QString& profileName);
     signals:
     void walkerToggled(bool on);
     void targetToggled(bool on);

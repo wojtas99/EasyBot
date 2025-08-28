@@ -15,6 +15,9 @@ public:
     explicit TargetTab(QWidget* parent = nullptr);
 public slots:
     void setTargetEnabled(bool on);
+    signals:
+    bool saveProfileSignal(const QString& tab, const QString& profileName, QList<QVariantMap> m_items);
+    QList<QVariantMap> loadProfileSignal(const QString& tab, const QString& profileName);
 
 
 private:
@@ -23,6 +26,11 @@ private:
 
     void targetList();
     void profileList();
+
+    void clearList() const;
+    void loadProfile(const QString& profileName);
+    void saveProfile(const QString& profileName);
+
     void addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count, bool open) const;
 
 

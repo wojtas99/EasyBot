@@ -33,12 +33,9 @@ void SpellThread::run()
             double current_maxhp = Game::map_view->LocalPlayer->max_hp;
             current_hp = 100*(current_hp/current_maxhp);
             if (count <= 0 && current_hp >= minHp && Game::map_view->LocalPlayer->mp >= minMp) {
-                std::cout << "We are in" << std::endl;
                 if (option == "Say") {
                     auto spell = item["spell"].toString().toStdString();
-                    std::cout << "spell " << std::endl;
                     Game::queue_talkChannel(spell.c_str());
-                    std::cout << "Spell" << std::endl;
                 } else if (option == "Use on yourself") {
                     auto spell = item["spell"].toInt();
                     auto item_use = Game::queue_findItemInContainers(spell);

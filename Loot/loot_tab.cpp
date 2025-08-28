@@ -22,7 +22,6 @@ LootTab::LootTab(QWidget* parent) : QWidget(parent) {
     delete lootList_listWidget->takeItem(lootList_listWidget->row(item));});
 
     profile_listWidget = new QListWidget(this);
-    profile_lineEdit = new QLineEdit(this);
 
     auto* layout = new QGridLayout(this);
     setLayout(layout);
@@ -31,6 +30,49 @@ LootTab::LootTab(QWidget* parent) : QWidget(parent) {
 
 }
 
+void LootTab::profileList() {
+    auto groupbox = new QGroupBox("Save && Load", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto profileName = new QLineEdit();
+
+    auto save_button = new QPushButton("Save");
+    auto load_button = new QPushButton("Load");
+
+    auto layout1 = new QHBoxLayout();
+    auto layout2 = new QHBoxLayout();
+
+    QDir dir("Save/Items");
+    QStringList filters("*.json");
+    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
+    for (const QFileInfo& file : files) {
+        profile_listWidget->addItem(file.baseName());
+    }
+
+    layout1->addWidget(new QLabel("Name", this));
+    layout1->addWidget(profileName);
+
+    connect(save_button, &QPushButton::clicked, [this, profileName](){
+        saveProfile(profileName->text());
+        profileName->clear();
+    });
+
+    connect(load_button, &QPushButton::clicked, [this, profileName](){
+        lootList_listWidget->clear();
+        if (!profileName->text().isEmpty()) { loadProfile(profileName->text());}
+        else if (!profile_listWidget->currentItem()->text().isEmpty()) {loadProfile(profile_listWidget->currentItem()->text());}
+        profileName->clear();
+    });
+
+    layout2->addWidget(save_button);
+    layout2->addWidget(load_button);
+
+    groupbox_layout->addWidget(profile_listWidget);
+    groupbox_layout->addLayout(layout1);
+    groupbox_layout->addLayout(layout2);
+    groupbox->setFixedSize(QSize(200, 160));
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
+}
 
 void LootTab::lootList() {
     auto groupbox = new QGroupBox("Items", this);
@@ -38,7 +80,7 @@ void LootTab::lootList() {
 
 
     auto clearItemList_button = new QPushButton("Clear List", this);
-    connect(clearItemList_button, &QPushButton::clicked, this, &LootTab::clearItemList);
+    connect(clearItemList_button, &QPushButton::clicked, this, &LootTab::clearList);
 
     auto item_id_lineEdit = new QLineEdit(this);
     item_id_lineEdit->setPlaceholderText("Item ID - 2148");
@@ -82,128 +124,6 @@ void LootTab::lootList() {
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
 }
 
-
-
-void LootTab::profileList() {
-    auto groupbox = new QGroupBox("Save && Load", this);
-    auto groupbox_layout = new QVBoxLayout(groupbox);
-
-    auto save_button = new QPushButton("Save");
-    auto load_button = new QPushButton("Load");
-    connect(save_button, &QPushButton::clicked, this, &LootTab::saveProfile);
-    connect(load_button, &QPushButton::clicked, this, &LootTab::loadProfile);
-
-    QDir dir("Save/Items");
-    QStringList filters("*.json");
-    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
-    for (const QFileInfo& file : files) {
-        profile_listWidget->addItem(file.baseName());
-    }
-
-    auto layout1 = new QHBoxLayout();
-    auto layout2 = new QHBoxLayout();
-    layout1->addWidget(new QLabel("Name", this));
-    layout1->addWidget(profile_lineEdit);
-    layout2->addWidget(save_button);
-    layout2->addWidget(load_button);
-
-    groupbox_layout->addWidget(profile_listWidget);
-    groupbox_layout->addLayout(layout1);
-    groupbox_layout->addLayout(layout2);
-
-    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0);
-
-}
-
-
-void LootTab::saveProfile() const {
-    const QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Save", "Give profile name.");
-        return;
-    }
-    if (lootList_listWidget->count() == 0) {
-        QMessageBox::information(nullptr, "Save", "There is no items to save.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Waypoints")).filePath(name + ".json");
-
-    QJsonArray itmArray;
-    for (int i = 0; i < lootList_listWidget->count(); ++i) {
-        const auto* item = lootList_listWidget->item(i);
-        const QVariantMap map = item->data(Qt::UserRole).toMap();
-        itmArray.append(QJsonObject::fromVariantMap(map));
-    }
-
-    QJsonObject root;
-    root["version"] = 1;
-    root["items"] = itmArray;
-
-    QSaveFile file(fullPath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(nullptr, "Save", "Can't open file:\n" + file.errorString());
-        return;
-    }
-    const QByteArray json = QJsonDocument(root).toJson(QJsonDocument::Indented);
-    if (file.write(json) == -1) {
-        QMessageBox::critical(nullptr, "Save", "Save Error:\n" + file.errorString());
-        return;
-    }
-    if (!file.commit()) {
-        QMessageBox::critical(nullptr, "Save", "Commit error:\n" + file.errorString());
-        return;
-    }
-
-    if (profile_listWidget->findItems(name, Qt::MatchExactly).isEmpty())
-        profile_listWidget->addItem(name);
-
-    QMessageBox::information(nullptr, "Save", "Profile saved: " + name);
-}
-
-void LootTab::loadProfile() const {
-    QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty() && profile_listWidget->currentItem())
-        name = profile_listWidget->currentItem()->text();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Load", "Choose or write profile name.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Items")).filePath(name + ".json");
-    QFile file(fullPath);
-    if (!file.exists()) {
-        QMessageBox::warning(nullptr, "Load", "File do not exist:\n" + fullPath);
-        return;
-    }
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(nullptr, "Load", "Can not open file:\n" + file.errorString());
-        return;
-    }
-
-    QJsonParseError perr{};
-    const QJsonObject root =  QJsonDocument::fromJson(file.readAll(), &perr).object();
-    const QJsonArray arr = root.value("waypoints").toArray();
-    if (arr.isEmpty()) {
-        QMessageBox::information(nullptr, "Load", "No waypoints in file.");
-        lootList_listWidget->clear();
-        return;
-    }
-
-    lootList_listWidget->clear();
-
-    profile_lineEdit->setText(name);
-    const auto matches = profile_listWidget->findItems(name, Qt::MatchExactly);
-    if (!matches.isEmpty())
-        profile_listWidget->setCurrentItem(matches.first());
-
-    QMessageBox::information(nullptr, "Load", "Profile loaded: " + name);
-}
-
-void LootTab::clearItemList() const {
-    lootList_listWidget->clear();
-}
-
 void LootTab::addItem(int item_id, const QString& container_name, const QString& item_name) const
 {
     auto* item = new QListWidgetItem(item_name + " -> " + container_name);
@@ -215,6 +135,37 @@ void LootTab::addItem(int item_id, const QString& container_name, const QString&
     item->setData(Qt::UserRole, data);
     lootList_listWidget->addItem(item);
 }
+
+// Start Profile Functions
+
+void LootTab::loadProfile(const QString& profileName) {
+    QList<QVariantMap> m_loaded = loadProfileSignal("Items", profileName);
+    for (auto item: m_loaded) {
+        auto name = item.value("name").toString();
+        auto container = item.value("container").toString();
+        auto* data = new QListWidgetItem(name + " -> " + container);
+        data->setData(Qt::UserRole, item);
+        lootList_listWidget->addItem(data);
+    }
+}
+
+void LootTab::saveProfile(const QString& profileName) {
+    QList<QVariantMap> targets;
+    for (int i = 0; i < lootList_listWidget->count(); ++i) {
+        QListWidgetItem* item = lootList_listWidget->item(i);
+        QVariantMap data = item->data(Qt::UserRole).toMap();
+        targets.append(data);
+    }
+    if (saveProfileSignal("Items", profileName, targets)) {
+        profile_listWidget->addItem(profileName);
+    }
+}
+
+void LootTab::clearList() const {
+    lootList_listWidget->clear();
+}
+
+// End Profile Functions
 void LootTab::setLootEnabled(bool on) {
     if (on) {
         if (lootThread) return;

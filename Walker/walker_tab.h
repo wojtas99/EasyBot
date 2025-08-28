@@ -16,34 +16,30 @@ public:
 
 public slots:
     void setWalkerEnabled(bool on);
-
-
+    signals:
+    bool saveProfileSignal(const QString& tab, const QString& profileName, QList<QVariantMap> m_items);
+    QList<QVariantMap> loadProfileSignal(const QString& tab, const QString& profileName);
 
 private:
     QListWidget* waypointList_listWidget;
     QListWidget* profile_listWidget;
-
-    QLineEdit* profile_lineEdit;
     QTextEdit* action_textEdit;
     QButtonGroup* directions_buttonGroup= nullptr;
     QButtonGroup* options_buttonGroup = nullptr;
 
-
-
-
-    void addWaypoint() const;
-    void clearWaypointList() const;
-    void saveProfile() const;
-    void loadProfile() const;
-
-
     void waypointList();
     void profileList();
+
+    void clearList() const;
+    void loadProfile(const QString& profileName);
+    void saveProfile(const QString& profileName);
+
+    void addWaypoint() const;
 
     WalkerThread* walkerThread = nullptr;
 
     private slots:
-    void onWalkerIndexUpdate(int idx);
+    void onWalkerIndexUpdate(int idx) const;
 };
 
 

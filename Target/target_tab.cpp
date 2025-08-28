@@ -28,12 +28,58 @@ TargetTab::TargetTab(QWidget* parent) : QWidget(parent) {
     profileList();
 }
 
+void TargetTab::profileList() {
+    auto groupbox = new QGroupBox("Save && Load", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto profileName = new QLineEdit();
+
+    auto save_button = new QPushButton("Save");
+    auto load_button = new QPushButton("Load");
+
+    auto layout1 = new QHBoxLayout();
+    auto layout2 = new QHBoxLayout();
+
+    QDir dir("Save/Targets");
+    QStringList filters("*.json");
+    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
+    for (const QFileInfo& file : files) {
+        profile_listWidget->addItem(file.baseName());
+    }
+
+    layout1->addWidget(new QLabel("Name", this));
+    layout1->addWidget(profileName);
+
+    connect(save_button, &QPushButton::clicked, [this, profileName](){
+        saveProfile(profileName->text());
+        profileName->clear();
+    });
+
+    connect(load_button, &QPushButton::clicked, [this, profileName](){
+        targetList_listWidget->clear();
+        if (!profileName->text().isEmpty()) { loadProfile(profileName->text());}
+        else if (!profile_listWidget->currentItem()->text().isEmpty()) {loadProfile(profile_listWidget->currentItem()->text());}
+        profileName->clear();
+    });
+
+    layout2->addWidget(save_button);
+    layout2->addWidget(load_button);
+
+    groupbox_layout->addWidget(profile_listWidget);
+    groupbox_layout->addLayout(layout1);
+    groupbox_layout->addLayout(layout2);
+    groupbox->setFixedSize(QSize(200, 160));
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
+}
+
 void TargetTab::targetList() {
     auto groupbox = new QGroupBox("Targets", this);
-    groupbox->setFixedHeight(200);
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
     auto* add_button = new QPushButton("Add", this);
+
+    auto clearList_button = new QPushButton("Clear List", this);
+    connect(clearList_button, &QPushButton::clicked, this, &TargetTab::clearList);
 
     auto targetName_lineEdit = new QLineEdit(this);
     targetName_lineEdit->setPlaceholderText("Orc | * - All targets");
@@ -138,7 +184,9 @@ void TargetTab::targetList() {
     layout6->addWidget(monsterAttacks_comboBox);
 
 
-
+    auto layout_left = new QVBoxLayout();
+    layout_left->addWidget(targetList_listWidget);
+    layout_left->addWidget(clearList_button);
 
     groupbox2_layout->addLayout(layout1);
     groupbox2_layout->addLayout(layout2);
@@ -149,35 +197,10 @@ void TargetTab::targetList() {
 
     groupbox2_layout->addStretch();
 
-    groupbox_layout->addWidget(targetList_listWidget);
+    groupbox_layout->addLayout(layout_left);
     groupbox_layout->addLayout(groupbox2_layout);
 
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 0, 0, 1, 2);
-}
-
-void TargetTab::profileList()
-{
-    auto groupbox = new QGroupBox("Save && Load", this);
-    auto groupbox_layout = new QVBoxLayout(groupbox);
-
-    auto save_button = new QPushButton("Save");
-    auto load_button = new QPushButton("Load");
-
-    auto layout1 = new QHBoxLayout();
-    auto layout2 = new QHBoxLayout();
-
-    layout1->addWidget(new QLabel("Name", this));
-
-    layout2->addWidget(save_button);
-    layout2->addWidget(load_button);
-
-    groupbox_layout->addWidget(profile_listWidget);
-    groupbox_layout->addLayout(layout1);
-    groupbox_layout->addLayout(layout2);
-
-    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
-    dynamic_cast<QGridLayout*>(layout())->setColumnStretch(0, 1);
-    dynamic_cast<QGridLayout*>(layout())->setColumnStretch(1, 1);
 }
 
 void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distance, const QString& desiredStance, const QString& monsterAttacks, int count, bool open) const {
@@ -195,6 +218,36 @@ void TargetTab::addTarget(const QString& name, int hpFrom, int hpTo, int distanc
     item->setData(Qt::UserRole, data);
     targetList_listWidget->addItem(item);
 }
+
+// Start Profile Functions
+
+void TargetTab::loadProfile(const QString& profileName) {
+    QList<QVariantMap> m_loaded = loadProfileSignal("Targets", profileName);
+    for (auto item: m_loaded) {
+        auto name = item.value("name").toString();
+        auto* data = new QListWidgetItem(name);
+        data->setData(Qt::UserRole, item);
+        targetList_listWidget->addItem(data);
+    }
+}
+
+void TargetTab::saveProfile(const QString& profileName) {
+    QList<QVariantMap> targets;
+    for (int i = 0; i < targetList_listWidget->count(); ++i) {
+        QListWidgetItem* item = targetList_listWidget->item(i);
+        QVariantMap data = item->data(Qt::UserRole).toMap();
+        targets.append(data);
+    }
+    if (saveProfileSignal("Targets", profileName, targets)) {
+        profile_listWidget->addItem(profileName);
+    }
+}
+
+void TargetTab::clearList() const {
+    targetList_listWidget->clear();
+}
+
+// End Profile Functions
 
 void TargetTab::setTargetEnabled(bool on) {
     if (on) {
@@ -216,3 +269,5 @@ void TargetTab::setTargetEnabled(bool on) {
         targetThread = nullptr;
     }
 }
+
+

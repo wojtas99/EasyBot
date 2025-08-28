@@ -23,13 +23,56 @@ SpellTab::SpellTab(QWidget* parent) : QWidget(parent) {
         delete spellList_listWidget->takeItem(spellList_listWidget->row(item));});
 
     profile_listWidget = new QListWidget(this);
-    profile_lineEdit = new QLineEdit(this);
 
     auto* layout = new QGridLayout(this);
     setLayout(layout);
     spellList();
     profileList();
 
+}
+
+void SpellTab::profileList() {
+    auto groupbox = new QGroupBox("Save && Load", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto profileName = new QLineEdit();
+
+    auto save_button = new QPushButton("Save");
+    auto load_button = new QPushButton("Load");
+
+    auto layout1 = new QHBoxLayout();
+    auto layout2 = new QHBoxLayout();
+
+    QDir dir("Save/Spells");
+    QStringList filters("*.json");
+    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
+    for (const QFileInfo& file : files) {
+        profile_listWidget->addItem(file.baseName());
+    }
+
+    layout1->addWidget(new QLabel("Name", this));
+    layout1->addWidget(profileName);
+
+    connect(save_button, &QPushButton::clicked, [this, profileName](){
+        saveProfile(profileName->text());
+        profileName->clear();
+    });
+
+    connect(load_button, &QPushButton::clicked, [this, profileName](){
+        spellList_listWidget->clear();
+        if (!profileName->text().isEmpty()) { loadProfile(profileName->text());}
+        else if (!profile_listWidget->currentItem()->text().isEmpty()) {loadProfile(profile_listWidget->currentItem()->text());}
+        profileName->clear();
+    });
+
+    layout2->addWidget(save_button);
+    layout2->addWidget(load_button);
+
+    groupbox_layout->addWidget(profile_listWidget);
+    groupbox_layout->addLayout(layout1);
+    groupbox_layout->addLayout(layout2);
+    groupbox->setFixedSize(QSize(200, 160));
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
 }
 
 void SpellTab::spellList() {
@@ -45,7 +88,7 @@ void SpellTab::spellList() {
     option_comboBox->setMinimumWidth(40);
 
     auto target_lineEdit = new QLineEdit();
-    target_lineEdit->setPlaceholderText("Dragon, Cyclops | * - All targets");
+    target_lineEdit->setPlaceholderText("Dragon | * - All targets");
     target_lineEdit->setMinimumWidth(180);
 
     auto count_lineEdit = new QLineEdit();
@@ -122,113 +165,51 @@ void SpellTab::spellList() {
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
 }
 
+void SpellTab::addSpell(const QString& option, const QString& spell, int minHp, int minMp, int count, const QString& targetName, int hpFrom, int hpTo, int dist) const {
+    QString name = option + " " + spell + " -> " + targetName;
+    auto* item = new QListWidgetItem(option + " " + spell + " -> " + targetName);
+    QVariantMap data;
+    data["option"] = option.toStdString().c_str();
+    data["spell"] = spell.toStdString().c_str();
+    data["minHp"] = minHp;
+    data["minMp"] = minMp;
+    data["count"] = count;
+    data["targetName"] = targetName.toStdString().c_str();
+    data["hpFrom"] = hpFrom;
+    data["hpTo"] = hpTo;
+    data["dist"] = dist;
 
-
-void SpellTab::profileList() {
-    auto groupbox = new QGroupBox("Save && Load", this);
-    auto groupbox_layout = new QVBoxLayout(groupbox);
-
-    auto save_button = new QPushButton("Save");
-    auto load_button = new QPushButton("Load");
-    connect(save_button, &QPushButton::clicked, this, &SpellTab::saveProfile);
-    connect(load_button, &QPushButton::clicked, this, &SpellTab::loadProfile);
-
-    QDir dir("Save/Spells");
-    QStringList filters("*.json");
-    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
-    for (const QFileInfo& file : files) {
-        profile_listWidget->addItem(file.baseName());
-    }
-
-    auto layout1 = new QHBoxLayout();
-    auto layout2 = new QHBoxLayout();
-    layout1->addWidget(new QLabel("Name", this));
-    layout1->addWidget(profile_lineEdit);
-    layout2->addWidget(save_button);
-    layout2->addWidget(load_button);
-
-    groupbox_layout->addWidget(profile_listWidget);
-    groupbox_layout->addLayout(layout1);
-    groupbox_layout->addLayout(layout2);
-
-    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0);
-
+    item->setData(Qt::UserRole, data);
+    spellList_listWidget->addItem(item);
 }
 
-void SpellTab::saveProfile() const {
-    const QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Save", "Give profile name.");
-        return;
+// Start Profile Functions
+
+void SpellTab::loadProfile(const QString& profileName) {
+    QList<QVariantMap> m_loaded = loadProfileSignal("Spells", profileName);
+    for (auto item: m_loaded) {
+        auto option = item.value("option").toString();
+        auto spell = item.value("spell").toString();
+        auto targetName = item.value("targetName").toString();
+        auto* data = new QListWidgetItem(option + " " + spell + " -> " + targetName);
+        data->setData(Qt::UserRole, item);
+        spellList_listWidget->addItem(data);
     }
+}
 
-    const QString fullPath = QDir(QDir::current().filePath("Save/Spells")).filePath(name + ".json");
-
-    QJsonArray healArray;
+void SpellTab::saveProfile(const QString& profileName) {
+    QList<QVariantMap> targets;
     for (int i = 0; i < spellList_listWidget->count(); ++i) {
-        const auto* item = spellList_listWidget->item(i);
-        const QVariantMap map = item->data(Qt::UserRole).toMap();
-        healArray.append(QJsonObject::fromVariantMap(map));
+        QListWidgetItem* item = spellList_listWidget->item(i);
+        QVariantMap data = item->data(Qt::UserRole).toMap();
+        targets.append(data);
     }
-
-    QJsonObject root;
-    root["version"] = 1;
-    root["spells"] = healArray;
-
-    QSaveFile file(fullPath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(nullptr, "Save", "Can't open file:\n" + file.errorString());
-        return;
+    if (saveProfileSignal("Spells", profileName, targets)) {
+        profile_listWidget->addItem(profileName);
     }
-    const QByteArray json = QJsonDocument(root).toJson(QJsonDocument::Indented);
-    if (file.write(json) == -1) {
-        QMessageBox::critical(nullptr, "Save", "Save Error:\n" + file.errorString());
-        return;
-    }
-    if (!file.commit()) {
-        QMessageBox::critical(nullptr, "Save", "Commit error:\n" + file.errorString());
-        return;
-    }
-
-    if (profile_listWidget->findItems(name, Qt::MatchExactly).isEmpty())
-        profile_listWidget->addItem(name);
-
-    QMessageBox::information(nullptr, "Save", "Profile saved: " + name);
 }
 
-void SpellTab::loadProfile() const {
-    QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty() && profile_listWidget->currentItem())
-        name = profile_listWidget->currentItem()->text();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Load", "Choose or write profile name.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Spells")).filePath(name + ".json");
-    QFile file(fullPath);
-    if (!file.exists()) {
-        QMessageBox::warning(nullptr, "Load", "File do not exist:\n" + fullPath);
-        return;
-    }
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(nullptr, "Load", "Can not open file:\n" + file.errorString());
-        return;
-    }
-
-    QJsonParseError perr{};
-    const QJsonObject root =  QJsonDocument::fromJson(file.readAll(), &perr).object();
-    const QJsonArray arr = root.value("spells").toArray();
-
-    spellList_listWidget->clear();
-
-    profile_lineEdit->setText(name);
-    const auto matches = profile_listWidget->findItems(name, Qt::MatchExactly);
-    if (!matches.isEmpty())
-        profile_listWidget->setCurrentItem(matches.first());
-
-    QMessageBox::information(nullptr, "Load", "Profile loaded: " + name);
-}
+// End Profile Functions
 
 void SpellTab::setSpellEnabled(bool on) {
     if (on) {
@@ -248,23 +229,4 @@ void SpellTab::setSpellEnabled(bool on) {
         delete spellThread;
         spellThread = nullptr;
     }
-}
-
-void SpellTab::addSpell(const QString& option, const QString& spell, int minHp, int minMp, int count, const QString& targetName, int hpFrom, int hpTo, int dist) const {
-    QString name = option + " " + spell + " -> " + targetName;
-    auto* item = new QListWidgetItem(option + " " + spell + " -> " + targetName);
-    QVariantMap data;
-    data["option"] = option.toStdString().c_str();
-    data["spell"] = spell.toStdString().c_str();
-    data["minHp"] = minHp;
-    data["minMp"] = minMp;
-    data["count"] = count;
-    data["targetName"] = targetName.toStdString().c_str();
-    data["hpFrom"] = hpFrom;
-    data["hpTo"] = hpTo;
-    data["dist"] = dist;
-
-    item->setData(Qt::UserRole, data);
-    spellList_listWidget->addItem(item);
-
 }

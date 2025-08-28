@@ -61,6 +61,9 @@ void TargetThread::run() {
                     Game::queue_stop();
                     msleep(500);
                     open_corpse = open;
+                    enemy_coords[0] = target-> x;
+                    enemy_coords[1] = target-> y;
+                    enemy_coords[2] = target-> z;
                     Game::queue_attack(target);
                     msleep(500);
                     if (desiredStance == "Chase") {Game::queue_setChaseMode(true);}

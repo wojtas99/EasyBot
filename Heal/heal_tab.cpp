@@ -24,7 +24,6 @@ HealTab::HealTab(QWidget* parent) : QWidget(parent) {
         delete healList_listWidget->takeItem(healList_listWidget->row(item));});
 
     profile_listWidget = new QListWidget(this);
-    profile_lineEdit = new QLineEdit(this);
 
     auto* layout = new QGridLayout(this);
     setLayout(layout);
@@ -33,12 +32,56 @@ HealTab::HealTab(QWidget* parent) : QWidget(parent) {
 
 }
 
+void HealTab::profileList() {
+    auto groupbox = new QGroupBox("Save && Load", this);
+    auto groupbox_layout = new QVBoxLayout(groupbox);
+
+    auto profileName = new QLineEdit();
+
+    auto save_button = new QPushButton("Save");
+    auto load_button = new QPushButton("Load");
+
+    auto layout1 = new QHBoxLayout();
+    auto layout2 = new QHBoxLayout();
+
+    QDir dir("Save/Heals");
+    QStringList filters("*.json");
+    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
+    for (const QFileInfo& file : files) {
+        profile_listWidget->addItem(file.baseName());
+    }
+
+    layout1->addWidget(new QLabel("Name", this));
+    layout1->addWidget(profileName);
+
+    connect(save_button, &QPushButton::clicked, [this, profileName](){
+        saveProfile(profileName->text());
+        profileName->clear();
+    });
+
+    connect(load_button, &QPushButton::clicked, [this, profileName](){
+        healList_listWidget->clear();
+        if (!profileName->text().isEmpty()) { loadProfile(profileName->text());}
+        else if (!profile_listWidget->currentItem()->text().isEmpty()) {loadProfile(profile_listWidget->currentItem()->text());}
+        profileName->clear();
+    });
+
+    layout2->addWidget(save_button);
+    layout2->addWidget(load_button);
+
+    groupbox_layout->addWidget(profile_listWidget);
+    groupbox_layout->addLayout(layout1);
+    groupbox_layout->addLayout(layout2);
+    groupbox->setFixedSize(QSize(200, 160));
+    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0, 1, 1);
+}
+
 void HealTab::healList() {
     auto groupbox = new QGroupBox("Healing", this);
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
     auto clearHealList_button = new QPushButton("Clear List", this);
-    connect(clearHealList_button, &QPushButton::clicked, this, &HealTab::clearHealList);
+    connect(clearHealList_button, &QPushButton::clicked, this, &HealTab::clearList);
 
     auto add_button = new QPushButton("Add Healing", this);
 
@@ -103,119 +146,6 @@ void HealTab::healList() {
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
 }
 
-
-
-void HealTab::profileList() {
-    auto groupbox = new QGroupBox("Save && Load", this);
-    auto groupbox_layout = new QVBoxLayout(groupbox);
-
-    auto save_button = new QPushButton("Save");
-    auto load_button = new QPushButton("Load");
-    connect(save_button, &QPushButton::clicked, this, &HealTab::saveProfile);
-    connect(load_button, &QPushButton::clicked, this, &HealTab::loadProfile);
-
-    QDir dir("Save/Healing");
-    QStringList filters("*.json");
-    QFileInfoList files = dir.entryInfoList(filters, QDir::Files);
-    for (const QFileInfo& file : files) {
-        profile_listWidget->addItem(file.baseName());
-    }
-
-    auto layout1 = new QHBoxLayout();
-    auto layout2 = new QHBoxLayout();
-    layout1->addWidget(new QLabel("Name", this));
-    layout1->addWidget(profile_lineEdit);
-    layout2->addWidget(save_button);
-    layout2->addWidget(load_button);
-
-    groupbox_layout->addWidget(profile_listWidget);
-    groupbox_layout->addLayout(layout1);
-    groupbox_layout->addLayout(layout2);
-
-    dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox, 1, 0);
-
-}
-
-
-void HealTab::saveProfile() const {
-    const QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Save", "Give profile name.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Healing")).filePath(name + ".json");
-
-    QJsonArray healArray;
-    for (int i = 0; i < healList_listWidget->count(); ++i) {
-        const auto* item = healList_listWidget->item(i);
-        const QVariantMap map = item->data(Qt::UserRole).toMap();
-        healArray.append(QJsonObject::fromVariantMap(map));
-    }
-
-    QJsonObject root;
-    root["version"] = 1;
-    root["healing"] = healArray;
-
-    QSaveFile file(fullPath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(nullptr, "Save", "Can't open file:\n" + file.errorString());
-        return;
-    }
-    const QByteArray json = QJsonDocument(root).toJson(QJsonDocument::Indented);
-    if (file.write(json) == -1) {
-        QMessageBox::critical(nullptr, "Save", "Save Error:\n" + file.errorString());
-        return;
-    }
-    if (!file.commit()) {
-        QMessageBox::critical(nullptr, "Save", "Commit error:\n" + file.errorString());
-        return;
-    }
-
-    if (profile_listWidget->findItems(name, Qt::MatchExactly).isEmpty())
-        profile_listWidget->addItem(name);
-
-    QMessageBox::information(nullptr, "Save", "Profile saved: " + name);
-}
-
-void HealTab::loadProfile() const {
-    QString name = profile_lineEdit->text().trimmed();
-    if (name.isEmpty() && profile_listWidget->currentItem())
-        name = profile_listWidget->currentItem()->text();
-    if (name.isEmpty()) {
-        QMessageBox::warning(nullptr, "Load", "Choose or write profile name.");
-        return;
-    }
-
-    const QString fullPath = QDir(QDir::current().filePath("Save/Healing")).filePath(name + ".json");
-    QFile file(fullPath);
-    if (!file.exists()) {
-        QMessageBox::warning(nullptr, "Load", "File do not exist:\n" + fullPath);
-        return;
-    }
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(nullptr, "Load", "Can not open file:\n" + file.errorString());
-        return;
-    }
-
-    QJsonParseError perr{};
-    const QJsonObject root =  QJsonDocument::fromJson(file.readAll(), &perr).object();
-    const QJsonArray arr = root.value("healing").toArray();
-
-    healList_listWidget->clear();
-
-    profile_lineEdit->setText(name);
-    const auto matches = profile_listWidget->findItems(name, Qt::MatchExactly);
-    if (!matches.isEmpty())
-        profile_listWidget->setCurrentItem(matches.first());
-
-    QMessageBox::information(nullptr, "Load", "Profile loaded: " + name);
-}
-
-void HealTab::clearHealList() const {
-    healList_listWidget->clear();
-}
-
 void HealTab::addHeal(const QString& option, const QString& heal, int hpBelow, int hpAbove, int minMp, const QString& contidion) const {
     auto* item = new QListWidgetItem(option + " " + heal);
     QVariantMap data;
@@ -229,6 +159,37 @@ void HealTab::addHeal(const QString& option, const QString& heal, int hpBelow, i
     item->setData(Qt::UserRole, data);
     healList_listWidget->addItem(item);
 }
+
+// Start Profile Functions
+
+void HealTab::loadProfile(const QString& profileName) {
+    QList<QVariantMap> m_loaded = loadProfileSignal("Heals", profileName);
+    for (auto item: m_loaded) {
+        auto option = item.value("option").toString();
+        auto heal = item.value("heal").toString();
+        auto* data = new QListWidgetItem(option + " " + heal);
+        data->setData(Qt::UserRole, item);
+        healList_listWidget->addItem(data);
+    }
+}
+
+void HealTab::saveProfile(const QString& profileName) {
+    QList<QVariantMap> targets;
+    for (int i = 0; i < healList_listWidget->count(); ++i) {
+        QListWidgetItem* item = healList_listWidget->item(i);
+        QVariantMap data = item->data(Qt::UserRole).toMap();
+        targets.append(data);
+    }
+    if (saveProfileSignal("Heals", profileName, targets)) {
+        profile_listWidget->addItem(profileName);
+    }
+}
+
+void HealTab::clearList() const {
+    healList_listWidget->clear();
+}
+
+// End Profile Functions
 
 void HealTab::setHealEnabled(bool on) {
     if (on) {
