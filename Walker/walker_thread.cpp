@@ -69,13 +69,14 @@ void WalkerThread::run()
         if (Game::map_view->LocalPlayer->x == map_x &&
             Game::map_view->LocalPlayer->y == map_y &&
             Game::map_view->LocalPlayer->z == map_z) {
+            std::cout << "Gitara" << std::endl;
             if (idx == (idx + 1) % m_waypoints.size()) {continue;}
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
             continue;
         }
         if (((!Game::has_loot && !Game::has_target) || option == "Lure") &&
-            (option != "Action" && option != "Label" && option != "Use")) {
+            (option != "Action" && option != "Use")) {
             Game::queue_autoWalk(map_x, map_y, map_z);
         }
         if (Game::queue_isAttacking() && option != "Lure" && is_walking)
