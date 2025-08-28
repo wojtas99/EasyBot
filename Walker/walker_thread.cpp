@@ -54,7 +54,6 @@ void WalkerThread::run()
         std::string option = wpt["option"].toString().toStdString();
         std::string direction = wpt["direction"].toString().toStdString();
         const QString action = wpt["action"].toString().trimmed();
-
         if (!action.isEmpty()) {
             ScriptResult res;
             runtime.exec(action, res);
@@ -76,8 +75,8 @@ void WalkerThread::run()
             emit indexUpdate(idx);
             continue;
         }
-
-        if ((!Game::has_loot && !Game::has_target) || option == "Lure") {
+        if (((!Game::has_loot && !Game::has_target) || option == "Lure") &&
+            (option != "Action" || option != "Label" || option != "Use")) {
             Game::queue_autoWalk(map_x, map_y, map_z);
         }
         if (Game::queue_isAttacking() && option != "Lure" && is_walking)

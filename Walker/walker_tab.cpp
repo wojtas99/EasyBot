@@ -25,7 +25,7 @@ WalkerTab::WalkerTab(QWidget* parent) : QWidget(parent) {
     const QVariantMap map = item->data(Qt::UserRole).toMap();
     const QString action  = map.value("action").toString();
 
-    if (map.value("option").toString() == "Action") {
+    if (map.value("option").toString() == "Action" || map.value("option").toString() == "Use") {
         action_textEdit->setPlainText(action);
     } else {
         action_textEdit->clear();
@@ -114,14 +114,14 @@ void WalkerTab::waypointList() {
     directionsGroup->setLayout(directionsLayout);
 
     // --- Options (Stand..Use) ---
-    QStringList options = {"Stand", "Node", "Lure", "Shovel", "Rope", "Pick", "Label", "Action", "Use"};
+    QStringList options = {"Stand", "Node", "Lure", "Label", "Action", "Use"};
     auto optionsGroup = new QGroupBox("Options", this);
     auto optionsLayout = new QGridLayout();
     options_buttonGroup = new QButtonGroup(this);
     options_buttonGroup->setExclusive(true);
 
     idx = 0;
-    for (int row = 0; row < 3; ++row) {
+    for (int row = 0; row < 2; ++row) {
         for (int col = 0; col < 3; ++col) {
             auto* rb = new QRadioButton(options[idx], this);
             optionsLayout->addWidget(rb, row, col);
@@ -132,7 +132,7 @@ void WalkerTab::waypointList() {
     connect(options_buttonGroup,static_cast<void(QButtonGroup::*)(QAbstractButton*, bool)>(&QButtonGroup::buttonToggled),this,[this](QAbstractButton* btn, bool checked) {
             if (!checked) return;
             const QString t = btn->text();
-            const bool allow = (t == "Label" || t == "Action");
+            const bool allow = (t == "Label" || t == "Action" || t == "Use");
             action_textEdit->setEnabled(allow);
         });
 
@@ -174,7 +174,6 @@ void WalkerTab::addWaypoint() const {
         itemText = QString("%1 %2 %3 %4 %5").arg(option).arg(x).arg(y).arg(z).arg(direction);
     }
 
-
     auto* item = new QListWidgetItem(itemText);
     static const QMap<QString, QPoint> dirOffsets = {
         {"N",  { 0, -1}},
@@ -201,6 +200,7 @@ void WalkerTab::addWaypoint() const {
     data["action"] = "";
     if (option == "Label") {data["label"] = action_textEdit->toPlainText();}
     if (option == "Action") {data["action"] = action_textEdit->toPlainText();}
+    if (option == "Use") {data["action"] = QString("api.useWith(%1, %2, %3, %4);").arg(action_textEdit->toPlainText()).arg(x).arg(y).arg(z);}
     action_textEdit->clear();
 
     item->setData(Qt::UserRole, data);

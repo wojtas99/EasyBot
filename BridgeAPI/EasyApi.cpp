@@ -1,4 +1,7 @@
 #include "EasyApi.h"
+
+#include <iostream>
+
 #include "../Functions/Game.h"
 #include <QByteArray>
 #include <QHash>
@@ -33,6 +36,19 @@ void EasyApi::close(const QString& container_name) {
 
 void EasyApi::openAll(int index) {
     Game::queue_openAll(index);
+}
+
+void EasyApi::useWith(int item_id, int x, int y, int z) {
+    if (auto tile = Game::queue_getTile(x, y, z)) {
+        if (uint64_t top_thing = Game::queue_getTopThing(tile)) {
+            if (item_id == 0) {
+                Game::queue_open(reinterpret_cast<Item*>(top_thing), 0);
+            } else {
+                auto item_use = Game::queue_findItemInContainers(item_id);
+                Game::queue_useWith(item_use, top_thing);
+            }
+        }
+    }
 }
 
 std::function<void(const QString&)> EasyApi::onLabel = {};
