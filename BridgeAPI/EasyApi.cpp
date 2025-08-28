@@ -1,10 +1,8 @@
 #include "EasyApi.h"
 
-#include <iostream>
-
 #include "../Functions/Game.h"
 #include <QByteArray>
-#include <QHash>
+#include <qmap.h>
 #include <QThread>
 
 static inline auto* LP() {
@@ -15,11 +13,8 @@ EasyApi::EasyApi(QObject* parent) : QObject(parent) {}
 
 double EasyApi::cap() const     { return LP() ? LP()->cap     : 0.0; }
 double EasyApi::hp() const      { return LP() ? LP()->hp      : 0.0; }
-double EasyApi::max_hp() const  { return LP() ? LP()->max_hp  : 0.0; }
 double EasyApi::mp() const      { return LP() ? LP()->mp      : 0.0; }
-double EasyApi::max_mp() const  { return LP() ? LP()->max_mp  : 0.0; }
 double EasyApi::lvl() const     { return LP() ? LP()->lvl     : 0.0; }
-double EasyApi::lvl_pc() const  { return LP() ? LP()->lvl_pc  : 0.0; }
 int    EasyApi::x() const       { return LP() ? int(LP()->x)  : 0; }
 int    EasyApi::y() const       { return LP() ? int(LP()->y)  : 0; }
 int    EasyApi::z() const       { return LP() ? int(LP()->z)  : 0; }
@@ -57,7 +52,6 @@ void EasyApi::label(const QString& name) {
     if (onLabel) onLabel(name.trimmed());
 }
 
-
 void EasyApi::sleep(int ms) {
     if (ms <= 0) return;
     while (ms > 0) {
@@ -65,4 +59,22 @@ void EasyApi::sleep(int ms) {
         QThread::msleep(step);
         ms -= step;
     }
+}
+
+QVariantList spectatorsInRange(int radius) const {
+    QVariantList out;
+    const auto entities = Game::getSpectatorsInRangeEx(radius);
+    out.reserve(int(entities.size()));
+    for (auto* entity : entities) {
+        if (!entity) continue;
+        QVariantMap m;
+        m["id"] = quint64(reinterpret_cast<uint64_t>(entity));
+        m["name"] = QString::fromStdString(entity->name);
+        m["x"] = entity->x;
+        m["y"] = entity->y;
+        m["z"] = entity->z;
+        m["hp"] = entity->hp;
+        out.push_back(m);
+    }
+    return out;
 }

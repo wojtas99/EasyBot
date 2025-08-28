@@ -3,6 +3,7 @@
 #pragma once
 #include <QObject>
 #include <QString>
+#include <QVariantMap>
 
 class EasyApi : public QObject {
     Q_OBJECT
@@ -11,11 +12,8 @@ public:
 
     Q_INVOKABLE double cap() const;
     Q_INVOKABLE double hp() const;
-    Q_INVOKABLE double max_hp() const;
     Q_INVOKABLE double mp() const;
-    Q_INVOKABLE double max_mp() const;
     Q_INVOKABLE double lvl() const;
-    Q_INVOKABLE double lvl_pc() const;
     Q_INVOKABLE int x() const;
     Q_INVOKABLE int y() const;
     Q_INVOKABLE int z() const;
@@ -24,6 +22,7 @@ public:
     Q_INVOKABLE static void close(const QString& container_name);
     Q_INVOKABLE static void openAll(int index);
     Q_INVOKABLE static void useWith(int item_id, int x, int y, int z);
+    Q_INVOKABLE QVariantList spectatorsInRange(int radius) const;
 
     Q_INVOKABLE static void sleep(int ms);
 

@@ -134,6 +134,13 @@ void WalkerTab::waypointList() {
             const QString t = btn->text();
             const bool allow = (t == "Label" || t == "Action" || t == "Use");
             action_textEdit->setEnabled(allow);
+        if (t == "Label") {
+            action_textEdit->setPlaceholderText("Start");
+        } else if (t == "Action") {
+            action_textEdit->setPlaceholderText("if (api.cap() < 400) { api.label(\"Bank\") } else { api.label(\"Start\")}\n""api.sleep(1000);");
+        } else if (t == "Use") {
+            action_textEdit->setPlaceholderText("0 - Use \n""2148 - Use ItemID");
+        }
         });
 
 

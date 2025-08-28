@@ -97,6 +97,7 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     connect(spell_tabWidget, &SpellTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
 
     setCentralWidget(main_tabWidget);
+    this->setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 }
 
 MainWindowTab::~MainWindowTab() {}

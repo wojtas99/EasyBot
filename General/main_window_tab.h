@@ -1,6 +1,8 @@
 #pragma once
 #include <QMainWindow>
-#include <QPushButton>
+#include <QSystemTrayIcon>
+#include <QMenu>
+#include <QCloseEvent>
 #include "../Status/status_tab.h"
 #include "../Walker/walker_tab.h"
 #include "../Target/target_tab.h"
@@ -20,7 +22,6 @@ public:
     ~MainWindowTab() override;
     LootTab *loot_tabWidget;
 
-
 private:
     QTabWidget *main_tabWidget;
     StatusTab *status_tabWidget;
@@ -32,6 +33,7 @@ private:
     bool m_hookInitialized = false;
     bool m_itemHookInitialized = false;
 };
+
 
 
 
