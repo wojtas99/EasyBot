@@ -1,9 +1,13 @@
 #include "EasyApi.h"
 
+#include <ios>
+#include <iostream>
+
 #include "../Functions/Game.h"
 #include <QByteArray>
 #include <qmap.h>
 #include <QThread>
+#include <__msvc_ostream.hpp>
 
 static inline auto* LP() {
     return Game::map_view->LocalPlayer;

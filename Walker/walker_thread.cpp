@@ -60,7 +60,6 @@ void WalkerThread::run()
             msleep(1500);
         }
 
-
         if (direction != "C" && map_z != Game::map_view->LocalPlayer->z) {
             idx = (idx + 1) % m_waypoints.size();
             emit indexUpdate(idx);
