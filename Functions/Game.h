@@ -26,6 +26,7 @@ public:
 
     static bool has_target;
     static bool has_loot;
+    static std::vector<Item*> opened_items;
 
     static SafeQueue actionQueue;
 
@@ -120,8 +121,6 @@ private:
     static uint64_t getTopThing_func_address;
 
     static LoadOption load_functions_variant;
-
-    static std::vector<Item*> opened_items;
 };
 
 #endif //MEMORY_FUNCTIONS_H
