@@ -1,8 +1,0 @@
-site_name: EasyBot Documentation
-nav:
-  - Home Page: home.md
-  - Injection: injection.md
-  - Scripts: scripts.md
-  - FAQ: faq.md
-theme:
-  name: material
