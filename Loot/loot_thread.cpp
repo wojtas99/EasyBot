@@ -16,7 +16,10 @@ inline std::string to_lower_copy(std::string s) {
 void ensure_space_in(Container* dest) {
     for (int k = 0; k < dest->number_of_items; ++k) {
         if (Item* open = Game::queue_getItem(dest, k)) {
-            Game::queue_open(open, dest);
+            if (Game::queue_isContainer(open)) {
+                Game::queue_open(open, dest);
+                return;
+            }
         }
     }
 }

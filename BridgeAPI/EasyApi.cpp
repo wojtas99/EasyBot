@@ -104,7 +104,7 @@ QVariant EasyApi::isTargeting() {
     if (!target) return{};
     QVariantMap out;
     auto* entity = reinterpret_cast<Entity*>(target);
-    out["address"]   = quint64(reinterpret_cast<uint64_t>(entity));
+    out["address"]= quint64(reinterpret_cast<uint64_t>(entity));
     out["name"]= entity->name;
     out["x"] = entity->x;
     out["y"] = entity->y;

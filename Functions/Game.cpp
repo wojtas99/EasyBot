@@ -679,10 +679,10 @@ bool Game::isContainer(Item* item)
 {
     //Decomp by IDA for Medivia bool __fastcall sub_7FF780DEEEE0(__int64 a1)
     using isContainer_t = bool(__fastcall*)(
-        Item *a1  // RCX - Item
+        Item **a1  // RCX - Item
         );
     auto IsContainer = reinterpret_cast<isContainer_t>(isContainer_func_address);
-    return IsContainer(item);;
+    return IsContainer(&item);
 }
 
 bool Game::isLyingCorpse(Item* item)
