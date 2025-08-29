@@ -1,6 +1,7 @@
 #include "walker_tab.h"
 
 #include <filesystem>
+#include <iostream>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDir>
@@ -284,9 +285,10 @@ void WalkerTab::setWalkerEnabled(bool on) {
         walkerThread->start();
     } else {
         if (!walkerThread) return;
-        walkerThread->stop();
-        walkerThread->wait();
-        delete walkerThread;
-        walkerThread = nullptr;
+        QMetaObject::invokeMethod(walkerThread, "stop", Qt::QueuedConnection);
+        connect(walkerThread, &QThread::finished, this, [this]{
+            walkerThread->deleteLater();
+            walkerThread = nullptr;
+        });
     }
 }

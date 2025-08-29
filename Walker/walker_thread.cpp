@@ -101,8 +101,7 @@ int WalkerThread::find_wpt()
         if (Game::map_view->LocalPlayer->z == map_z &&
             abs(static_cast<int>(map_x - Game::map_view->LocalPlayer->x)) <= 7 &&
             abs(static_cast<int>(map_y - Game::map_view->LocalPlayer->y)) <= 5 &&
-            direction == "C"  || option == "Lure") {
-            std::cout << "Found wpt" << std::endl;
+            (direction == "C"  || option == "Lure")) {
             return idx;
         }
     }

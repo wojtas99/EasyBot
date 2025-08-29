@@ -32,6 +32,9 @@ StatusTab::StatusTab(QWidget* parent) : QWidget(parent) {
     spells_checkBox = new QCheckBox("Enable Spells", g);
     spells_checkBox->setChecked(false);
     v->addWidget(spells_checkBox);
+    script_checkBox= new QCheckBox("Enable Scripts", g);
+    script_checkBox->setChecked(false);
+    v->addWidget(script_checkBox);
     v->addStretch();
 
     auto* root = new QVBoxLayout(this);
@@ -43,6 +46,7 @@ StatusTab::StatusTab(QWidget* parent) : QWidget(parent) {
     connect(loot_checkBox, &QCheckBox::toggled, this, &StatusTab::lootToggled);
     connect(healing_checkBox, &QCheckBox::toggled, this, &StatusTab::healingToggled);
     connect(spells_checkBox, &QCheckBox::toggled, this, &StatusTab::spellsToggled);
+    connect(script_checkBox, &QCheckBox::toggled, this, &StatusTab::scriptsToggled);
 }
 
 bool StatusTab::saveProfile(const QString& tab, const QString& profileName, const QList<QVariantMap>& m_items) {

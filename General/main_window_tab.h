@@ -9,6 +9,7 @@
 #include "../Loot/loot_tab.h"
 #include "../Heal/heal_tab.h"
 #include "../Spell/spell_tab.h"
+#include "../Scripts/script_tab.h"
 #include "../safe_queue.h"
 #include "../Functions/Game.h"
 #include "../include/MinHook.h"
@@ -29,6 +30,7 @@ private:
     TargetTab *target_tabWidget;
     HealTab *heal_tabWidget;
     SpellTab *spell_tabWidget;
+    ScriptTab *script_tabWidget;
 
     bool m_hookInitialized = false;
     bool m_itemHookInitialized = false;

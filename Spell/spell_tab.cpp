@@ -224,9 +224,10 @@ void SpellTab::setSpellEnabled(bool on) {
         spellThread->start();
     } else {
         if (!spellThread) return;
-        spellThread->stop();
-        spellThread->wait();
-        delete spellThread;
-        spellThread = nullptr;
+        QMetaObject::invokeMethod(spellThread, "stop", Qt::QueuedConnection);
+        connect(spellThread, &QThread::finished, this, [this]{
+            spellThread->deleteLater();
+            spellThread = nullptr;
+        });
     }
 }

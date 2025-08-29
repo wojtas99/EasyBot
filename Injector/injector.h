@@ -5,18 +5,16 @@
 #include <iostream>
 namespace fs = std::filesystem;
 
-// Funkcja: Kopiuj plik z nadpisaniem
 bool copy_files(const fs::path& from, const fs::path& to) {
     try {
         fs::copy_file(from, to, fs::copy_options::overwrite_existing);
         return true;
     } catch (...) {
-        std::cerr << "Nie można skopiować pliku: " << from << std::endl;
+        std::cerr << "Can not copy the file: " << from << std::endl;
         return false;
     }
 }
 
-// Funkcja: Kopiuj cały folder (np. platforms)
 bool copy_dir(const fs::path& from, const fs::path& to) {
     try {
         if (fs::exists(to)) fs::remove_all(to);
@@ -28,12 +26,11 @@ bool copy_dir(const fs::path& from, const fs::path& to) {
         }
         return true;
     } catch (...) {
-        std::cerr << "Nie można skopiować folderu: " << from << std::endl;
+        std::cerr << "Can not copy the folder: " << from << std::endl;
         return false;
     }
 }
 
-// Funkcja: Usuwanie plików po zamknięciu gry
 void cleanup(const fs::path& gameDir, const std::vector<std::string>& dlls, const fs::path& platforms) {
     for (const auto& dll : dlls) {
         try { fs::remove(gameDir / dll); } catch (...) {}
@@ -42,7 +39,6 @@ void cleanup(const fs::path& gameDir, const std::vector<std::string>& dlls, cons
     try { fs::remove_all(platforms); } catch (...) {}
 }
 
-// Funkcja: Inject DLL do procesu
 bool InjectDLL(HANDLE hProcess, const std::string& dllPath) {
     void* pRemoteBuf = VirtualAllocEx(hProcess, NULL, dllPath.size() + 1, MEM_COMMIT, PAGE_READWRITE);
     if (!pRemoteBuf) return false;
@@ -57,21 +53,17 @@ bool InjectDLL(HANDLE hProcess, const std::string& dllPath) {
     return true;
 }
 
-// Funkcja loadera: przyjmuje ścieżkę do DLL i EXE
 bool inject(const std::string& dllPath, const std::string& exePath, QWidget* parent = nullptr) {
-    // Ustal katalogi plików
     fs::path botDir = fs::path(dllPath).parent_path();
     fs::path gameDir = fs::path(exePath).parent_path();
     std::string dllName = fs::path(dllPath).filename().string();
     std::string gameExe = fs::path(exePath).filename().string();
     std::string platformsDir = "platforms";
 
-    // Pliki Qt do skopiowania (dodaj inne, jeśli trzeba)
     std::vector<std::string> qtDlls = {
         "Qt5Core.dll", "Qt5Gui.dll", "Qt5Widgets.dll", "Qt5Qml.dll", "Qt5Svg.dll", "Qt5Network.dll"
     };
 
-    // ---- KOPIOWANIE ----
     for (const auto& dll : qtDlls)
         copy_files(botDir / dll, gameDir / dll);
     copy_dir(botDir / platformsDir, gameDir / platformsDir);

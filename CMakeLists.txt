@@ -53,6 +53,8 @@ add_library(EasyBot SHARED EasyBot_dlmain.cpp
         Spell/spell_tab.h
         Spell/spell_thread.cpp
         Spell/spell_thread.h
+        Scripts/script_tab.cpp
+        Scripts/script_tab.h
 )
 
 target_link_libraries(EasyBot PRIVATE

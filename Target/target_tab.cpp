@@ -259,14 +259,14 @@ void TargetTab::setTargetEnabled(bool on) {
                 targets.append(data);
             }
             targetThread = new TargetThread(targets);
-            std::cout << "Target Thread created" << std::endl;
             targetThread->start();
     } else {
         if (!targetThread) return;
-        targetThread->stop();
-        targetThread->wait();
-        delete targetThread;
-        targetThread = nullptr;
+        QMetaObject::invokeMethod(targetThread, "stop", Qt::QueuedConnection);
+        connect(targetThread, &QThread::finished, this, [this]{
+            targetThread->deleteLater();
+            targetThread = nullptr;
+        });
     }
 }
 

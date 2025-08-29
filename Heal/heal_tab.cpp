@@ -205,9 +205,10 @@ void HealTab::setHealEnabled(bool on) {
         healThread->start();
     } else {
         if (!healThread) return;
-        healThread->stop();
-        healThread->wait();
-        delete healThread;
-        healThread = nullptr;
+        QMetaObject::invokeMethod(healThread, "stop", Qt::QueuedConnection);
+        connect(healThread, &QThread::finished, this, [this]{
+            healThread->deleteLater();
+            healThread = nullptr;
+        });
     }
 }

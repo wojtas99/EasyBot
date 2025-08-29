@@ -70,18 +70,21 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     loot_tabWidget = new LootTab();
     heal_tabWidget = new HealTab();
     spell_tabWidget = new SpellTab();
+    script_tabWidget = new ScriptTab();
     main_tabWidget->addTab(status_tabWidget, "Status");
     main_tabWidget->addTab(walker_tabWidget, "Walker");
     main_tabWidget->addTab(target_tabWidget, "Target");
     main_tabWidget->addTab(loot_tabWidget, "Loot");
     main_tabWidget->addTab(heal_tabWidget, "Heal");
     main_tabWidget->addTab(spell_tabWidget, "Spell");
+    main_tabWidget->addTab(script_tabWidget, "Scripts");
 
     connect(status_tabWidget, &StatusTab::walkerToggled,walker_tabWidget,  &WalkerTab::setWalkerEnabled);
     connect(status_tabWidget, &StatusTab::targetToggled,target_tabWidget,  &TargetTab::setTargetEnabled);
     connect(status_tabWidget, &StatusTab::lootToggled,loot_tabWidget,  &LootTab::setLootEnabled);
     connect(status_tabWidget, &StatusTab::healingToggled,heal_tabWidget,  &HealTab::setHealEnabled);
     connect(status_tabWidget, &StatusTab::spellsToggled,spell_tabWidget,  &SpellTab::setSpellEnabled);
+    connect(status_tabWidget, &StatusTab::scriptsToggled,script_tabWidget,  &ScriptTab::setScriptsEnabled);
 
 
     connect(target_tabWidget, &TargetTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
@@ -89,12 +92,14 @@ MainWindowTab::MainWindowTab(QWidget *parent) : QMainWindow(parent) {
     connect(loot_tabWidget, &LootTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
     connect(heal_tabWidget, &HealTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
     connect(spell_tabWidget, &SpellTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
+    connect(script_tabWidget, &ScriptTab::saveProfileSignal,status_tabWidget,  &StatusTab::saveProfile);
 
     connect(target_tabWidget, &TargetTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
     connect(walker_tabWidget, &WalkerTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
     connect(loot_tabWidget, &LootTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
     connect(heal_tabWidget, &HealTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
     connect(spell_tabWidget, &SpellTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
+    connect(script_tabWidget, &ScriptTab::loadProfileSignal,status_tabWidget,  &StatusTab::loadProfile);
 
     setCentralWidget(main_tabWidget);
     this->setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);

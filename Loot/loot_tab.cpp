@@ -177,10 +177,11 @@ void LootTab::setLootEnabled(bool on) {
         lootThread->start();
     } else {
         if (!lootThread) return;
-        lootThread->stop();
-        lootThread->wait();
-        delete lootThread;
-        lootThread = nullptr;
+        QMetaObject::invokeMethod(lootThread, "stop", Qt::QueuedConnection);
+        connect(lootThread, &QThread::finished, this, [this]{
+            lootThread->deleteLater();
+            lootThread = nullptr;
+        });
     }
 }
 
