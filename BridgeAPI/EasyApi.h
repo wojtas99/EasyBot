@@ -10,13 +10,13 @@ class EasyApi : public QObject {
 public:
     explicit EasyApi(QObject* parent=nullptr);
 
-    Q_INVOKABLE double cap() const;
-    Q_INVOKABLE double hp() const;
-    Q_INVOKABLE double mp() const;
-    Q_INVOKABLE double lvl() const;
-    Q_INVOKABLE int x() const;
-    Q_INVOKABLE int y() const;
-    Q_INVOKABLE int z() const;
+    Q_INVOKABLE static double cap();
+    Q_INVOKABLE static double hp();
+    Q_INVOKABLE static double mp();
+    Q_INVOKABLE static double lvl();
+    Q_INVOKABLE static int x();
+    Q_INVOKABLE static int y();
+    Q_INVOKABLE static int z();
 
     Q_INVOKABLE static void say(const QString& msg);
     Q_INVOKABLE static void close(const QString& container_name);
@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE static void useWith(int item_id, int x, int y, int z);
     Q_INVOKABLE static QVariantList getSpectatorsInRangeEx(int radius);
     Q_INVOKABLE static QVariantMap getTopThing(int x, int y, int z);
+    Q_INVOKABLE static QVariant isTargeting();
 
     Q_INVOKABLE static void sleep(int ms);
 

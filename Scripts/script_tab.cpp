@@ -1,6 +1,7 @@
 #include "script_tab.h"
 
 #include <filesystem>
+#include <iostream>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDir>
@@ -76,8 +77,15 @@ void ScriptTab::scriptList() {
     auto groupbox = new QGroupBox("Scripts", this);
     auto groupbox_layout = new QHBoxLayout(groupbox);
 
+    auto del_button = new QPushButton("Delete Script");
     auto add_button = new QPushButton("Add Script");
+
+    auto sleep_lineEdit = new QLineEdit();
+    sleep_lineEdit->setValidator(new QIntValidator(0, INT_MAX));
+    sleep_lineEdit->setPlaceholderText("1000 - Time in ms");
+
     auto script_textEdit = new QTextEdit();
+    script_textEdit->setPlaceholderText("api.say(\"exura\")");
 
     auto clearList_button = new QPushButton("Clear List", this);
     connect(clearList_button, &QPushButton::clicked, this, &ScriptTab::clearList);
@@ -87,8 +95,10 @@ void ScriptTab::scriptList() {
     auto right_layout = new QVBoxLayout();
 
     left_layout->addWidget(scriptList_listWidget);
+    left_layout->addWidget(del_button);
     left_layout->addWidget(clearList_button);
 
+    right_layout->addWidget(sleep_lineEdit);
     right_layout->addWidget(script_textEdit);
     right_layout->addWidget(add_button);
 
@@ -97,48 +107,50 @@ void ScriptTab::scriptList() {
 
     groupbox->setLayout(groupbox_layout);
 
-    connect(add_button, &QPushButton::clicked, this, [=]{
-        const QString code = script_textEdit->toPlainText().trimmed();
-        if (code.isEmpty()) return;
-
-        QString name = code.section('\n', 0, 0).trimmed();
-        if (name.isEmpty())
-            name = QString("Script %1").arg(scriptList_listWidget->count() + 1);
-
-        auto* item = new QListWidgetItem(name, scriptList_listWidget);
-        item->setFlags(item->flags()
-                       | Qt::ItemIsUserCheckable
-                       | Qt::ItemIsSelectable
-                       | Qt::ItemIsEnabled
-                       | Qt::ItemIsEditable);
-        item->setCheckState(Qt::Checked); // domyślnie włączony
-
-        QVariantMap data;
-        data["name"] = name;
-        data["code"] = code;
-        data["enabled"] = true;
-        item->setData(Qt::UserRole, data);
-
-        script_textEdit->clear();
+    connect(add_button, &QPushButton::clicked, [this, script_textEdit, sleep_lineEdit](){
+        if (!script_textEdit->toPlainText().isEmpty() && !sleep_lineEdit->text().isEmpty()) {
+            addScript(script_textEdit->toPlainText().trimmed(), sleep_lineEdit->text().toInt());
+             script_textEdit->clear();
+             sleep_lineEdit->clear();
+        }
     });
 
-    // NOWE: aktualizuj UserRole, gdy user odznaczy/zaznaczy albo zmieni nazwę
-    connect(scriptList_listWidget, &QListWidget::itemChanged,
-            this, [=](QListWidgetItem* item){
-        QVariantMap m = item->data(Qt::UserRole).toMap();
-        m["enabled"] = (item->checkState() == Qt::Checked);
-        m["name"] = item->text();
-        item->setData(Qt::UserRole, m);
-    });
+    connect(scriptList_listWidget, &QListWidget::itemChanged, this, &ScriptTab::onItemChanged);
+    connect(del_button, &QPushButton::clicked, this, &ScriptTab::deleteSelected);
 
     dynamic_cast<QGridLayout*>(layout())->addWidget(groupbox);
 }
 
+void ScriptTab::addScript(const QString& scriptData, int sleep_time) const {
+    auto* item = new QListWidgetItem(scriptData);
+    item->setFlags(item->flags()
+                   | Qt::ItemIsUserCheckable
+                   | Qt::ItemIsSelectable
+                   | Qt::ItemIsEnabled);
+    item->setCheckState(Qt::CheckState::Unchecked);
+    QVariantMap data;
+    data["script"] = scriptData;
+    data["loop"] = sleep_time;
+    item->setData(Qt::UserRole, data);
+    scriptList_listWidget->addItem(item);
+}
 
 // Start Profile Functions
 
 void ScriptTab::loadProfile(const QString& profileName) {
     QList<QVariantMap> m_loaded = loadProfileSignal("Scripts", profileName);
+    for (auto item: m_loaded) {
+        auto script = item.value("script").toString();
+        auto loop = item.value("loop").toString();
+        auto* data = new QListWidgetItem(script);
+        data->setFlags(data->flags()
+               | Qt::ItemIsUserCheckable
+               | Qt::ItemIsSelectable
+               | Qt::ItemIsEnabled);
+        data->setCheckState(Qt::CheckState::Unchecked);
+        data->setData(Qt::UserRole, item);
+        scriptList_listWidget->addItem(data);
+    }
 }
 
 void ScriptTab::saveProfile(const QString& profileName) {
@@ -153,11 +165,57 @@ void ScriptTab::saveProfile(const QString& profileName) {
     }
 }
 
-void ScriptTab::clearList() const {
+void ScriptTab::clearList() {
+    stopAllThreads();
     scriptList_listWidget->clear();
+}
+
+void ScriptTab::deleteSelected() {
+    QListWidgetItem* item = scriptList_listWidget->currentItem();
+    if (item) {
+        stopAndRemoveThread(item);
+        delete scriptList_listWidget->takeItem(scriptList_listWidget->row(item));
+    }
 }
 
 // End Profile Functions
 
-void ScriptTab::setScriptsEnabled(bool on) {
+void ScriptTab::setScriptsEnabled(bool on) const {
+    scriptList_listWidget->clear();
+}
+
+void ScriptTab::onItemChanged(QListWidgetItem* item) {
+    if (item->checkState()) {
+        if (!m_scriptThreads.contains(item)) {
+            const QVariantMap data = item->data(Qt::UserRole).toMap();
+            auto* th = new ScriptThread(data, this);
+            m_scriptThreads.insert(item, th);
+            th->start();
+        }
+    } else {
+        stopAndRemoveThread(item);
+    }
+}
+
+void ScriptTab::stopAndRemoveThread(QListWidgetItem* item) {
+    auto it = m_scriptThreads.find(item);
+    if (it == m_scriptThreads.end()) return;
+
+    ScriptThread* th = it.value();
+    m_scriptThreads.erase(it);
+    connect(th, &QThread::finished, this, [th]{
+        th->deleteLater();
+    }, Qt::UniqueConnection);
+    QMetaObject::invokeMethod(th, "stop", Qt::QueuedConnection);
+}
+
+void ScriptTab::stopAllThreads() {
+    const auto keys = m_scriptThreads.keys();
+    for (QListWidgetItem* item : keys) {
+        stopAndRemoveThread(item);
+    }
+}
+
+ScriptTab::~ScriptTab() {
+    stopAllThreads();
 }

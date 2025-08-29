@@ -9,19 +9,19 @@
 #include <QThread>
 #include <__msvc_ostream.hpp>
 
-static inline auto* LP() {
-    return Game::map_view->LocalPlayer;
+static inline auto* PlayerBase() {
+    return Game::player_base;
 }
 
 EasyApi::EasyApi(QObject* parent) : QObject(parent) {}
 
-double EasyApi::cap() const     { return LP() ? LP()->cap     : 0.0; }
-double EasyApi::hp() const      { return LP() ? LP()->hp      : 0.0; }
-double EasyApi::mp() const      { return LP() ? LP()->mp      : 0.0; }
-double EasyApi::lvl() const     { return LP() ? LP()->lvl     : 0.0; }
-int    EasyApi::x() const       { return LP() ? int(LP()->x)  : 0; }
-int    EasyApi::y() const       { return LP() ? int(LP()->y)  : 0; }
-int    EasyApi::z() const       { return LP() ? int(LP()->z)  : 0; }
+double EasyApi::cap() { return PlayerBase() ? PlayerBase()->LocalPlayer->cap     : 0.0; }
+double EasyApi::hp() { return PlayerBase() ? PlayerBase()->LocalPlayer->hp      : 0.0; }
+double EasyApi::mp() { return PlayerBase() ? PlayerBase()->LocalPlayer->mp      : 0.0; }
+double EasyApi::lvl() { return PlayerBase() ? PlayerBase()->LocalPlayer->lvl     : 0.0; }
+int EasyApi::x() { return PlayerBase() ? static_cast<int>(PlayerBase()->LocalPlayer->x)  : 0; }
+int EasyApi::y() { return PlayerBase() ? static_cast<int>(PlayerBase()->LocalPlayer->y)  : 0; }
+int EasyApi::z() { return PlayerBase() ? static_cast<int>(PlayerBase()->LocalPlayer->z)  : 0; }
 
 void EasyApi::say(const QString& msg) {
     const QByteArray u = msg.toUtf8();
@@ -72,7 +72,7 @@ QVariantList EasyApi::getSpectatorsInRangeEx(int radius) {
     for (auto* entity : entities) {
         if (!entity) continue;
         QVariantMap m;
-        m["id"]   = quint64(reinterpret_cast<uint64_t>(entity));
+        m["address"]   = quint64(reinterpret_cast<uint64_t>(entity));
         m["name"] = QString::fromStdString(entity->name);
         m["x"] = entity->x;
         m["y"] = entity->y;
@@ -90,11 +90,25 @@ QVariantMap EasyApi::getTopThing(int x, int y, int z) {
     const auto top = Game::queue_getTopThing(tile);
     if (!top) return out;
     auto* item = reinterpret_cast<Item*>(top);
+    out["address"]= quint64(reinterpret_cast<uint64_t>(item));;
     out["id"]= item->id;
     out["x"] = item->x;
     out["y"] = item->y;
     out["z"] = item->z;
     out["count"] = item->count;
+    return out;
+}
+
+QVariant EasyApi::isTargeting() {
+    const auto target = Game::player_base->Entity;
+    if (!target) return{};
+    QVariantMap out;
+    auto* entity = reinterpret_cast<Entity*>(target);
+    out["address"]   = quint64(reinterpret_cast<uint64_t>(entity));
+    out["name"]= entity->name;
+    out["x"] = entity->x;
+    out["y"] = entity->y;
+    out["z"] = entity->z;
     return out;
 }
 

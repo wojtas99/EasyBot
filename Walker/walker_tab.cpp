@@ -279,7 +279,6 @@ void WalkerTab::setWalkerEnabled(bool on) {
             auto* item = waypointList_listWidget->item(i);
             waypoints.append(item->data(Qt::UserRole).toMap());
         }
-
         walkerThread = new WalkerThread(waypoints);
         connect(walkerThread, &WalkerThread::indexUpdate,this,&WalkerTab::onWalkerIndexUpdate,Qt::QueuedConnection);
         walkerThread->start();

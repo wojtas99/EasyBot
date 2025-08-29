@@ -21,6 +21,7 @@ DWORD WINAPI TibiaBot(HMODULE hModule) {
     std::filesystem::create_directories("Save/Items");
     std::filesystem::create_directories("Save/Heals");
     std::filesystem::create_directories("Save/Spells");
+    std::filesystem::create_directories("Save/Scripts");
 
     AllocConsole();
     FILE* f;
