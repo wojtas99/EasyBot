@@ -14,6 +14,7 @@ public:
 
     void run() override;
     int find_wpt();
+public slots:
     void stop() noexcept { m_running = false; }
 
     signals:

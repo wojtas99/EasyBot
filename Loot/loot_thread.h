@@ -12,6 +12,7 @@ public:
     QThread(parent), m_items(items), m_running(true) {}
 
     void run() override;
+public slots:
     void stop() noexcept { m_running = false; }
 
 private:

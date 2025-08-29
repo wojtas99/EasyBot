@@ -13,6 +13,7 @@ public:
         : QThread(parent), m_spells(spells), m_running(true) {}
 
     void run() override;
+public slots:
     void stop() noexcept { m_running = false; }
 
 private:
